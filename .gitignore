@@ -1,3 +1,14 @@
+## My added ignores:
+paper.pdf
+*~   ## vim temp things
+*~   ## vim temp things
+*~   ## vim temp things
+*~   ## vim temp things
+*~   ## vim temp things
+*~   ## vim temp things
+*~   ## vim temp things
+*~   ## vim temp things
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

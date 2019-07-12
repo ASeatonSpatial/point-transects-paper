@@ -1,0 +1,125 @@
+%% Template article for Elsevier's document class `elsarticle'
+%% with numbered style bibliographic references
+\documentclass[preprint,12pt]{elsarticle}
+
+\usepackage{setspace}
+\doublespacing
+
+% remove preprent footnote
+\makeatletter
+\def\ps@pprintTitle{%
+ \let\@oddhead\@empty
+ \let\@evenhead\@empty
+ \def\@oddfoot{\centerline{\thepage}}%
+ \let\@evenfoot\@oddfoot}
+\makeatother
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+\biboptions{comma,round}
+
+% shortcuts
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\blambda}{\boldsymbol{\lambda}}
+\newcommand{\T}{\intercal}
+\newcommand{\bS}{\mathbf{S}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bSigma}{\boldsymbol{\Sigma}}
+\newcommand{\bm}{\boldsymbol}  % bold maths symbols
+\newcommand{\tl}{\tilde{\lambda}}   % thinned little lambda
+\newcommand{\tL}{\tilde{\Lambda}}  % thinned big lambda
+
+\begin{document}
+\begin{frontmatter}
+\title{Point transect distance sampling in inlabru}
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for the associated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for the associated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for the associated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%%
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{<author name>}
+%% \address[label1]{<address>}
+%% \address[label2]{<address>}
+
+\author{Andrew E Seaton}
+
+\address{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, University of St Andrews, St Andrews, Fife, Scotland}
+
+\begin{abstract}
+Point transect distance sampling in \texttt{inlabru}
+\end{abstract}
+
+\begin{keyword}
+Distance sampling \sep Stochastic partial differential equations \sep Integrated nested Laplace approximation \sep Generalized additive model
+\end{keyword}
+\end{frontmatter}
+
+\section*{Introduction}
+
+Introduction outline:
+\begin{enumerate}
+	\item Estimation of abundance and spatial distribution of animals is an important topic
+	\item Distance sampling is a family of methods that aim to do this whilst accounting for detectability of animals
+	\item Distance sampling began life under a design-based inference paradigm
+	\item Randomised survey design is used in two ways.  Firstly, to justify the assumption that the true distribution of animals is uniform with respect to distance from the observer.  Secondly, to construct Horvit-Thompson-like estimators of animal density, which are then converted to abundance estimates for regions of interest
+	\item Interest in the spatial distribution of animals has led to the development of approaches that combine traditional distance sampling methods and spatially explicit generalized additive models
+	\item In this approach the estimated detection probabilities for discrete spatial units are used as an offset in a generalized additive model where the response variable is a count of detections in each unit
+	\item This two-stage approach needs a way to propogate uncertainty from the detection model to the spatial model
+	\item Recently [[JOYCE PAPER]] presented a one-stage approach that simultaneously estimates the detection and spatial processes, avoids binning data into counts and removes the need to consider uncertainty propagation
+	\item This approach considered line-transect distance sampling as thinned log-Gaussian Cox process
+	\item To estimate the detection function [[JOYCE et al]] constructed a spline-like function using an SPDE approach and fit the model using \texttt{R-INLA}
+	\item In this paper we show how to achieve a similar one-stage model for point transect distance sampling
+	\item Point transect surveys require a different approach than line transects because the area surveyed increases with distance from observer
+	\item In addition to accounting for this we present an alternative way to specify the detection function.  We replace the spline approach with a parametric family of detection functions such as half-normal and hazard rate functions
+	\item  These detection functions are typically not linear in their parameters and so cannot be straightforwardly estimated using methods for additive linear predictors
+	\item To solve this we implement an iterative approach based on a Taylor approximation of the detection function and fit the model using the \texttt{inlabru} package which extends the functionality of \texttt{R-INLA}
+	\item This represents a novel development in distance sampling methods that allows simultaneous estimation of parametric detection functions and the spatial distribution of animals from point transect data
+\end{enumerate}
+
+\section*{Methods}
+
+We assume the location of animals are a point pattern that follows a log-Gaussian Cox process with intensity process $\lambda(s)$.  The log-Gaussian Cox process is a flexible approach that can include spatially structured random effects on the intensity process to account for unexplained heterogeneity not captured by fixed effect covariates.  
+
+\sloppy For the case with imperfect detection of points we specify a thinning probability function $g(s) = \mathbb{P}(\text{a point at $s$ is detected})$. A key property of the log-Gaussian Cox process is that a realisation thinned with thinning probability function $g(s)$ also follows a log-Gaussian Cox process with intensity given by $\tl(s) = \lambda(s)g(s)$.  
+
+Standard distance sampling methodology specifies $g(s)$ as a function that decays with increasing distance from the observer.  For example, if $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$ where $\sigma$ is a variance parameter to be estimated from the number of observed distances.  The parameter $\sigma$ can only be estimated if some assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption of distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed differences from uniformity can be attributed to detectability, and not variation in the intensity.  
+
+A point transect distance sampling survey consists of a set of $K$ sampled regions.  The $k$-th sampled region we denote $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity we assume that all sampled regions are discs with radius $W$ and $\Omega_j \cap \Omega_k = \emptyset$ for all $j \neq k$.  The thinning probability function $g(s)$ is then defined relative to the positions of the surveyed regions.  For any area not surveyed the probability of observing a point is $0$, i.e. $g(s) = 0$ for any $s \notin \cup_{k=1}^K \Omega_k$.  Let the probability of observing a point $s \in \Omega_k$ be denoted $g_k(s)$.  Since the surveyed regions are non-overlapping each location $s$ is associated with only one thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the half-normal detection function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$. The assumption of non-overlapping survey regions could be relaxed by including extra information such as the time of each observation although we do not consider this here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for any $s \in \Omega_k$.  
+
+The likelihood of observing points at locations $\bm{Y} = (s_1, \ldots, s_n)$ is
+\begin{equation}
+\pi(\bm{Y} | \theta, \phi) = \exp\left(-\int_{s \in \Omega} \lambda(s) g(s) \mathrm{d}s \right)\prod_{i=1}^n \lambda(s_i)g(s_i)
+\end{equation}
+
+\end{document}

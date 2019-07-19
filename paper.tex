@@ -80,9 +80,9 @@
 Point transect distance sampling in \texttt{inlabru}
 \end{abstract}
 
-\begin{keyword}
-Distance sampling \sep Stochastic partial differential equations \sep Integrated nested Laplace approximation \sep Generalized additive model
-\end{keyword}
+%\begin{keyword}
+%Distance sampling \sep Stochastic partial differential equations \sep Integrated nested Laplace approximation \sep Generalized additive model
+%\end{keyword}
 \end{frontmatter}
 
 \section*{Introduction}
@@ -90,11 +90,11 @@ Distance sampling \sep Stochastic partial differential equations \sep Integrated
 Introduction outline:
 \begin{enumerate}
 	\item Estimation of abundance and spatial distribution of animals is an important topic
-	\item Distance sampling is a family of methods that aim to do this whilst accounting for detectability of animals
+	\item Distance sampling is a family of methods that aim to do this whilst accounting for imperfect detectability of animals
 	\item Distance sampling began life under a design-based inference paradigm
 	\item Randomised survey design is used in two ways.  Firstly, to justify the assumption that the true distribution of animals is uniform with respect to distance from the observer.  Secondly, to construct Horvit-Thompson-like estimators of animal density, which are then converted to abundance estimates for regions of interest
 	\item Interest in the spatial distribution of animals has led to the development of approaches that combine traditional distance sampling methods and spatially explicit generalized additive models
-	\item In this approach the estimated detection probabilities for discrete spatial units are used as an offset in a generalized additive model where the response variable is a count of detections in each unit
+	\item In this approach the estimated detection probabilities for discrete spatial units are used as an offset in a generalized additive model where the response variable is a count of detections within each unit
 	\item This two-stage approach needs a way to propogate uncertainty from the detection model to the spatial model
 	\item Recently [[JOYCE PAPER]] presented a one-stage approach that simultaneously estimates the detection and spatial processes, avoids binning data into counts and removes the need to consider uncertainty propagation
 	\item This approach considered line-transect distance sampling as thinned log-Gaussian Cox process
@@ -107,19 +107,107 @@ Introduction outline:
 	\item This represents a novel development in distance sampling methods that allows simultaneous estimation of parametric detection functions and the spatial distribution of animals from point transect data
 \end{enumerate}
 
-\section*{Methods}
+\section*{Distance Sampling as a Thinned Point Process}
 
 We assume the location of animals are a point pattern that follows a log-Gaussian Cox process with intensity process $\lambda(s)$.  The log-Gaussian Cox process is a flexible approach that can include spatially structured random effects on the intensity process to account for unexplained heterogeneity not captured by fixed effect covariates.  
 
 \sloppy For the case with imperfect detection of points we specify a thinning probability function $g(s) = \mathbb{P}(\text{a point at $s$ is detected})$. A key property of the log-Gaussian Cox process is that a realisation thinned with thinning probability function $g(s)$ also follows a log-Gaussian Cox process with intensity given by $\tl(s) = \lambda(s)g(s)$.  
 
-Standard distance sampling methodology specifies $g(s)$ as a function that decays with increasing distance from the observer.  For example, if $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$ where $\sigma$ is a variance parameter to be estimated from the number of observed distances.  The parameter $\sigma$ can only be estimated if some assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption of distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed differences from uniformity can be attributed to detectability, and not variation in the intensity.  
+Standard distance sampling approaches specify $g(s)$ as a function that decays with increasing distance from the observer.  For example, if $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$ where $\sigma$ is a variance parameter to be estimated using the observed distances.  The parameter $\sigma$ can only be estimated if some assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption of distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed differences from uniformity can be attributed to detectability, and not variation in the intensity.  
 
-A point transect distance sampling survey consists of a set of $K$ sampled regions.  The $k$-th sampled region we denote $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity we assume that all sampled regions are discs with radius $W$ and $\Omega_j \cap \Omega_k = \emptyset$ for all $j \neq k$.  The thinning probability function $g(s)$ is then defined relative to the positions of the surveyed regions.  For any area not surveyed the probability of observing a point is $0$, i.e. $g(s) = 0$ for any $s \notin \cup_{k=1}^K \Omega_k$.  Let the probability of observing a point $s \in \Omega_k$ be denoted $g_k(s)$.  Since the surveyed regions are non-overlapping each location $s$ is associated with only one thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the half-normal detection function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$. The assumption of non-overlapping survey regions could be relaxed by including extra information such as the time of each observation although we do not consider this here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for any $s \in \Omega_k$.  
+A point transect distance sampling survey consists of a set of $K$ sampled regions.  The $k$-th sampled region we denote $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity we assume that all sampled regions are discs with radius $W$ and $\Omega_j \cap \Omega_k = \emptyset$ for all $j \neq k$.  The thinning probability function $g(s)$ is then defined relative to the positions of the surveyed regions.  The probability of observing a point outside the surveyed region is zero.  We denote the probability of observing a point $s \in \Omega_k$ as $g_k(s)$.  Since the surveyed regions are non-overlapping each location $s$ is associated with a single thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the half-normal thinning probability function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$. The assumption of non-overlapping survey regions can be relaxed by including extra information such as the time of each observation.  For simplicity we do not consider this here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for $s \in \Omega_k$.  
 
-The likelihood of observing points at locations $\bm{Y} = (s_1, \ldots, s_n)$ is
+The likelihood of observed points at locations $\bm{Y} = (s_1, \ldots, s_n)^\intercal$ is then
 \begin{equation}
-\pi(\bm{Y} | \theta, \phi) = \exp\left(-\int_{s \in \Omega} \lambda(s) g(s) \mathrm{d}s \right)\prod_{i=1}^n \lambda(s_i)g(s_i)
+\label{lgcp-likelihood}
+\pi(\bm{Y} | \theta, \phi) = \exp\left(-\int\displaylimits_{s \in \Omega} \lambda(s) g(s) \mathrm{d}s \right)\prod_{i=1}^n \lambda(s_i)g(s_i)
 \end{equation}
+
+The integral component of the likelihood does not usually have analytical solutions.  Replacing the integral with a weighted sum allows the log-likelihood to be rewritten as a weighted Poisson log-likelihood.  
+
+To evaluate the integral we introduce polar coordinates notation $s_k(r, \theta) = s_k + r\left[\cos\theta, \sin\theta \right]^T$ to represent locations in each sampling unit $\Omega_k$.   In general the thinning function depends only on $r$ and not on $\theta$.  We assume this is the case in the following and use the shorthand $g_k(r) = g(s_k(r, \theta))$. It follows that the integral can be rewritten as a sum of weighted one-dimensional integrals $\sum_{k=1}^K 2\pi \lambda(s_k) \int_0^W r g_k(r)\mathrm{d}r$ using the assumption that $\lambda(s)$ is constant within each sampling unit.  For each sampling unit we approximate the one-dimensional integral using a midpoint integration method with $M$ integration locations $r_{k1}, \ldots, r_{kM}$ and associated weights $\alpha_{k1}, \ldots, \alpha_{kM}$.  This gives
+\begin{equation*}
+	\int\displaylimits_{s \in \Omega} \lambda(s)g(s)\mathrm{d}s \approx \sum_{k=1}^K \sum_{j=1}^M \tilde{\alpha}_{kj} \tl(s_{kj}) 
+\end{equation*}
+where $\tilde{\alpha}_{kj} = 2\pi \alpha_{kj}r_{kj}$ and $\tl(s_{kj}) = \lambda(s_k) g_k(r_{kj})$.  
+
+To simplify notation below we let $\tilde{\alpha}_{k} = (\alpha_{k1}, \ldots, \alpha_{kM})^\intercal$ and $\tilde{\alpha} = (\alpha_1^\intercal, \ldots, \alpha_K^\intercal)^\intercal$.  Similarly let $\tl_k = (\tl(s_{k1}), \ldots, \tl(s_{kM}))^\intercal$, $\tl_{int} = (\tl_1^\intercal, \ldots, \tl_K^\intercal)^\intercal$ and denote the intensity evaluated at the observed locations as $\tl_{obs} = (\tl(s_1), \ldots, \tl(s_n))^\intercal$
+
+Then the approximate log-likelihood is
+
+\begin{equation}
+\label{approx-log-likelihood}
+	\log \pi(\bm{Y}) \approx - \tilde{\alpha}^\intercal \tl_{int} + 1^\intercal\log\tl_{obs}
+\end{equation}
+
+This approximation can be written as a modified Poisson likelihood.  To see this let $\exp \eta = (\tl_{int}^\intercal, \tl_{obs}^\intercal)^\intercal$, 
+$\alpha = (\tilde{\alpha}^\intercal, 0_{n \times 1}^\intercal)^\intercal$ and construct a vector of pseudo-observations $y = (0_{KM\times 1}^\intercal, 1_{n \times 1}^\intercal)^\intercal$.  Then the approximate likelihood becomes
+\begin{equation}
+\pi(\bm{Y}) \approx \prod_{i=1}^{KM + n} \eta_i^{y_i}\exp(-\alpha_i\eta_i)
+\end{equation}
+
+This is similar to a Poisson likelihood with an offset term equal to $\log\alpha$.  
+[[Cite ``Going off Grid" and ``Berman Turner" papers here]]
+[[ I don't understand how INLA/inlabru handles this specific likelihood form.  The data corresponding to $\exp(-\alpha_i\eta_i)$ is straightforward using the $E$ argument with ``family = poisson".  The $\eta_i^{y_i}$ part sets $E = 0$ but I don't see anything that would set $\exp(-\alpha_i\eta_i) =1$ for this part of the stack which is what we need to get back to \eqref{approx-log-likelihood}.  
+
+This all differs from Berman-Turner/Baddeley papers in one key respect - the observed points do not form part of the integration scheme.  For Berman-Turner this is necessary so we can define pseudo-data $\tilde{y}_i = y_i / \alpha_i$.  Since all points are in the integration scheme $\alpha_i \neq 0$.  This is the trick they use to get it into a completely Poisson form (although now the pseudo-data is non-integer).]]  
+\section*{Intensities for incomplete data}
+
+In the above we assume the data are complete records of animal location.  However, in many distance sampling surveys the exact location of the animal is not recorded - instead only the location of the observer and the distance to the observer are recorded.  Data of this type can be analysed within a point process framework by deriving the appropriate intensity function for the incomplete data.
+
+Using the polar coordinates notation given above, for true animal location $s_k(r, \theta) \in \Omega_k$, we consider the case where we observe $r$ but not $\theta$.  It follows that the intensity for points at a distance $r$ observed within sampling unit $\Omega_k$ is
+\begin{align}
+\tl_k(r) &= \oint\displaylimits_{c_k(r)} \lambda(s)g_k(s)\mathrm{d}s \nonumber \\
+&= 2\pi\lambda(s_k)rg_k(r)
+\end{align}
+ where $c_k(r)$ is a circle of radius $r$ centred at $s_k$ and the second line follows from changing to polar coordinates and the assumption of constant intensity within $\Omega_k$.  This intensity differs from the full data case by including the $2\pi$  term to account for the fact that we do not observe $\theta$ and the additional $r$ term to account for the increasing area surveyed at larger distances.  
+ 
+\section*{Modelling $\lambda(s)$ using the stochastic partial differential equation approach}
+
+To model the intensity of animal locations we use a combination of fixed effects of spatial covariates and a spatially structured random effect.  This allows us to associate distance sampling data with environmental and ecological conditions that may be relevant to understanding the ecology of the species of interest.  For cases where we have insufficient covariates to fully explain the location of animals the spatially structured random effect accounts for additional heterogeneity in the intensity and is required to assume conditional independence between points, given the intensity.  
+
+The log-intensity of animal locations is given by
+\begin{equation*}
+\log \lambda(s) = \beta_0 + \sum_v \beta_v z_v(s) + \xi(s)
+\end{equation*}
+where $\beta_0$ is an intercept parameter, the $z_v(s)$ are spatially indexed covariates with effect parameters $\beta_v$ and $\xi(s)$ is a zero-mean Gaussian random field with Mat\'ern covariance
+\begin{equation}
+C(s_1,s_2) = \frac{2^{1-\nu}}{4\pi\kappa^2\tau^2\Gamma(\nu)}(\kappa \|s_1-s_2\|)^{\nu}K_\nu(\kappa \|s_1-s_2\|)
+\end{equation}
+where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  All three parameters are not simultaneously identifiable and it is conventional to assume a value for $\nu$ which controls the mean-square differentiability of the process.  We set $\nu = 1$ which is the most common default value in the approximation approach outlined below.  [[Would like to justify $\nu = 1$ somehow]]
+
+We use a Gaussian Markov random field approximation of $\xi(s)$ following the approach of [[Lindgren 2011]] based on specifying $\xi(s)$ via a stochastic partial differential equation.  Given a finite element mesh on the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$ we represent $\xi$ as $\xi(s) = \sum_l \xi_l \phi_l(s)$.  The parameters $\xi_1, \ldots, \xi_L$ follow a multivariate normal distribution with sparse precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices the elements of which are defined via an approximate solution to a stochastic partial differential equation. The precision parameter $\tau$ controls the marginal variance of the field and $\kappa$ is an inverse range parameter that controls the rate of decay of the covariance as distance between locations increases.  Further details of this Gaussian Markov random field approximation are given in the supplementary materials. 
+
+\section*{Thinned Intensities} 
+
+The above specifies a model for all animal locations in the area of interest.  The log-intensity for observed points is $\log\tl(s) = \log\lambda(s) + \log g(s)$.  This presents a problem since $\log g(s)$ is not typically linear in its parameters. However, for any single set of parameter values, $g(s)$ is essentially an offset term.  That is to say, if we could specify $g(s)$ as known then we could proceed with inference with a standard additive linear predictor.   
+
+TO DO:
+
+\begin{itemize}
+ \item Description of iterated INLA here
+\end{itemize}
+
+
+\section*{Case-Study:  Hawaiian Akepa Survey}
+
+TO DO:
+
+\begin{itemize}
+\item Bird survey locations image
+\item This section to include code snippets from inlabru
+\item Also mentions principled choice of priors and our choice for this akepa example
+\item Image of posterior mean of intensity
+\item Image of CV of posterior intensity
+\item Talk to Rick about something interesting to do with excursions package?  Multiple-testing an issue with gridded data as well - how is this solved?
+\end{itemize}
+
+\section*{Discussion}
+
+\begin{enumerate}
+	\item Iterated INLA is a powerful and flexible way to include non-linear components to a predictor and has applications beyond this application to distance sampling
+	\item More to do in future to test how many parameters can be included in the non-linear component and what types of non-linear components are feasible
+
+\end{enumerate}
 
 \end{document}

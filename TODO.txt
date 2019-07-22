@@ -1,0 +1,26 @@
+## Point transect distance sampling in inlabru
+## To Do List
+
+
+Re-do analysis in full INLA mode (not "eb")
+
+Try increasing montecarlo sample size for N realisation
+
+Try looking at a few of the N pdfs to see if they are non-overlapping
+and prefer certain values
+
+Look up JRSS C author guidelines and some example papers for spatial applications
+
+Investigate Excursions package, can it be used for this?
+
+Explanation of the N plot, it is the posterior of the abundance, not the posterior of expected abundance
+Distance Sampling people often don't think about the realisation part
+
+Is there anything special about being a Bayesian?  Read Cornelia Bayesian DS papers
+
+
+## Thoughts on Distance Sampling Assumptions
+
+Add to discussion something like:
+It may be possible to relax the assumption of uniformity within each 
+point transect.  E.g. by placing a prior on smoothness?

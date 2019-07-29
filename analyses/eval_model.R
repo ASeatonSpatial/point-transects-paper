@@ -2,9 +2,16 @@
 library(INLA)
 library(inlabru)
 
+
+#### WARNING - as it stands this script will overwrite figures for the paper
+
 #### Fitted model  ####
 file_name = "akepa_2002_fitted_model.RDS"
 fit = readRDS(file_name)
+
+study_area = readRDS("data/study_area_no_crs.RDS")
+samplers = readRDS("data/samplers_no_crs.RDS")
+mesh = readRDS("data/mesh_no_crs.RDS")
 
 #### Specify detection functions  ####
 
@@ -74,13 +81,13 @@ ggsave(filename = "../figures/spde_logvar_posterior.png")
 # Abundance posterior
 source("AS.Nposterior.R") 
 predpts = ipoints(study_area, mesh)
-abnc = AS.Nposterior(fit, predpts)   # n.samples = 1000 default
+abnc = AS.Nposterior(fit, predpts, n.samples = 8000)   # n.samples = 1000 default
 
 # Expected Abundance
 abnc$Nexp
 
 # Abundance posterior
-plot(abnc$Npost)
+plot(abnc$Npost)   # assymmetrical about mean?
 
 ggplot() + 
   gg(abnc$Npost) +

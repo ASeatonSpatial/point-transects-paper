@@ -9,6 +9,9 @@ paper.pdf
 *~   ## vim temp things
 *~   ## vim temp things
 
+# ignore generated figures
+*.png
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

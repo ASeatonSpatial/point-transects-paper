@@ -250,7 +250,7 @@ E_{u,\alpha}^{+}(\lambda) = \argmax_{D}\{\lvert D \rvert : \mathbb{P}\left[D \su
 \end{equation*}
 It is important to note that $A_u^{+}(f)$ specifies a set for which a function $f(s)$ exceeds a threshold value $u$ for \textit{every location} in the set.  This means that when considering random quantities such as $\lambda(s)$ the definition of the positive excursion set $E_{u,\alpha}^{+}(\lambda)$ is finding the largest such set for which such a condition holds simultaneously for all locations in a region.  Because $\lambda(s)$ is stochastic we must use something akin to a confidence level by specifying $\alpha$.  
 
-Excursion sets can be estimated using...  [[summarise Bolin paper here]]
+Excursion sets can be estimated by considering increasing candidate sets $D$ and a sequential integration scheme to estimate probabilities.  An implementation is available in the \texttt{excursions} package available through the Comprehensive R Archive Network.  
 
 \autoref{fig:excursion-set} shows the positive excursion set with a level corresponding to 1 bird per hectare with probability 0.95.  This figure can be interpreted in a natural way.  It is the largest possible region for which the intensity is greater than 1 bird per hectare for every location within the region, with probability 0.95.  
 
@@ -270,21 +270,32 @@ To visualise multiple such maps we can use the excursion function $F_u^{+}(s) = 
 
 This figure can also be interpreted naturally, defining probabilities each location to be a member of a set for which the probability of exceeding a threshold simultaneously in all locations.  A key feature of these plots is that they display either discrete sub-regions of the area of interest (for excursion sets) or the probability of membership of such discrete sub-regions (for excursion functions).  We believe the risk of interpreting these maps as intensities is much lower than for the quantile plots.  
 
-Another key aim of performing distance sampling surveys is to estimate the abundance of the population of interest.
+Another key aim of performing distance sampling surveys is to estimate the abundance of the population of interest.  By specifying our spatial model as a log-Gaussian Cox process, the intensity is a $random field$.  Let $n$ denote the abundance of the population within the region of interest and $N$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the random field provides a point estimate for the abundance, which we term the expected abundance (where the term expected comes from the fact this value is the rate parameter in the Poisson distribution which $N$ follows). Here we demonstrate the importance of considering the full posterior for $N$ which we call the \textit{realized} abundance.  
+
+Let $\Lambda = \int_{\Omega}\lambda(s)\mathrm{d}s$. Note that $\Lambda$ is a random variable and the integral of $\mathbb{E}[\lambda(s)]$ is equivalent to $\mathbb{E}(\Lambda)$ by Fubini's theorem.  As we mentioned above, this is the most sensible point estimate for the abundance.  We estimate the posterior $\pi(N | \Lambda)$ by a monte-carlo method.  Taking $m$ monte-carlo samples of the posterior intensity field $\lambda_1, \ldots, \lambda_m$ with corresponding expected abundance estimates $\Lambda_i = \int \lambda_i(s)\mathrm{d}s$ we estimate the posterior for the abundance as $\pi(N | \Lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \Lambda = \Lambda_i)$. This is well defined since $\pi(N | \Lambda = \Lambda_i) = \text{Poisson}(N, \Lambda_i)$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  
+
+For reference \autoref{fig:realized-abundance-comparison} shows a single Poisson PMF with rate parameter equal to the expected abundance.  
 
 \begin{figure}
 	\includegraphics[scale=0.6]{figures/realized_abundance_posterior.png}
-	\caption{Posterior of realized abundance}
+	\caption{Posterior of realized abundance.  The blue line marks the expected abundance}
 	\label{fig:realized-abundance-posterior}
 \end{figure}
 
 \begin{figure}
 	\includegraphics[scale=0.6]{figures/realized_abundance_vs_exp.png}
+	\caption{Solid:  Posterior of realized abundance.  Dashed:  Poisson PMF with rate parameter $\mathbb{E}[\Lambda]$}
+	\label{fig:realized-abundance-comparison}
 \end{figure}
+
 
 \begin{figure}
 	\includegraphics[scale=0.6]{figures/halfnormal.png}
 \end{figure}
+
+\bigskip 
+
+TODO HERE:  Something about how this is all a one-stage model and all these plots are based on sampling from the joint posterior of all parameters.  As such all plots can be viewed as incorporating the uncertainty from the detection model.  This is a lovely and natural way to present results and an advantage of having a joint model.  I'm not sure varprop can do this?  
 
 \newpage
 

@@ -57,24 +57,23 @@ ggsave(filename = "../figures/halfnormal.png",
 pxl = pixels(mesh, nx = 100, ny = 100, mask = study_area)
 pr.int <- predict(fit, pxl, ~ exp(grf + Intercept))
 
-ggplot() + 
-  gg(study_area) + 
+p1 = ggplot() + 
+  gg(study_area) +
   gg(pr.int) +
   scale_fill_viridis_c() +
-  ggtitle("Posterior mean intensity field")
+  ggtitle("Posterior mean intensity")
 
-ggsave(filename = "../figures/intensity_mean.png",
-       width = 5, height = 6, units = "in")
-
-ggplot() +
+p2 = ggplot() +
   gg(study_area)  +
   gg(pr.int["cv"]) +
   gg(samplers, colour = "red") +
   scale_fill_viridis_c() +
-  ggtitle("Posterior CV of intensity field")
+  ggtitle("Posterior CV of intensity")
 
-ggsave(filename = "../figures/intensity_cv.png",
-       width = 5, height = 6, units = "in")
+png(filename = "../figures/intensity_mean_cv.png",
+    width = 10, height = 6, units = "in", res = 100)
+multiplot(p1, p2, cols = 2)
+dev.off()
 
 # lower and upper quantiles
 

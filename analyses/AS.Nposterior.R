@@ -4,17 +4,18 @@
 #' @param model  fitted inlabru model
 #' @param predpts the thing that ipoints() returns, or something similar, must have weight column
 #' @param ... other args passed on to predict()
-#' 
+#' @param n.sd how many standard deviations above and below the mean to consider (for domain of N)
+#' @param n.grid roughly the number of discrete N values to consider
 
-AS.Nposterior <- function(model, predpts, ...){
+AS.Nposterior <- function(model, predpts, n.sd = 3, n.grid = 100, ...){
   
   # First get posterior for 
   Lambda <- predict(model, predpts, ~ sum(weight * exp(grf + Intercept))) 
   Lambda
   
-  Nlow <- round(Lambda$mean - 3*Lambda$sd)
-  Nhigh <- round(Lambda$mean + 3*Lambda$sd)
-  by <- round((Nhigh - Nlow)/500)   # should give roughly 500 
+  Nlow <- round(Lambda$mean - n.sd*Lambda$sd)
+  Nhigh <- round(Lambda$mean + n.sd*Lambda$sd)
+  by <- round((Nhigh - Nlow)/n.grid)   # should give roughly n.grid 
   
   Nrange <- seq(Nlow, Nhigh, by = by)
   Npost = predict(model, predpts, 

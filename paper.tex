@@ -194,21 +194,10 @@ TO DO:
 \end{itemize}
 
 
+\newpage
+
 \section*{Case-Study:  Hawaiian Akepa Survey}
 
-Section outline:
-\begin{enumerate}
-	\item Introduce the Akepa data, survey method, conservation status, conservation approaches, questions managers have.
-	\item Example code snippets for how to specify the model in inlabru
-	\item This includes discussion of priors.  Reference PC-priors, short description of how they work and why they are important for spatial modelling with Gaussian random fields.  In this case:  the prior for the range parameter was chosen based on the smallest distance between sampled locations.  The prior for sigma was based on a plausible scale for the maximum intensity.  
-	\item Show main results:  (i) The posterior mean of intensity (ii) The CV of the posterior intensity (iii)  The expected abundance
-	\item Discussion of difference between \textit{expected} abundance and \textit{realized abundance}.  Show how we create a posterior for realized abundance by monte-carlo sampling and averaging of Poisson probability mass functions.  Highlight that this is not often considered and is a natural thing to do in Bayesian setting where it is possible to draw monte-carlo samples from the posterior.  Plots of posterior for expected and realized abundance.  Note extra variation in realized abundance over expected abundance.  
-	\item Plot lower 0.025 quantile and upper 0.975 quantile of intensity.  Note the problem of multiple hypothesis testing and that these maps may be misleading.  Describe the excursion sets approach to solving this problem.
-	\item Show plots of estimated excursion sets for various thresholds and emphasise the usefulness from a management point of view.  Emphasise the \textit{joint} probability of every location in the set exceeding a threshold.
-	\item A small comparison with the GAM approach (perhaps in an appendix?) to show the similarity for the mean intensity.  Compare the uncertainty.  Reassuring that the methods agree.    
-\end{enumerate}
-
-\newpage
 
 TODO HERE:  Description of Akepa data, survey method, key questions, what do we care about from ecology/conservation point of view.  Then, code snippets of how to specify the model in inlabru, brief discussion of PC priors and how they were chosen here
 
@@ -248,7 +237,7 @@ joint probability of events across multiple locations.  The positive excursion s
 \begin{equation*}
 E_{u,\alpha}^{+}(\lambda) = \argmax_{D}\{\lvert D \rvert : \mathbb{P}\left[D \subset A_u^{+}(\lambda)\right] \geq 1 - \alpha \}
 \end{equation*}
-It is important to note that $A_u^{+}(f)$ specifies a set for which a function $f(s)$ exceeds a threshold value $u$ for \textit{every location} in the set.  This means that when considering random quantities such as $\lambda(s)$ the definition of the positive excursion set $E_{u,\alpha}^{+}(\lambda)$ is finding the largest such set for which such a condition holds simultaneously for all locations in a region.  Because $\lambda(s)$ is stochastic we must use something akin to a confidence level by specifying $\alpha$.  
+It is important to note that $A_u^{+}(f)$ specifies a set for which a function $f(s)$ exceeds a threshold value $u$ for \textit{every location} in the set.  This means that when considering random quantities such as $\lambda(s)$ the definition of the positive excursion set $E_{u,\alpha}^{+}(\lambda)$ is the largest such set for which a threshold is exceeded simultaneously for all locations in the set.  Because $\lambda(s)$ is stochastic we can only ever say this is true with some probability and use something akin to a confidence level by specifying $\alpha$.  
 
 Excursion sets can be estimated by considering increasing candidate sets $D$ and a sequential integration scheme to estimate probabilities.  An implementation is available in the \texttt{excursions} package available through the Comprehensive R Archive Network.  
 
@@ -268,13 +257,13 @@ To visualise multiple such maps we can use the excursion function $F_u^{+}(s) = 
 	\label{fig:excursion-function}
 \end{figure}
 
-This figure can also be interpreted naturally, defining probabilities each location to be a member of a set for which the probability of exceeding a threshold simultaneously in all locations.  A key feature of these plots is that they display either discrete sub-regions of the area of interest (for excursion sets) or the probability of membership of such discrete sub-regions (for excursion functions).  We believe the risk of interpreting these maps as intensities is much lower than for the quantile plots.  
+This figure can also be interpreted naturally.  It shows the largest possible probability for each location to be a member of a set for in which the intensity exceeds a threshold simultaneously across all locations in the set.  It can be viewed intuitively as a kind of fuzzier version of \autoref{fig:excursion-set}.  Regions on the edge of the excursion set would be included if the $\alpha$ value were allowed to increase slightly.  However, for regions in the north there is essentially no probability level for which those locations would be included in $A_u^{+}(\lambda)$.  
 
-Another key aim of performing distance sampling surveys is to estimate the abundance of the population of interest.  By specifying our spatial model as a log-Gaussian Cox process, the intensity is a $random field$.  Let $n$ denote the abundance of the population within the region of interest and $N$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the random field provides a point estimate for the abundance, which we term the expected abundance (where the term expected comes from the fact this value is the rate parameter in the Poisson distribution which $N$ follows). Here we demonstrate the importance of considering the full posterior for $N$ which we call the \textit{realized} abundance.  
+  A key feature of these plots is that they display either discrete sub-regions of the area of interest (for excursion sets) or the probability of membership of such discrete sub-regions (for excursion functions).  We believe the risk of interpreting these maps as intensities is much lower than for the quantile plots.  The fact that it is possible to estimate discrete regions may also be useful to communicate results to conservation managers and decision-makers.  We anticipate the excursion function will be most useful in communicating to audiences with statistical training.  
 
-Let $\Lambda = \int_{\Omega}\lambda(s)\mathrm{d}s$. Note that $\Lambda$ is a random variable and the integral of $\mathbb{E}[\lambda(s)]$ is equivalent to $\mathbb{E}(\Lambda)$ by Fubini's theorem.  As we mentioned above, this is the most sensible point estimate for the abundance.  We estimate the posterior $\pi(N | \Lambda)$ by a monte-carlo method.  Taking $m$ monte-carlo samples of the posterior intensity field $\lambda_1, \ldots, \lambda_m$ with corresponding expected abundance estimates $\Lambda_i = \int \lambda_i(s)\mathrm{d}s$ we estimate the posterior for the abundance as $\pi(N | \Lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \Lambda = \Lambda_i)$. This is well defined since $\pi(N | \Lambda = \Lambda_i) = \text{Poisson}(N, \Lambda_i)$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  
+Another key aim of performing distance sampling surveys is to estimate the abundance of the population of interest.  By specifying our spatial model as a log-Gaussian Cox process, the intensity is a random field rather than a fixed function of space. Let $n$ denote the abundance of the population within the region of interest and $N$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the random field provides a point estimate for the abundance, which we term the expected abundance.  Here we demonstrate the importance of considering the full posterior for $N$ which we call the \textit{realized} abundance.  
 
-For reference \autoref{fig:realized-abundance-comparison} shows a single Poisson PMF with rate parameter equal to the expected abundance.  
+Let $N = \int_{\Omega}\lambda(s)\mathrm{d}s$. Note that $N$ is a random variable and the integral of $\mathbb{E}[\lambda(s)]$ is equivalent to $\mathbb{E}(N)$ by Fubini's theorem, hence the term expected abundance.  As we mentioned above, this is the most sensible point estimate for the abundance.  We estimate the posterior $\pi(N | \lambda)$ by a monte-carlo method.  Taking $m$ monte-carlo samples of the posterior intensity field $\lambda_1, \ldots, \lambda_m$ we estimate the posterior for the abundance as $\pi(N | \lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda_i)$. This is well defined since $\pi(N | \lambda = \lambda_i)$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda_i(s)\mathrm{d}s$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of \textit{realized} abundance $n$ by calculating $\pi(N = n | \lambda)$.  For reference, \autoref{fig:realized-abundance-comparison} shows a single Poisson PMF with rate parameter equal to the expected abundance.  
 
 \begin{figure}
 	\includegraphics[scale=0.6]{figures/realized_abundance_posterior.png}

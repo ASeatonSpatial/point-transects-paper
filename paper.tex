@@ -5,10 +5,14 @@
 \usepackage{setspace}
 \doublespacing
 
-\usepackage{hyperref}
+
+\usepackage{hyperref} % auto detect ref type
+\usepackage{natbib}
+\setcitestyle{authoryear}
 
 
-% remove preprent footnote
+
+% remove preprint footnote
 \makeatletter
 \def\ps@pprintTitle{%
  \let\@oddhead\@empty
@@ -113,6 +117,16 @@ Introduction outline:
 	\item To solve this we implement an iterative approach based on a Taylor approximation of the detection function and fit the model using the \texttt{inlabru} package which extends the functionality of \texttt{R-INLA}
 	\item This represents a novel development in distance sampling methods that allows simultaneous estimation of parametric detection functions and the spatial distribution of animals from point transect data
 \end{enumerate}
+
+The estimation of the size of wild populations of animals is a critical objective within ecology and conservation [[citation]].  Distance sampling methods aim to achieve this by using a spatially explicit sampling design and estimating the detectability of animals as a function of distance from observer \citep{buckland_advanced_2008, buckland_distance_2015}.  Standard distance sampling approaches use a hybrid of design and model-based inference to estimate population size.  Probability of detection is modelled as a function of distance from observer and a randomized sampling design allows the construction of Horvitz-Thompson-like estimators of animal density \citep{horvitz_generalization_1952,  buckland_advanced_2008}.
+
+Over time interest grew in fully model-based approaches which allow the use of non-randomized survey designs by considering a spatial model for animal density so observations can be associated with spatially indexed covariates and abundance can, in principle, be estimated for any subregion within the study area \citep{johnson_model-based_2010, buckland_model-based_2016, miller_spatial_2013}.  Model-based distance sampling has typically been implemented in a two-stage modelling process.  In the first stage, detectability is estimated within each sampling unit.  In the second stage, detections within sampling units are binned into counts and used as the response variable in generalized additive model framework where the detectability estimates from the first stage are used as an offset.  Due to often sparse nature of wildlife survey data this may require consideration of over or under-dispersion and zero-inflation.  Negative-binomial and Tweedie distributions are common choices to model the distribution of counts [[citation?]].  
+A key concern with the two-stage approach is the propogation of the uncertainty in the detectability estimates to the second-stage spatial model.  Early attempts to address this focused on bootstrapping [[citations]], but more recent work has pointed to potentially irresolvable difficulties  [[flesh out]] with the bootstrapping approach and instead proposed propagating error based on a second-order Taylor approximation of detectability around the maximum-likelihood estimate from the first stage \citep{bravington_reliable_2018-1}.
+
+\citet{yuan_point_2017} presented a one-stage approach for analysing line-transect distance sampling within a Bayesian framework that simulateously estimates the detectability 
+and spatial distribution of animals.  Key to their approach is the use of sparse Gaussian Markov random field (GMRF) approximations to continously indexed Gaussian random fields (GRF) and a log-Gaussian Cox point process model that avoids the need to bin data into counts and naturally sidesteps issues of zero-inflation and dispersion.  The observation process is formulated as a thinning of the log-Gaussian Cox process.  Both the log-intensity of points and the detection function were modelled using a stochastic partial differential equation approach \citep{lindgren_explicit_2011}.  The model was specified as a latent Gaussian model and fitted using integrated nested Laplace approximations using the \texttt{R-INLA} package \citep{rue_approximate_2009}.  
+
+Here we present a similar approach to \citet{yuan_point_2017} but instead focus on the case of point transect data.  Point transects require special treatment to account for the fact that the area surveyed increases with increasing distance from the observer.  Our case study is, to the best of our knowledge, the first analysis of point transect distance sampling data as a thinned point process.  However, the point process viewpoint is not new and has been applied numerous times to line transect data [[citations here]].  
 
 \section*{Distance Sampling as a Thinned Point Process}
 
@@ -297,5 +311,8 @@ TODO HERE:  Something about how this is all a one-stage model and all these plot
 	\item More to do in future to test how many parameters can be included in the non-linear component and what types of non-linear components are feasible
 
 \end{enumerate}
+
+\bibliographystyle{chicago}
+\bibliography{paper}
 
 \end{document}

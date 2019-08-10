@@ -90,17 +90,19 @@
 % RJC 09/08/2019 Added co-authors and affiliations. Note that I used \affil[]{} instead of \address[]{}
 \author[1,*]{Andrew E Seaton}
 \author[1,2]{Richard J Camp}
+\author[3]{Finn Lindgren}
 \author[1]{Janine B Illian}
 \author[1]{David L Borchers}
 \author[1]{David L Miller}      % Ask about co-authoring the manuscript
 \author[1]{Len Thomas}          % Ask about co-authoring the manuscript
 \author[1]{Stephen T Buckland}  % Ask about co-authoring the manuscript
-\author[3]{Steve J Kendall}     % It is Steve's data we are using.
+\author[4]{Steve J Kendall}     % It is Steve's data we are using.
 
 %\address{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, University of St Andrews, St Andrews, Fife, Scotland}
 \affil[1]{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, University of St Andrews, St Andrews, Fife, Scotland}
 \affil[2]{U. S. Geological Survey, Pacific Island Ecosystems Research Center, P.O. Box 44, \hawaii{} National Park, HI 96718, U.S.A.}
-\affil[3]{U. S. Fish and Wildlife, Big Island National Wildlife Refuge Complex, 60 Nowelo St., Suite 100, Hilo, HI  96720, U.S.A.}
+\affil[3]{School of Mathematics, University of Edinburgh, Edinburgh, Scotland}
+\affil[4]{U. S. Fish and Wildlife, Big Island National Wildlife Refuge Complex, 60 Nowelo St., Suite 100, Hilo, HI  96720, U.S.A.}
 \affil[*]{Correspondence: Andrew E Seaton, Email: aes22@st-andrews.ac.uk}
 
 \begin{abstract}
@@ -119,30 +121,29 @@ Introduction outline:
 	\item Estimation of abundance and spatial distribution of animals is an important topic
 	\item Distance sampling is a family of methods that aim to do this whilst accounting for imperfect detectability of animals
 	\item Distance sampling began life under a design-based inference paradigm
-	\item Randomised survey design is used in two ways.  Firstly, to justify the assumption that the true distribution of animals is uniform with respect to distance from the observer.  Secondly, to construct Horvit-Thompson-like estimators of animal density, which are then converted to abundance estimates for regions of interest
+	\item Randomised survey design is used in two ways.  Firstly, to justify the assumption that the true distribution of animals is uniform with respect to distance from the observer.  Secondly, to construct Horvitz-Thompson-like estimators of animal density, which are then converted to abundance estimates for regions of interest
 	\item Interest in the spatial distribution of animals has led to the development of approaches that combine traditional distance sampling methods and spatially explicit generalized additive models
 	\item In this approach the estimated detection probabilities for discrete spatial units are used as an offset in a generalized additive model where the response variable is a count of detections within each unit
-	\item This two-stage approach needs a way to propogate uncertainty from the detection model to the spatial model
+	\item This two-stage approach needs a way to propagate uncertainty from the detection model to the spatial model
 	\item Recently [[JOYCE PAPER]] presented a one-stage approach that simultaneously estimates the detection and spatial processes, avoids binning data into counts and removes the need to consider uncertainty propagation
 	\item This approach considered line-transect distance sampling as thinned log-Gaussian Cox process
 	\item To estimate the detection function [[JOYCE et al]] constructed a spline-like function using an SPDE approach and fit the model using \texttt{R-INLA}
 	\item In this paper we show how to achieve a similar one-stage model for point transect distance sampling
 	\item Point transect surveys require a different approach than line transects because the area surveyed increases with distance from observer
-	\item In addition to accounting for this we present an alternative way to specify the detection function.  We replace the spline approach with a parametric family of detection functions such as half-normal and hazard rate functions
+	\item In addition to accounting for this [RJC - what does 'this' refer to?] we present an alternative way to specify the detection function.  We replace the spline approach with a parametric family of detection functions such as half-normal and hazard rate functions [RJC - I thought we couldn't use the hazard rate (hr) function? If the updated inlabru package includes the hr detection function model I need to rerun dsm as hr better fits the data.]
 	\item  These detection functions are typically not linear in their parameters and so cannot be straightforwardly estimated using methods for additive linear predictors
 	\item To solve this we implement an iterative approach based on a Taylor approximation of the detection function and fit the model using the \texttt{inlabru} package which extends the functionality of \texttt{R-INLA}
 	\item This represents a novel development in distance sampling methods that allows simultaneous estimation of parametric detection functions and the spatial distribution of animals from point transect data
 \end{enumerate}
 
-The estimation of the size of wild populations of animals is a critical objective within ecology and conservation [[citation]].  Distance sampling methods aim to achieve this by using a spatially explicit sampling design and estimating the detectability of animals as a function of distance from observer \citep{buckland_advanced_2008, buckland_distance_2015}.  Standard distance sampling approaches use a hybrid of design and model-based inference to estimate population size.  Probability of detection is modelled as a function of distance from observer and a randomized sampling design allows the construction of Horvitz-Thompson-like estimators of animal density \citep{horvitz_generalization_1952,  buckland_advanced_2008}.
+The estimation of the size of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}.  Distance sampling methods aim to achieve this by using a spatially explicit sampling design and estimating the detectability of animals as a function of distance from observer \citep{buckland_advanced_2008, buckland_distance_2015}.  Standard distance sampling approaches use a hybrid of design- and model-based inference to estimate population size.  Probability of detection is modelled as a function of distance from observer and a randomized sampling design allows the construction of Horvitz-Thompson-like estimators of animal density \citep{horvitz_generalization_1952,  buckland_advanced_2008}.
 
-Over time interest grew in fully model-based approaches which allow the use of non-randomized survey designs by considering a spatial model for animal density so observations can be associated with spatially indexed covariates and abundance can, in principle, be estimated for any subregion within the study area \citep{johnson_model-based_2010, buckland_model-based_2016, miller_spatial_2013}.  Model-based distance sampling has typically been implemented in a two-stage modelling process.  In the first stage, detectability is estimated within each sampling unit.  In the second stage, detections within sampling units are binned into counts and used as the response variable in generalized additive model framework where the detectability estimates from the first stage are used as an offset.  Due to often sparse nature of wildlife survey data this may require consideration of over or under-dispersion and zero-inflation.  Negative-binomial and Tweedie distributions are common choices to model the distribution of counts [[citation?]].
-A key concern with the two-stage approach is the propogation of the uncertainty in the detectability estimates to the second-stage spatial model.  Early attempts to address this focused on bootstrapping [[citations]], but more recent work has pointed to potentially irresolvable difficulties  [[flesh out]] with the bootstrapping approach and instead proposed propagating error based on a second-order Taylor approximation of detectability around the maximum-likelihood estimate from the first stage \citep{bravington_reliable_2018-1}.
+Over time interest grew in fully model-based approaches which allow the use of non-randomized survey designs by considering a spatial model for animal density so observations can be associated with spatially indexed covariates and abundance can, in principle, be estimated for any subregion within the study area \citep{johnson_model-based_2010, miller_spatial_2013, buckland_model-based_2016}.  Model-based distance sampling has typically been implemented in a two-stage modelling process.  In the first stage, detectability is estimated within each sampling unit.  In the second stage, detections within sampling units are binned into counts and used as the response variable in a generalized additive model framework where the detectability estimates from the first stage are used as an offset in the second stage.  Due to often sparse nature of wildlife survey data this may require consideration of over or under-dispersion and zero-inflated distributions.  Negative-binomial and Tweedie distributions are common choices to model the distribution of counts \citep{wood_gam_2017}.
+A key concern with the two-stage approach is the propagation of the uncertainty in the detectability estimates to the second-stage spatial model.  Early attempts to address this focused on bootstrapping \citep{lahiri_resampling_2003}, but more recent work with the bootstrapping approach has pointed to potentially irresolvable difficulties that require resampling blocks at multiple spatial scales. Instead \cite{bravington_reliable_2018-1} proposed propagating error based on a second-order Taylor approximation of detectability around the maximum-likelihood estimate from the first stage.
 
-\citet{yuan_point_2017} presented a one-stage approach for analysing line-transect distance sampling within a Bayesian framework that simulateously estimates the detectability
-and spatial distribution of animals.  Key to their approach is the use of sparse Gaussian Markov random field (GMRF) approximations to continously indexed Gaussian random fields (GRF) and a log-Gaussian Cox point process model that avoids the need to bin data into counts and naturally sidesteps issues of zero-inflation and dispersion.  The observation process is formulated as a thinning of the log-Gaussian Cox process.  Both the log-intensity of points and the detection function were modelled using a stochastic partial differential equation approach \citep{lindgren_explicit_2011}.  The model was specified as a latent Gaussian model and fitted using integrated nested Laplace approximations using the \texttt{R-INLA} package \citep{rue_approximate_2009}.
+\citet{yuan_point_2017} presented a one-stage approach for analysing line-transect distance sampling within a Bayesian framework that simultaneously estimates the detectability and spatial distribution of animals.  Key to their approach is the use of sparse Gaussian Markov random field (GMRF) approximations to continuously indexed Gaussian random fields (GRF) and a log-Gaussian Cox point process model that avoids the need to bin data into counts and naturally sidesteps issues of zero-inflation and dispersion.  The observation process is formulated as a thinning of the log-Gaussian Cox process.  Both the log-intensity of points and the detection function were modelled using a stochastic partial differential equation approach \citep{lindgren_explicit_2011}.  The model was specified as a latent Gaussian model and fitted using integrated nested Laplace approximations using the \texttt{R-INLA} package \citep{rue_approximate_2009}.
 
-Here we present a similar approach to \citet{yuan_point_2017} but instead focus on the case of point transect data.  Point transects require special treatment to account for the fact that the area surveyed increases with increasing distance from the observer.  Our case study is, to the best of our knowledge, the first analysis of point transect distance sampling data as a thinned point process.  However, the point process viewpoint is not new and has been applied numerous times to line transect data [[citations here]].
+Here we present a similar approach to \citet{yuan_point_2017} but instead focus on the case of point-transect distance sampling data.  Point transects require special treatment to account for the fact that the area surveyed increases with increasing distance from the observer.  Our case study is, to the best of our knowledge, the first analysis of point-transect distance sampling data as a thinned point process.  However, the point process viewpoint is not new and has been applied numerous times to line transect data [[citations here]].
 
 \section*{Distance Sampling as a Thinned Point Process}
 
@@ -150,9 +151,9 @@ We assume the location of animals are a point pattern that follows a log-Gaussia
 
 \sloppy For the case with imperfect detection of points we specify a thinning probability function $g(s) = \mathbb{P}(\text{a point at $s$ is detected})$. A key property of the log-Gaussian Cox process is that a realisation thinned with thinning probability function $g(s)$ also follows a log-Gaussian Cox process with intensity given by $\tl(s) = \lambda(s)g(s)$.
 
-Standard distance sampling approaches specify $g(s)$ as a function that decays with increasing distance from the observer.  For example, if $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$ where $\sigma$ is a variance parameter to be estimated using the observed distances.  The parameter $\sigma$ can only be estimated if some assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption of distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed differences from uniformity can be attributed to detectability, and not variation in the intensity.
+Standard distance sampling approaches specify $g(s)$ as a function that decays with increasing distance from the observer.  For example, if $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$ where $\sigma$ is a variance parameter to be estimated using the observed distances.  The parameter $\sigma$ can only be estimated if an assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption of distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed differences from uniformity can be attributed to detectability, and not variation in the intensity.
 
-A point transect distance sampling survey consists of a set of $K$ sampled regions.  The $k$-th sampled region we denote $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity we assume that all sampled regions are discs with radius $W$ and $\Omega_j \cap \Omega_k = \emptyset$ for all $j \neq k$.  The thinning probability function $g(s)$ is then defined relative to the positions of the surveyed regions.  The probability of observing a point outside the surveyed region is zero.  We denote the probability of observing a point $s \in \Omega_k$ as $g_k(s)$.  Since the surveyed regions are non-overlapping each location $s$ is associated with a single thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the half-normal thinning probability function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$. The assumption of non-overlapping survey regions can be relaxed by including extra information such as the time of each observation.  For simplicity we do not consider this here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for $s \in \Omega_k$.
+A point transect distance sampling survey consists of a set of $K$ sampled regions.  The $k$-th sampled region we denote $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity we assume that all sampled regions are discs with radius $W$ and $\Omega_j \cap \Omega_k = \emptyset$ for all $j \neq k$.  The thinning probability function $g(s)$ is then defined relative to the positions of the surveyed regions.  We denote the probability of observing a point $s \in \Omega_k$ as $g_k(s)$.  The probability of observing a point outside the surveyed region is zero.  [RJC - I switched the order of the two previous sentences. That way we start with the relevant probability, followed by defining the probability elsewhere is zero]  Since the surveyed regions are non-overlapping each location $s$ is associated with a single thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the half-normal thinning probability function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$. The assumption of non-overlapping survey regions can be relaxed by including extra information such as the time of each observation.  For simplicity we do not consider this here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for $s \in \Omega_k$.
 
 The likelihood of observed points at locations $\bm{Y} = (s_1, \ldots, s_n)^\intercal$ is then
 \begin{equation}
@@ -215,7 +216,7 @@ We use a Gaussian Markov random field approximation of $\xi(s)$ following the ap
 
 \section*{Thinned Intensities}
 
-The above specifies a model for all animal locations in the area of interest.  The log-intensity for observed points is $\log\tl(s) = \log\lambda(s) + \log g(s)$.  This presents a problem since $\log g(s)$ is not typically linear in its parameters. However, for any single set of parameter values, $g(s)$ is essentially an offset term.  That is to say, if we could specify $g(s)$ as known then we could proceed with inference with a standard additive linear predictor.
+The above specifies a model for all animal locations in the area of interest.  The log-intensity for observed points is $\log\tl(s) = \log\lambda(s) + \log g(s)$.  This presents a problem since $\log g(s)$ is not typically linear in its parameters. However, for any single set of parameter values, $g(s)$ is essentially an offset term.  That is, if we specify $g(s)$ as known then we can proceed with inference within a standard additive linear predictor framework.
 
 TO DO:
 
@@ -223,11 +224,7 @@ TO DO:
  \item Description of iterated INLA here
 \end{itemize}
 
-
-\newpage
-
 \section*{Case-Study:  Hawaiian Akepa Survey}
-
 
 TODO HERE:  Description of Akepa data, survey method, key questions, what do we care about from ecology/conservation point of view.  Then, code snippets of how to specify the model in inlabru, brief discussion of PC priors and how they were chosen here
 
@@ -249,7 +246,7 @@ Hakalau was established in 1985 to conserve 15,390-ha of montane forest habitat 
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.7\linewidth]{figures/2002studyareapoints_pt}
+	\includegraphics[scale=0.5]{figures/2002studyareapoints_pt}
 	\caption{Study area (light blue) showing the 2002 survey points (black dots) in Hakalau Forest National Wildlife Refuge, \hawaii{} Island.}
 	\label{fig:2002studyareapointspt}
 \end{figure}
@@ -262,7 +259,7 @@ For purposes of our analysis, we selected a single survey from the \akepa{} time
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.7\linewidth]{figures/2002counts_pt}
+	\includegraphics[scale=0.5]{figures/2002counts_pt}
 	\caption{Counts of \akepa{} by point during the 2002 survey.}
 	\label{fig:2002countspt}
 \end{figure}
@@ -277,7 +274,7 @@ The predicted mean of the posterior intensity is shown in \autoref{fig:intensity
 	\label{fig:intensity-mean-cv}
 \end{figure}
 
-The CV plot shows a measure of uncertainty relative to the mean intensity in each prediction grid cell.  However, often we are interested in the uncertainty around the mean intensity on the scale of the intensity function itself - perhaps seeking to identify areas where we can confidently predict particularly high or low intensities.  To attempt to communicate this uncertainty around the mean it is common [[references?]] to present the lower and upper quantiles corresponding to a 95\% credible interval for each prediction cell (\autoref{fig:intensity-quantiles}).
+The CV plot shows a measure of uncertainty relative to the mean intensity in each prediction grid cell.  However, often we are interested in the uncertainty around the mean intensity on the scale of the intensity function itself - perhaps seeking to identify areas where we can confidently predict particularly high or low intensities.  To attempt to communicate this uncertainty around the mean it is common [[references?]] to present the lower and upper quantiles corresponding to a 95\% credible interval for each prediction cell (\autoref{fig:intensity-quantiles}). [RJC - I don't think a reference is needed to substantiate presenting credible intervals or computing them using quantiles, particularly in a stats journal.]
 
 \begin{figure}
 	\includegraphics[scale=0.5]{figures/intensity_quantiles.png}
@@ -287,7 +284,7 @@ The CV plot shows a measure of uncertainty relative to the mean intensity in eac
 
 We believe quantile plots like those in \autoref{fig:intensity-quantiles} to be challenging to interpret and potentially misleading.  The temptation is to interpet these plots as showing possible intensity surfaces that produced the observed data.  We believe this misconception would be extremely common in particular for non-statistically trained audiences. The maps in \autoref{fig:intensity-quantiles} in fact only show \textit{summary statistics} of a posterior intensity which is specified (in our model) as a log-Gaussian random field.
 
-This difference becomes clear if one generates realizations of the posterior intensity field.  Three such realizations are in \autoref{fig:intensity-realizations}.  There are some notable differences when compared to the mean and quantile summary maps.  First, each realization has finer-grained spatial structure than the mean of the field.  What this means in practice is that we should expect more spatial structure in our collected data than what we might expect if we only look at the posterior mean of the field.  The mean field plot hides the spatial structure the model has been able to estimate from the data.  In general, the mean of a random field will contain less spatial structure than realisations of the field.
+This difference becomes clear if one generates realizations of the posterior intensity field.  Three such realizations are in \autoref{fig:intensity-realizations}.  There are some notable differences when compared to the mean and quantile summary maps.  First, each realization has finer-grained spatial structure than the mean of the field.  In practice, this indicates that we should expect more spatial structure in our collected data than what we might expect if we only look at the posterior mean of the field.  The mean field plot hides the spatial structure the model has been able to estimate from the data.  In general, the mean of a random field will contain less spatial structure than realisations of the field. [RJC - 'First' is not followed up with subsequent ordinal numbers; I suggest rewriting the above sentence to remove 'first' or add ordinal numbers below.]
 
 \begin{figure}
 	\includegraphics[scale=0.35]{figures/intensity_realized.png}
@@ -295,17 +292,16 @@ This difference becomes clear if one generates realizations of the posterior int
 	\label{fig:intensity-realizations}
 \end{figure}
 
-The quantile plots are more concerning.  As mentioned above, the temptation is to interpret these as possible intensities that produced our observed data.  However, they in fact show the quantiles of the \textit{marginal} probability density for each prediction location.  This essentially treats each prediction cell as independent of the others. Whilst any one prediction location may be well described by such quantiles, to present them side by side in one image obscures the fact that the probability that all (or some subset of) the prediction cells would \textit{simultaneously} achieve that value will be in fact much lower than the quantile value and in many cases would be essentially zero.  To demonstrate this we treated the lower and upper quantile plots as though they were intensities and integrated them to obtain an expected abundance estimate of approximately 2500 for the 0.025 quantile and 12,300 for the 0.975.  A naive (and tempting) interpretation of these numbers is as upper and lower limits of the 95\% credible interval for abundance. However, these abundance estimates are essentially impossible according to the estimated posterior for abundance (see \autoref{fig:realized-abundance-posterior}).  This emphasises that the temptation to treat these maps as showing possible intensity surfaces leads to outcomes (and possible management decisions) that are inconsistent with the very model that generated the maps.
+The quantile plots are more concerning.  As mentioned above, the temptation is to interpret these as possible intensities that produced our observed data.  However, they in fact show the quantiles of the \textit{marginal} probability density for each prediction location.  This essentially treats each prediction cell as independent of the others. Whilst any one prediction location may be well described by such quantiles, to present them side by side in one image obscures the fact that the probability that all (or some subset of) the prediction cells would \textit{simultaneously} achieve that value will be in fact much lower than the quantile value and in many cases would be essentially zero.  [RJC - I stumbled over this sentence several times and I think it needs to be rewritten.]  To demonstrate this we treated the lower and upper quantile plots as though they were intensities and integrated them to obtain an expected abundance estimate of approximately 2500 for the 0.025 quantile and 12,300 for the 0.975.  A naive (and tempting) interpretation of these numbers is as upper and lower limits of the 95\% credible interval for abundance. However, these abundance estimates are essentially impossible according to the estimated posterior for abundance (see \autoref{fig:realized-abundance-posterior}).  This emphasises that the temptation to treat these maps as showing possible intensity surfaces leads to outcomes (and possible management decisions) that are inconsistent with the very model that generated the maps.
 
-As an alternative we suggest using excursion sets and excursion functions.  This is a recently approach to representing uncertainty in stochastic processes that specifically considers
-joint probability of events across multiple locations.  The positive excursion set with level $u$ for a function $f(s)$ with domain $\Omega$ is $A_u^{+}(f) = \{ s \in \Omega ; f(s) < u \}$.  For a stochastic process $\lambda(s)$ the positive excursion set with level $u$ and probability $1 - \alpha$ is
+As an alternative, we suggest using excursion sets and excursion functions.  This is a recently developed approach to representing uncertainty in stochastic processes that specifically considers joint probability of events across multiple locations.  The positive excursion set with level $u$ for a function $f(s)$ with domain $\Omega$ is $A_u^{+}(f) = \{ s \in \Omega ; f(s) < u \}$.  For a stochastic process $\lambda(s)$ the positive excursion set with level $u$ and probability $1 - \alpha$ is
 
 \begin{equation*}
 E_{u,\alpha}^{+}(\lambda) = \argmax_{D}\{\lvert D \rvert : \mathbb{P}\left[D \subset A_u^{+}(\lambda)\right] \geq 1 - \alpha \}
 \end{equation*}
 It is important to note that $A_u^{+}(f)$ specifies a set for which a function $f(s)$ exceeds a threshold value $u$ for \textit{every location} in the set.  This means that when considering random quantities such as $\lambda(s)$ the definition of the positive excursion set $E_{u,\alpha}^{+}(\lambda)$ is the largest such set for which a threshold is exceeded simultaneously for all locations in the set.  Because $\lambda(s)$ is stochastic we can only ever say this is true with some probability and use something akin to a confidence level by specifying $\alpha$.
 
-Excursion sets can be estimated by considering increasing candidate sets $D$ and a sequential integration scheme to estimate probabilities.  An implementation is available in the \texttt{excursions} package available through the Comprehensive R Archive Network.
+Excursion sets can be estimated by considering increasing candidate sets $D$ and a sequential integration scheme to estimate probabilities.  An implementation is available in the \texttt{excursions} package \citep{bolin_calculating_2018} available through the Comprehensive R Archive Network \citep{r_2017}.
 
 \autoref{fig:excursion-set} shows the positive excursion set with a level corresponding to 1 bird per hectare with probability 0.95.  This figure can be interpreted in a natural way.  It is the largest possible region for which the intensity is greater than 1 bird per hectare for every location within the region, with probability 0.95.
 
@@ -325,7 +321,7 @@ To visualise multiple such maps we can use the excursion function $F_u^{+}(s) = 
 
 This figure can also be interpreted naturally.  It shows the largest possible probability for each location to be a member of a set for in which the intensity exceeds a threshold simultaneously across all locations in the set.  It can be viewed intuitively as a kind of fuzzier version of \autoref{fig:excursion-set}.  Regions on the edge of the excursion set would be included if the $\alpha$ value were allowed to increase slightly.  However, for regions in the north there is essentially no probability level for which those locations would be included in $A_u^{+}(\lambda)$.
 
-  A key feature of these plots is that they display either discrete sub-regions of the area of interest (for excursion sets) or the probability of membership of such discrete sub-regions (for excursion functions).  We believe the risk of interpreting these maps as intensities is much lower than for the quantile plots.  The fact that it is possible to estimate discrete regions may also be useful to communicate results to conservation managers and decision-makers.  We anticipate the excursion function will be most useful in communicating to audiences with statistical training.
+A key feature of these plots is that they display either discrete sub-regions of the area of interest (for excursion sets) or the probability of membership of such discrete sub-regions (for excursion functions).  We believe the risk of interpreting these maps as intensities is much lower than for the quantile plots.  The fact that it is possible to estimate discrete regions may also be useful to communicate results to conservation practitioners, land and resource managers and policy decision-makers.  We anticipate the excursion function will be most useful in communicating to audiences with statistical training. [RJC - I think statistically savvy audiences will readily grasp the excursion functions. Do you mean "without" statistical training?]
 
 Another key aim of performing distance sampling surveys is to estimate the abundance of the population of interest.  By specifying our spatial model as a log-Gaussian Cox process, the intensity is a random field rather than a fixed function of space. Let $n$ denote the abundance of the population within the region of interest and $N$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the random field provides a point estimate for the abundance, which we term the expected abundance.  Here we demonstrate the importance of considering the full posterior for $N$ which we call the \textit{realized} abundance.
 
@@ -350,7 +346,7 @@ Let $N = \int_{\Omega}\lambda(s)\mathrm{d}s$. Note that $N$ is a random variable
 
 \bigskip
 
-TODO HERE:  Something about how this is all a one-stage model and all these plots are based on sampling from the joint posterior of all parameters.  As such all plots can be viewed as incorporating the uncertainty from the detection model.  This is a lovely and natural way to present results and an advantage of having a joint model.  I'm not sure varprop can do this?
+TODO HERE:  Something about how this is all a one-stage model and all these plots are based on sampling from the joint posterior of all parameters.  As such all plots can be viewed as incorporating the uncertainty from the detection model.  This is a lovely and natural way to present results and an advantage of having a joint model.  I'm not sure varprop can do this? [RJC - Varprop does do this through the posterior covariance V_beta matrix of the intercept, smoother and detection probability terms. But it doesn't do so in such an elegant way. Varprop is still reliant on a two-stage model.]
 
 \newpage
 
@@ -358,7 +354,7 @@ TODO HERE:  Something about how this is all a one-stage model and all these plot
 
 \begin{enumerate}
 	\item Note the model-based Bayesian hierarchical approach provides a framework for working with distance sampling data.  This allows simultaneous estimation of parameters associated with the detection process and the spatial distribution.  It is in principle extendible... somehow...
-	\item Note that Bayesian distance sampling has been done before but that the INLA approach avoids data augmentation and MCMC.
+	\item Note that Bayesian distance sampling [RJC - References for this include Oedekoven et al (2014, JABES 19:219-239) and Buckland et al. (2015). We could also include Buckland et al. (2016, JABES 21:58-75) but it deals more with model-based design distance sampling than Bayesian approaches specifically. The more recent papers that reference Cornelia's paper are applied. It is also worth looking at Yuan's paper on point process models of blue whales.] has been done before but that the INLA approach avoids data augmentation and MCMC.
 	\item Iterated INLA is a powerful and flexible way to include non-linear components to a predictor and has applications beyond this application to distance sampling
 	\item More to do in future to test how many parameters can be included in the non-linear component and what types of non-linear components are feasible
 

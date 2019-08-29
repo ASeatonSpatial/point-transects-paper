@@ -10,9 +10,9 @@ set.seed(9701071)
 file_name = "akepa_2002_fitted_model.RDS"
 fit = readRDS(file_name)
 
-study_area = readRDS("data/study_area_no_crs.RDS")
-samplers = readRDS("data/samplers_no_crs.RDS")
-mesh = readRDS("data/mesh_no_crs.RDS")
+study_area = readRDS("data/study_area_extended_no_crs.RDS")
+samplers = readRDS("data/samplers_extended_no_crs.RDS")
+mesh = readRDS("data/mesh_extended_no_crs.RDS")
 
 #### Specify detection functions  ####
 

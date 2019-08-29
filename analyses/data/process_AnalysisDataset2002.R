@@ -24,7 +24,8 @@ coordinates(samplers) = ~ Easting + Northing
 
 obs = newdata %>% 
   select(SampleLabel, Distance, Easting, Northing, Stratum) %>% 
-  filter(Stratum %in% c("OF", "CF"), !is.na(Distance)) -> obs
+  filter(Stratum %in% c("OF", "CF"), !is.na(Distance)) %>% 
+  rename(distance = Distance) -> obs
 
 coordinates(obs) = ~ Easting + Northing
 
@@ -35,4 +36,4 @@ ggplot() +
   gg(obs, col = "green")
 
 saveRDS(samplers, file = "samplers_extended_no_crs.RDS")
-saveRDS(samplers, file = "obs_extended_no_crs.RDS")
+saveRDS(obs, file = "obs_extended_no_crs.RDS")

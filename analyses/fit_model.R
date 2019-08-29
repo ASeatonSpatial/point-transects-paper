@@ -18,10 +18,10 @@ file_name = "akepa_2002_fitted_model.RDS"
 
 #### Load Data ####
 
-realobs <- readRDS("data/obs_2002_no_crs.RDS")
-samplers <- readRDS("data/samplers_no_crs.RDS")
-study_area <- readRDS("data/study_area_no_crs.RDS")
-mesh <- readRDS("data/mesh_no_crs.RDS")
+realobs <- readRDS("data/obs_extended_no_crs.RDS")
+samplers <- readRDS("data/samplers_extended_no_crs.RDS")
+study_area <- readRDS("data/study_area_extended_no_crs.RDS")
+mesh <- readRDS("data/mesh_extended_no_crs.RDS")
 
 #### Specify detection function  ####
 
@@ -68,7 +68,7 @@ fml <- coordinates + distance ~ grf +
   Intercept
 
 
-starting_values <- data.frame(grf = 0, lsig = 3.6, Intercept = 0)
+starting_values <- data.frame(grf = 0, lsig = 3.65, Intercept = 0)
 
 W <- 60   # transect radius
 distance_domain <- seq(.Machine$double.eps, W, length.out = 30)
@@ -78,7 +78,7 @@ fit <-  lgcp(components = cmp,
              samplers = samplers,
              domain = list(coordinates = mesh, distance = distance_domain),
              formula = fml,
-             options = list(result = starting_values, max.iter = 20))
+             options = list(result = starting_values, max.iter = 30))
 
 summary(fit)
 

@@ -128,7 +128,7 @@ Here we present a similar approach to \citet{yuan_point_2017} but instead focus 
 
 To demonstrate the benefits of this one-stage approach we highlight potential issues regarding model evaluation and communication of results that are common in many formulations of species distribution modelling.  We discuss potentially misleading summary maps of the posterior intensity process and propose an alternative based on excursion sets \citep{bolin_excursion_2015, bolin_calculating_2018}.  A key theme in our case-study is to highlight the importance of considering \textit{realizations} of random quantities rather than rely too much as summaries such as expectations and quantiles.  The one-stage approach is invaluable since model summaries are based on monte-carlo sampling from the joint posterior of all model parameters.  Since the spatial process and observation process are estimated jointly this means figures and summaries produced naturally average over the estimated uncertainty in the observation processes.  This is an advantage over the two-stage approach even if uncertainty has been effectively propagated in some way.  
 
-The article proceeds as follows.  First we present the perspective of point transect distance sampling as a thinned poisson process, describing in detail how this can be formulated as a latent Gaussian model with a latent GMRF random effect.  We also show how the point process viewpoint can still be used in the case of incomplete location information where only the distance from the observer is recorded, not the exact location of the animal.  Secondly we describe how to specify the joint model using an iterative approach to fitting models with components that are non-linear in their parameters.  Thirdly, we introduce our case-study using a point transect distance sampling survey of the Hawaiian \akepa{} and show how the above methods can be specified and fit using the software package \texttt{inlabru} \citep{bachl_inlabru_2019}, an extension of the \texttt{R-INLA} package. We focus our model evaluation on the effective understanding and communication of uncertainty in the posterior intensity and abundance estimates, which are typically of greatest interest to stakeholders.
+The article proceeds as follows.  First we present the perspective of point transect distance sampling as a thinned poisson process, describing in detail how this can be formulated as a latent Gaussian model with a latent GMRF random effect.  We also show how the point process viewpoint can still be used in the case of incomplete location information where only the distance from the observer is recorded, not the exact location of the animal.  Secondly we describe how to specify the joint model using an iterative approach to fitting models with components that are non-linear in their parameters.  Thirdly, we introduce our case-study using a point transect distance sampling survey of the Hawaiian \akepa{}, an endangered bird of the honeycreeper tribe.  We show how the above methods can be specified and fit using the software package \texttt{inlabru} \citep{bachl_inlabru_2019}, an extension of the \texttt{R-INLA} package. We focus our model evaluation on the effective understanding and communication of uncertainty in the posterior intensity and abundance estimates, which are typically of greatest interest to stakeholders.
 
 
 \section*{Distance Sampling as a Thinned Point Process}
@@ -170,14 +170,14 @@ $\alpha = (\tilde{\alpha}^\intercal, 0_{n \times 1}^\intercal)^\intercal$ and co
 \pi(\bm{Y}) \approx \prod_{i=1}^{KM + n} \eta_i^{y_i}\exp(-\alpha_i\eta_i)
 \end{equation}
 
-This is similar to a Poisson likelihood with an offset term equal to $\log\alpha$.
+This is similar to a Poisson likelihood with an offset term equal to $\log\alpha$ and can be specified using the Poisson likelihood implementation available in \texttt{R-INLA}.
 
 
 \section*{Intensities for incomplete data}
 
-In the above we assume the data are complete records of animal location.  However, in many distance sampling surveys the exact location of the animal is not recorded - instead only the location of the observer and the distance to the observer are recorded.  Data of this type can be analysed within a point process framework by deriving the appropriate intensity function for the incomplete data.
+In the above we assume the data are complete records of animal location.  However, in many distance sampling surveys only the location of the observer and the distance to the observer are recorded.  Data of this type can be analysed within a point process framework by deriving the appropriate intensity function for the incomplete data.
 
-Using the polar coordinates notation given above, for true animal location $s_k(r, \theta) \in \Omega_k$, we consider the case where we observe $r$ but not $\theta$.  It follows that the intensity for points at a distance $r$ observed within sampling unit $\Omega_k$ is
+Using the polar coordinates notation given above, for true animal location $s_k(r, \theta) \in \Omega_k$ we consider the case where we observe $r$ but not $\theta$.  It follows that the intensity for points at a distance $r$ observed within sampling unit $\Omega_k$ is
 \begin{align}
 \tl_k(r) &= \oint\displaylimits_{c_k(r)} \lambda(s)g_k(s)\mathrm{d}s \nonumber \\
 &= 2\pi\lambda(s_k)rg_k(r)
@@ -196,23 +196,19 @@ where $\beta_0$ is an intercept parameter, the $z_v(s)$ are spatially indexed co
 \begin{equation}
 C(s_1,s_2) = \frac{2^{1-\nu}}{4\pi\kappa^2\tau^2\Gamma(\nu)}(\kappa \|s_1-s_2\|)^{\nu}K_\nu(\kappa \|s_1-s_2\|)
 \end{equation}
-where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  All three parameters are not simultaneously identifiable and it is conventional to assume a value for $\nu$ which controls the mean-square differentiability of the process.  We set $\nu = 1$ which is the most common default value in the approximation approach outlined below.  [[Would like to justify $\nu = 1$ somehow]]
+where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  All three parameters are not simultaneously identifiable \citep{zhang_inconsistent_2004} and it is conventional to assume a value for $\nu$ which controls the mean-square differentiability of the process.  We set $\nu = 1$ which is the most default value in \texttt{R-INLA}. [[Would like to justify $\nu = 1$ somehow?]]
 
-We use a Gaussian Markov random field approximation of $\xi(s)$ following the approach of [[Lindgren 2011]] based on specifying $\xi(s)$ via a stochastic partial differential equation.  Given a finite element mesh on the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$ we represent $\xi$ as $\xi(s) = \sum_l \xi_l \phi_l(s)$.  The parameters $\xi_1, \ldots, \xi_L$ follow a multivariate normal distribution with sparse precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices the elements of which are defined via an approximate solution to a stochastic partial differential equation. The precision parameter $\tau$ controls the marginal variance of the field and $\kappa$ is an inverse range parameter that controls the rate of decay of the covariance as distance between locations increases.  Further details of this Gaussian Markov random field approximation are given in the supplementary materials.
+We use a Gaussian Markov random field approximation of $\xi(s)$ following the approach of \cite{lindgren_explicit_2011} based on specifying $\xi(s)$ via a stochastic partial differential equation.  Given a finite element mesh on the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$ we represent $\xi$ as $\xi(s) = \sum_l \xi_l \phi_l(s)$.  The parameters $\xi_1, \ldots, \xi_L$ are a Gaussian Markov random field with sparse prior precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices the elements of which are defined via an approximate solution to a stochastic partial differential equation. The precision parameter $\tau$ controls the marginal variance of the field and $\kappa$ is an inverse range parameter that controls the rate of decay of the covariance as distance between locations increases.  Further details of this Gaussian Markov random field approximation are given in the supplementary materials.
 
 \section*{Thinned Intensities}
 
-The above specifies a model for all animal locations in the area of interest.  The log-intensity for observed points is $\log\tl(s) = \log\lambda(s) + \log g(s)$.  This presents a problem since $\log g(s)$ is not typically linear in its parameters. However, for any single set of parameter values, $g(s)$ is essentially an offset term.  That is, if we specify $g(s)$ as known then we can proceed with inference within a standard additive linear predictor framework.
-
-TO DO:
+The above specifies a model for all animal locations in the area of interest.  The log-intensity for observed points is $\log\tl(s) = \log\lambda(s) + \log g(s)$.  This presents a problem since $\log g(s)$ is not typically linear in its parameters. However, for any single set of parameter values $g(s)$ can be viewed as acting like an offset. If we could specify $g(s)$ as known then we can proceed with an inference approach that applies to additive linear predictors.
 
 \begin{itemize}
  \item Description of iterated INLA here
 \end{itemize}
 
 \section*{Case-Study:  Hawaiian Akepa Survey}
-
-TODO HERE:  Add code snippets of how to specify the model in inlabru, brief discussion of PC priors and how they were chosen here
 
 % RJC 09/08/2019 Added text describing the akepa data, survey method, key questions and what we care about from ecology/conservation point of view. This text provides a background on Hawaiian forest birds, why it is important to monitor their populations and the need for unbiased and precise estimates. I am wondering if we need to strengthen the 'key questions' text.
 
@@ -252,7 +248,13 @@ For purposes of our analysis, we selected a single survey from the \akepa{} time
 
 % addtextend
 
-The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.  This shows a region of high intensity in the south and much lower intensity in the north.  The CV plot shows clearly that there is less variation in the posterior intensity field in areas with greater sampling effort.  In general the south, with greater density of sampled locations, has a lower CV than the north, where sampling units are more spread out.  The areas of highest CV are those regions furthest away from any sampled location, reflecting the intuitive fact that we are least certain in areas where we did not look.
+\subsection*{Model specification}
+
+TODO HERE:  Add code snippets of how to specify the model in inlabru, brief discussion of PC priors and how they were chosen here
+
+\subsection*{Results}
+
+The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.  This shows a region of high intensity in the south and much lower intensity in the north.  The CV plot shows clearly that there is less variation in the posterior intensity field in areas with greater sampling effort.  In general the south, with greater density of sampled locations, has a lower CV than the north, where sampling units are more spread out.  The areas of highest CV are those regions furthest away from any sampled location, reflecting the intuitive fact that we are least certain in areas further away from the sampled locations.  
 
 \begin{figure}
 	\includegraphics[scale=0.5]{figures/intensity_mean_cv.png}
@@ -260,7 +262,7 @@ The predicted mean of the posterior intensity is shown in \autoref{fig:intensity
 	\label{fig:intensity-mean-cv}
 \end{figure}
 
-The CV plot shows a measure of uncertainty relative to the mean intensity in each prediction grid cell.  However, often we are interested in the uncertainty around the mean intensity on the scale of the intensity function itself - perhaps seeking to identify areas where we can confidently predict particularly high or low intensities.  To attempt to communicate this uncertainty around the mean it is common [[references?]] to present the lower and upper quantiles corresponding to a 95\% credible interval for each prediction cell (\autoref{fig:intensity-quantiles}). [RJC - I don't think a reference is needed to substantiate presenting credible intervals or computing them using quantiles, particularly in a stats journal.]
+The CV plot shows a measure of uncertainty relative to the mean intensity in each prediction grid cell.  However, often we are interested in the uncertainty around the mean intensity on the scale of the intensity function itself - perhaps seeking to identify areas where we can confidently predict particularly high or low intensities.  To attempt to communicate this uncertainty around the mean it is common [[references?]] to present the lower and upper quantiles corresponding to a 95\% credible interval for each prediction cell (\autoref{fig:intensity-quantiles}). [RJC - I don't think a reference is needed to substantiate presenting credible intervals or computing them using quantiles, particularly in a stats journal. AES - I was trying to find an example of someone presenting maps like these in a paper, yet to find one.  If you know of any please let me know!]
 
 \begin{figure}
 	\includegraphics[scale=0.5]{figures/intensity_quantiles.png}
@@ -280,38 +282,32 @@ This difference becomes clear if one generates realizations of the posterior int
 
 The quantile plots are more concerning.  As mentioned above, the temptation is to interpret these as possible intensities that produced our observed data.  However, they in fact show the quantiles of the \textit{marginal} probability density for each prediction location.  This essentially treats each prediction cell as independent of the others. Whilst any one prediction location may be well described by such quantiles, to present them side by side in one image obscures the fact that the probability that all (or some subset of) the prediction cells would \textit{simultaneously} achieve that value will be in fact much lower than the quantile value and in many cases would be essentially zero.  [RJC - I stumbled over this sentence several times and I think it needs to be rewritten.]  To demonstrate this we treated the lower and upper quantile plots as though they were intensities and integrated them to obtain an expected abundance estimate of approximately 2500 for the 0.025 quantile and 12,300 for the 0.975.  A naive (and tempting) interpretation of these numbers is as upper and lower limits of the 95\% credible interval for abundance. However, these abundance estimates are essentially impossible according to the estimated posterior for abundance (see \autoref{fig:realized-abundance-posterior}).  This emphasises that the temptation to treat these maps as showing possible intensity surfaces leads to outcomes (and possible management decisions) that are inconsistent with the very model that generated the maps.
 
-As an alternative, we suggest using excursion sets and excursion functions.  This is a recently developed approach to representing uncertainty in stochastic processes that specifically considers joint probability of events across multiple locations.  The positive excursion set with level $u$ for a function $f(s)$ with domain $\Omega$ is $A_u^{+}(f) = \{ s \in \Omega ; f(s) < u \}$.  For a stochastic process $\lambda(s)$ the positive excursion set with level $u$ and probability $1 - \alpha$ is
+As an alternative, we suggest using excursion sets and excursion functions \citep{bolin_excursion_2015}.  This is a recently developed approach to representing uncertainty in stochastic processes that specifically considers joint probability of events across multiple locations.  The positive excursion set with level $u$ for a function $f(s)$ with domain $\Omega$ is $A_u^{+}(f) = \{ s \in \Omega ; f(s) > u \}$ i.e. the set of all locations in $\Omega$ where $f$ exceeds the a threshold value $u$. For a stochastic process $\lambda(s)$ the positive excursion set with level $u$ and probability $1 - \alpha$ is
 
 \begin{equation*}
 E_{u,\alpha}^{+}(\lambda) = \argmax_{D}\{\lvert D \rvert : \mathbb{P}\left[D \subset A_u^{+}(\lambda)\right] \geq 1 - \alpha \}
 \end{equation*}
 It is important to note that $A_u^{+}(f)$ specifies a set for which a function $f(s)$ exceeds a threshold value $u$ for \textit{every location} in the set.  This means that when considering random quantities such as $\lambda(s)$ the definition of the positive excursion set $E_{u,\alpha}^{+}(\lambda)$ is the largest such set for which a threshold is exceeded simultaneously for all locations in the set.  Because $\lambda(s)$ is stochastic we can only ever say this is true with some probability and use something akin to a confidence level by specifying $\alpha$.
 
-Excursion sets can be estimated by considering increasing candidate sets $D$ and a sequential integration scheme to estimate probabilities.  An implementation is available in the \texttt{excursions} package \citep{bolin_calculating_2018} available through the Comprehensive R Archive Network \citep{r_2017}.
+Excursion sets can be estimated by considering candidate sets for $D$ of increasing size and a sequential integration scheme to estimate probabilities.  An implementation is available in the \texttt{excursions} package \citep{bolin_calculating_2018} available through the Comprehensive R Archive Network \citep{r_2017}.
 
-\autoref{fig:excursion-set} shows the positive excursion set with a level corresponding to 1 bird per hectare with probability 0.95.  This figure can be interpreted in a natural way.  It is the largest possible region for which the intensity is greater than 1 bird per hectare for every location within the region, with probability 0.95.
-
-\begin{figure}
-	\includegraphics[scale=0.5]{figures/excursion_set.png}
-	\caption{The positive excursion set with a level corresponding to 1 bird per hectare and probability 0.95}
-	\label{fig:excursion-set}
-\end{figure}
-
-To visualise multiple such maps we can use the excursion function $F_u^{+}(s) = \sup \{1 - \alpha ; s \in E_{u,\alpha}^+ \}$, which defines for each location something similar to a p-value.  For each $s$ it is the largest possible probability $1 -\alpha$ for which that location would be in the excursion set defined using probability $1 - \alpha$.  The excursion function with a level corresponding to 1 bird per hectare is shown in \autoref{fig:excursion-function}.
+\autoref{fig:excursions} (left panel) shows the positive excursion set with a level corresponding to 1 bird per hectare with probability 0.95.  This figure can be interpreted in a natural way.  It is the largest possible region for which the intensity is greater than 1 bird per hectare for every location within the region, with probability 0.95.
 
 \begin{figure}
-	\includegraphics[scale=0.5]{figures/excursion_function.png}
-	\caption{The positive excursion function with a level corresponding to 1 bird per hectare}
-	\label{fig:excursion-function}
+	\includegraphics[scale=0.5]{figures/excursions.png}
+	\caption{Left:  The positive excursion set with a level corresponding to 1 bird per hectare and probability 0.95.  Right: The positive excursion function with a level corresponding to 1 bird per hectare}
+	\label{fig:excursions}
 \end{figure}
 
-This figure can also be interpreted naturally.  It shows the largest possible probability for each location to be a member of a set for in which the intensity exceeds a threshold simultaneously across all locations in the set.  It can be viewed intuitively as a kind of fuzzier version of \autoref{fig:excursion-set}.  Regions on the edge of the excursion set would be included if the $\alpha$ value were allowed to increase slightly.  However, for regions in the north there is essentially no probability level for which those locations would be included in $A_u^{+}(\lambda)$.
+To visualise multiple such maps we can use the excursion function $F_u^{+}(s) = \sup \{1 - \alpha ; s \in E_{u,\alpha}^+ \}$, which defines for each location something similar to a p-value.  For each $s$ it is the largest possible probability $1 -\alpha$ for which that location would be in the excursion set defined using probability $1 - \alpha$.  The excursion function with a level corresponding to 1 bird per hectare is shown in \autoref{fig:excursions} (right panel).
+
+This figure can also be interpreted naturally.  It shows the largest possible probability for each location to be a member of a set for in which the intensity exceeds a threshold simultaneously across all locations in the set. Regions on the edge of the excursion set would be included if the $\alpha$ value were allowed to increase slightly.  However, for regions in the north there is essentially no probability level for which those locations would be included in $A_u^{+}(\lambda)$.
 
 A key feature of these plots is that they display either discrete sub-regions of the area of interest (for excursion sets) or the probability of membership of such discrete sub-regions (for excursion functions).  We believe the risk of interpreting these maps as intensities is much lower than for the quantile plots.  The fact that it is possible to estimate discrete regions may also be useful to communicate results to conservation practitioners, land and resource managers and policy decision-makers.  We anticipate the excursion function will be most useful in communicating to audiences with statistical training. [RJC - I think statistically savvy audiences will readily grasp the excursion functions. Do you mean "without" statistical training?]
 
-Another key aim of performing distance sampling surveys is to estimate the abundance of the population of interest.  By specifying our spatial model as a log-Gaussian Cox process, the intensity is a random field rather than a fixed function of space. Let $n$ denote the abundance of the population within the region of interest and $N$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the random field provides a point estimate for the abundance, which we term the expected abundance.  Here we demonstrate the importance of considering the full posterior for $N$ which we call the \textit{realized} abundance.
+Another key aim of performing distance sampling surveys is to estimate the abundance of the population of interest.  By specifying our spatial model as a log-Gaussian Cox process, the posterior intensity is a random field rather than a deterministic function. Let $n$ denote the abundance of the population within the region of interest and $N$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the random field provides a point estimate for the abundance, which we term the expected abundance.  Here we demonstrate the importance of considering the full posterior for $N$ which we call the \textit{realized} abundance.
 
-Let $N = \int_{\Omega}\lambda(s)\mathrm{d}s$. Note that $N$ is a random variable and the integral of $\mathbb{E}[\lambda(s)]$ is equivalent to $\mathbb{E}(N)$ by Fubini's theorem, hence the term expected abundance.  As we mentioned above, this is the most sensible point estimate for the abundance.  We estimate the posterior $\pi(N | \lambda)$ by a monte-carlo method.  Taking $m$ monte-carlo samples of the posterior intensity field $\lambda_1, \ldots, \lambda_m$ we estimate the posterior for the abundance as $\pi(N | \lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda_i)$. This is well defined since $\pi(N | \lambda = \lambda_i)$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda_i(s)\mathrm{d}s$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of \textit{realized} abundance $n$ by calculating $\pi(N = n | \lambda)$.  For reference, \autoref{fig:realized-abundance-comparison} shows a single Poisson PMF with rate parameter equal to the expected abundance.
+Let $N = \int_{\Omega}\lambda(s)\mathrm{d}s$. Note that $N$ is a random variable and the integral of $\mathbb{E}[\lambda(s)]$ is equivalent to $\mathbb{E}(N)$ by Fubini's theorem, hence the term expected abundance.  As we mentioned above, this is the most sensible point estimate for the abundance.  We estimate the posterior $\pi(N | \lambda)$ by a monte-carlo method.  Taking $m$ monte-carlo samples  $\lambda_1, \ldots, \lambda_m$ of the posterior intensity field we estimate the posterior for the abundance as $\pi(N | \lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda_i)$. This is well-defined since $\pi(N | \lambda = \lambda_i)$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda_i(s)\mathrm{d}s$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of \textit{realized} abundance $n$ by calculating $\pi(N = n | \lambda)$.  For reference, \autoref{fig:realized-abundance-comparison} shows a single Poisson PMF with rate parameter equal to the expected abundance.
 
 \begin{figure}
 	\includegraphics[scale=0.6]{figures/realized_abundance_posterior.png}
@@ -340,10 +336,13 @@ TODO HERE:  Something about how this is all a one-stage model and all these plot
 
 \begin{enumerate}
 	\item Note the model-based Bayesian hierarchical approach provides a framework for working with distance sampling data.  This allows simultaneous estimation of parameters associated with the detection process and the spatial distribution.  It is in principle extendible... somehow...
+
 	\item Note that Bayesian distance sampling [RJC - References for this include Oedekoven et al (2014, JABES 19:219-239) and Buckland et al. (2015). We could also include Buckland et al. (2016, JABES 21:58-75) but it deals more with model-based design distance sampling than Bayesian approaches specifically. The more recent papers that reference Cornelia's paper are applied. It is also worth looking at Yuan's paper on point process models of blue whales.] has been done before but that the INLA approach avoids data augmentation and MCMC.
 	\item Iterated INLA is a powerful and flexible way to include non-linear components to a predictor and has applications beyond this application to distance sampling
 	\item More to do in future to test how many parameters can be included in the non-linear component and what types of non-linear components are feasible
-
+	\item Note similarities and differences with two-stage GAM approach
+	\item Note that presenting uncertainty in maps is difficult and excursion sets are a promising contribution relevant to many areas of spatial statistics.
+	\item Links to species "range" estimates - excursions possibly useful here.
 \end{enumerate}
 
 \bibliographystyle{chicago}

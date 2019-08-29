@@ -2,6 +2,9 @@
 library(INLA)
 library(inlabru)
 
+# set ggplot theme
+theme_set(theme_minimal())
+
 set.seed(9701071)
 
 #### WARNING - as it stands this script will overwrite figures for the paper
@@ -61,14 +64,18 @@ p1 = ggplot() +
   gg(study_area) +
   gg(pr.int) +
   scale_fill_viridis_c() +
-  ggtitle("Posterior mean intensity")
+  ggtitle("Posterior mean intensity") +  
+  xlab("Easting") +
+  ylab("Northing")
 
 p2 = ggplot() +
   gg(study_area)  +
   gg(pr.int["cv"]) +
   gg(samplers, colour = "red") +
   scale_fill_viridis_c() +
-  ggtitle("Posterior CV of intensity")
+  ggtitle("Posterior CV of intensity") +  
+  xlab("Easting") +
+  ylab("Northing")
 
 png(filename = "../figures/intensity_mean_cv.png",
     width = 10, height = 6, units = "in", res = 100)
@@ -86,17 +93,23 @@ viridisscale =   scale_fill_viridis_c(limits = range(v))
 p1 = ggplot() + 
   gg(study_area) + 
   gg(pr.int) +
-  viridisscale
+  viridisscale +
+  xlab("Easting") +
+  ylab("Northing")
 
 p2 = ggplot() +
   gg(study_area) +
   gg(pr.int["q0.025"]) +
-  viridisscale
+  viridisscale +
+  xlab("Easting") +
+  ylab("Northing")
 
 p3 = ggplot() +
   gg(study_area) +
   gg(pr.int["q0.975"]) +
-  viridisscale
+  viridisscale +
+  xlab("Easting") +
+  ylab("Northing")
 
 layout_matrix <- matrix(c(4, 1, 1, 4, 2, 2, 3, 3), nrow = 2, byrow = TRUE)  # triangle arrangement
 
@@ -126,17 +139,23 @@ viridisscale =   scale_fill_viridis_c(limits = range(draw_all))
 p1 = ggplot() + 
   gg(study_area) + 
   gg(draw1["mean"]) +
-  viridisscale
+  viridisscale +
+  xlab("Easting") +
+  ylab("Northing")
 
 p2 = ggplot() + 
   gg(study_area) + 
   gg(draw2["mean"]) +
-  viridisscale
+  viridisscale +
+  xlab("Easting") +
+  ylab("Northing")
 
 p3 = ggplot() + 
   gg(study_area) + 
   gg(draw3["mean"]) +
-  viridisscale
+  viridisscale +
+  xlab("Easting") +
+  ylab("Northing")
 
 png(filename = "../figures/intensity_realized.png",
     width = 15, height = 6, units = "in", res = 100)

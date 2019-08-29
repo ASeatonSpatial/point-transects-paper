@@ -2,6 +2,12 @@
 library(INLA)
 library(inlabru)
 library(excursions)
+source("gg.R")   # small edit of gg.SpatialPixelsDataFrame
+
+## todo - replace predict loop with generate() ?
+
+# set ggplot theme
+theme_set(theme_minimal())
 
 set.seed(1525)
 
@@ -49,22 +55,35 @@ Fpxl$F = ex$F
 
 # png(filename = "../figures/excursion_function.png",
 #     width = 4.5, height = 5.5, units = "cm", res = 1000)
-ggplot() + 
+p2 = ggplot() + 
   gg(Fpxl) +
   scale_fill_viridis_c() +
-  ggtitle("Excursion function for > 1 bird per hectare")
+  ggtitle("Excursion function for > 1 bird per hectare") +
+  xlab("Easting") +
+  ylab("Northing")
 
-ggsave(filename = "../figures/excursion_function.png",
-       width = 5, height = 6, units = "in")
+p2
+# ggsave(filename = "../figures/excursion_function.png",
+#        width = 5, height = 6, units = "in")
 
 Epxl = pxl
-Epxl$E = ex$E
-ggplot() +
-  gg(Epxl) +
-  ggtitle("Excursion set for > 1 bird per hectare,\nalpha = 0.05")
+Epxl$E = as.factor(ex$E)
+p1 = ggplot() +
+  gg(Epxl, aes(group = E)) +
+  ggtitle("Excursion set for > 1 bird per hectare,\nalpha = 0.05") +
+  scale_fill_manual(values = c("gray", "blue")) +
+  xlab("Easting") +
+  ylab("Northing")
 
-ggsave(filename = "../figures/excursion_set.png",
-       width = 5, height = 6, units = "in")
+p1
+
+# ggsave(filename = "../figures/excursion_set.png",
+#        width = 5, height = 6, units = "in")
+
+png(filename = "../figures/excursions.png",
+    width = 10, height = 6, units = "in", res = 100)
+multiplot(p1, p2, cols = 2)
+dev.off()
 
 # contour map - how to visualise this?  ?
 cm = contourmap.mc(Xhec, levels = c(0.1, 0.5, 0.8, 1.5, 2, 4), alpha = alpha)

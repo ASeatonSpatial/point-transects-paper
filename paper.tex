@@ -384,18 +384,23 @@ Let $N = \int_{\Omega}\lambda(s)\mathrm{d}s$. Note that $N$ is a random variable
 
 \section*{Discussion}
 
-\begin{enumerate}
-	\item Note the model-based Bayesian hierarchical approach provides a framework for working with distance sampling data.  This allows simultaneous estimation of parameters associated with the detection process and the spatial distribution.  It is in principle extendible... somehow...
+\subsection*{General remarks}
 
-	\item Note that Bayesian distance sampling [RJC - References for this include Oedekoven et al (2014, JABES 19:219-239) and Buckland et al. (2015). We could also include Buckland et al. (2016, JABES 21:58-75) but it deals more with model-based design distance sampling than Bayesian approaches specifically. The more recent papers that reference Cornelia's paper are applied. It is also worth looking at Yuan's paper on point process models of blue whales.] has been done before but that the INLA approach avoids data augmentation and MCMC.
-	\item Iterated INLA is a powerful and flexible way to include non-linear components to a predictor and has applications beyond this application to distance sampling
-	\item More to do in future to test how many parameters can be included in the non-linear component and what types of non-linear components are feasible
-	\item Note similarities and differences with two-stage GAM approach
-	\item Note that presenting uncertainty in maps is difficult and excursion sets are a promising contribution relevant to many areas of spatial statistics.
-	\item Links to species "range" estimates - excursions possibly useful here.
-	\item model selection is difficult.  Oedekoven 2014 addresses using RJMCMC.  Unclear what to do with this approach.
-\end{enumerate}
+The most common method to analyse distance sampling data is a two-stage approach with a generalised additive model that includes a spatial smoothing spline.  The approach here of specifying a point process model and including an SPDE effect can seem fundamentally different.  However, these two approaches are related and an analysis of the \akepa{} data using the GAM approach provides similar point estimates.  There is a correspondence between SPDEs and smoothing splines: the smoothing spline is an estimator of the posterior mean of the SPDE \citep{kimeldorf_spline_2002}.  The SPDE and the smoothing spline play a similar role within the model and the resulting mean field map looks similar in both approaches.  
+In addition, via the point process model, we have avoided the need to bin data into counts, which may at first appear as though we have avoided some loss of information. This is not the case since we also applied the standard distance sampling assumption of constant density within each point transect.  This can be thought of as the point process version of binning data into counts since the location of points within transects does not inform the spatial distribution of points.  The main advantage of the log-Gaussian Cox process is that the discretisation of space occurs at the level of approximating the GRF.  This is in contrast to motivating the discretisation by binning the observed data which requires consideration of zero-inflation and dispersion.  
 
+We also note that \texttt{inlabru} provides functionality for fitting models with multiple likelihoods \citep{bachl_inlabru_2019}.  As such our approach is extendible to more complicated contexts such as marked point processes.    
+
+We believe the excursions approach is a valuable addition to the literature on communicating uncertainty in estimated surfaces.  For species distribution modelling this has the potential to be a useful tool for model evaluation and communication with stakeholders.  In particular the approach requires users to decide (i) a threshold or set of threshold values of interest and (ii) an acceptable probability of error. 
+We believe that, in most situations, these decisions should be made by domain experts who have an understanding of the phenomena of interest, the set of possible decisions that may be taken on the basis of the analysis and the consequences of error.  Once these decisions have been made the statistician can then proceed accordingly, providing outputs  that inform on quantities of interest with a level of uncertainty that stakeholders have agreed is acceptable.  We note that the excursions approach applied here has the potential to be useful in other methods of species distribution mapping, environmental statistics and spatial statistics in general.  There is the potential to use excursions to motivate both the \textit{definition} and \textit{estimation} of concepts of interest to ecologists, such as a species' home range or the notion of occupancy. 
+
+\subsection*{Possible future directions}
+
+Here we applied the iterated INLA approach in order to estimate the half-normal detection function which is non-linear in its $\log \sigma$ parameter.  We note that this approach provides a general framework for estimating parametric functions from data and is not restricted to detection functions within a distance sampling model.  The \texttt{inlabru} software allows users to specify the model in an intuive and modular way.  Users write individual functions to define (possibly non-linear) model components and specify how these are combined to form the additive predictor.  By additive we mean a predictor that is a sum of model components, and not necessarily additive in terms of parameters to be estimated.
+
+We presented a simple choice for the detection model.  The half-normal function has only one parameter to be estimated but other, more flexible, detection functions are common in applications.  The potential to include further flexibility in the detection model through covariates or random-effects is an open research question and would dramatically increase the usability of our approach presented here. Increasing the number of parameters to estimate in the non-linear model components may run into computational challenges.  This has yet to be explored.  
+
+Model selection is a general challenge for models with spatially structured random effects.  Traditional tools of model assessment and selection do not apply in many contexts.  For model assessment we advise a pragmatic approach based on comparing summaries of posterior samples to the observed data. A moodel selection procedure is useful to users to justify decisions regarding which covariates to include, whether or not to include a spatially structured random effect, and if so, what type of effect should be used. 
 
 \bibliographystyle{chicago}
 \bibliography{paper}

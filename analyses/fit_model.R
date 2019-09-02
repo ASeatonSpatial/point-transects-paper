@@ -76,7 +76,8 @@ distance_domain <- seq(.Machine$double.eps, W, length.out = 30)
 fit <-  lgcp(components = cmp, 
              data = realobs,
              samplers = samplers,
-             domain = list(coordinates = mesh, distance = distance_domain),
+             # domain = list(coordinates = mesh, distance = distance_domain),
+             domain = list(distance = distance_domain),
              formula = fml,
              options = list(result = starting_values, max.iter = 30))
 

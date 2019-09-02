@@ -68,7 +68,7 @@
 
 \begin{document}
 \begin{frontmatter}
-\title{Point transect distance sampling in inlabru}
+\title{One-stage point transect distance sampling using iterated integrated nested Laplace approximations}
 
 %% use the tnoteref command within \title for footnotes;
 %% use the tnotetext command for the associated footnote;
@@ -114,7 +114,7 @@
 \address[*]{Correspondence: Andrew E Seaton, Email: aes22@st-andrews.ac.uk}
 
 \begin{abstract}
-Point transect distance sampling in \texttt{inlabru}
+Distance sampling methods aim to estimate the size and distribution of animal populations.  Traditionally this has been achieved using a two-stage approach, using estimates of detectability as an offset in a generalised additive model.  One-stage approaches have typically been implemented using data augmentation with an MCMC algorithm. Here we present a new approach to one-stage distance sampling models, using iterated fits of latent Gaussian models fitted using integrated nested Laplace approximations (INLA) to simultaneously estimate the detectability of animals and their spatial distribution.  We model the data as a thinned log-Gaussian Cox process using computationally efficient Gaussian Markov random field approximations to Gaussian random fields.  We demonstrate the benefits of the approach by applying the methods to point count survey data of Hawaiian \akepa{}. The Bayesian one-stage approach allows sampling from the joint posterior of all model parameters and so resulting summaries and plots naturally incorporate uncertainty in the observation process.  
 \end{abstract}
 
 %\begin{keyword}

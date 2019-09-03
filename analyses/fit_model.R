@@ -68,7 +68,7 @@ fml <- coordinates + distance ~ grf +
   Intercept
 
 
-starting_values <- data.frame(grf = 0, lsig = 3.65, Intercept = 0)
+starting_values <- data.frame(grf = 0, lsig = 3.4, Intercept = 0)
 
 W <- 60   # transect radius
 distance_domain <- seq(.Machine$double.eps, W, length.out = 30)
@@ -79,7 +79,7 @@ fit <-  lgcp(components = cmp,
              # domain = list(coordinates = mesh, distance = distance_domain),
              domain = list(distance = distance_domain),
              formula = fml,
-             options = list(result = starting_values, max.iter = 30))
+             options = list(result = starting_values, max.iter = 40))
 
 summary(fit)
 

@@ -24,7 +24,7 @@ mesh <- inla.mesh.2d(boundary=boundary,
                      cutoff=2, ## Filter away adjacent points.
                      offset=c(1100, 2000)) ## Offset for extra boundaries, if needed.
 
-ggplot() + gg(mesh) + gg(point_transects, colour = "red")
+ggplot() + gg(mesh) + gg(point_transects, colour = "red") + coord_equal()
 
 # save the mesh
 saveRDS(object = mesh, file = "mesh_extended_no_crs.RDS")

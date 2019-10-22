@@ -20,7 +20,8 @@ samplersnew = samplers[samplers$Stratum == "CF",]
 # 
 # study_area_new = gUnion(old_study_area, chull)
 
-bnd.csv = read.csv("bnd_forest2.csv")
+# bnd.csv = read.csv("bnd_forest2.csv")
+bnd.csv = read.csv("OpenClosedForestBoundary.csv")
 study_area_new <- SpatialPolygons(list(Polygons(list(Polygon(bnd.csv)), ID=1)))
 
 ggplot() +

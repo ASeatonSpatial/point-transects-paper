@@ -1,0 +1,188 @@
+%% Template article for Elsevier's document class `elsarticle'
+%% with numbered style bibliographic references
+\documentclass[preprint,12pt]{elsarticle}
+
+% remove preprint footnote
+\makeatletter
+\def\ps@pprintTitle{%
+ \let\@oddhead\@empty
+ \let\@evenhead\@empty
+ \def\@oddfoot{\centerline{\thepage}}%
+ \let\@evenfoot\@oddfoot}
+\makeatother
+
+
+\usepackage{setspace}
+\doublespacing
+
+\usepackage{hyperref} % auto detect ref type
+\usepackage{natbib}
+\setcitestyle{authoryear}
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{caption}
+\usepackage{textcomp}    % for Hawaii characters
+%\usepackage{listings}
+%\lstset{language=R}
+\usepackage[T1]{fontenc}  % tilde in middle in lstlisting
+\usepackage[formats]{listings}
+\lstset{language=R,
+		basicstyle=\ttfamily,
+		columns=fixed,
+		basewidth=0.5em,
+		literate={~}{{$\sim$}}1
+		}
+
+\biboptions{comma,round}
+
+% shortcuts
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\blambda}{\boldsymbol{\lambda}}
+\newcommand{\T}{\intercal}
+\newcommand{\bS}{\mathbf{S}}
+\newcommand{\bQ}{\mathbf{Q}}
+\newcommand{\bSigma}{\boldsymbol{\Sigma}}
+\newcommand{\bm}{\boldsymbol}  % bold maths symbols
+\newcommand{\tl}{\tilde{\lambda}}   % thinned little lambda
+\newcommand{\tL}{\tilde{\Lambda}}  % thinned big lambda
+
+% RJC 09/08/2019 Added shortcuts for Hawaiian words
+\newcommand{\akepa}{\textquotesingle\={a}kepa}  % adds Hawaiian diacritical marks
+\newcommand{\Akepa}{\textquotesingle\={A}kepa}  % adds Hawaiian diacritical marks
+\newcommand{\hawaii}{Hawai\textquotesingle i}   % adds Hawaiian diacritical marks
+\DeclareMathOperator*{\argmax}{arg\,max}  % * means _ puts thing beneath operator
+
+\begin{document}
+\begin{frontmatter}
+\title{One-stage point transect distance sampling using iterated integrated nested Laplace approximations}
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for the associated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for the associated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for the associated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%%
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{<author name>}
+%% \address[label1]{<address>}
+%% \address[label,2]{<address>}
+
+% RJC 09/08/2019 Added co-authors and affiliations. Note that I used \affil[]{} instead of \address[]{}
+\author[1,*]{Andrew E Seaton}
+\author[1,2]{Richard J Camp}
+\author[3]{Finn Lindgren}
+\author[1]{Janine B Illian}
+\author[1]{David L Borchers}
+\author[1]{David L Miller}      % Ask about co-authoring the manuscript
+\author[1]{Len Thomas}          % Ask about co-authoring the manuscript
+\author[1]{Stephen T Buckland}  % Ask about co-authoring the manuscript
+\author[4]{Steve J Kendall}     % It is Steve's data we are using and I have already mentioned this manuscript to him.
+
+%\address{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, University of St Andrews, St Andrews, Fife, Scotland}
+\address[1]{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, University of St Andrews, St Andrews, Fife, Scotland}
+\address[2]{U. S. Geological Survey, Pacific Island Ecosystems Research Center, P.O. Box 44, \hawaii{} National Park, HI 96718, U.S.A.}
+\address[3]{School of Mathematics, University of Edinburgh, Edinburgh, Scotland}
+\address[4]{U. S. Fish and Wildlife, Big Island National Wildlife Refuge Complex, 60 Nowelo St., Suite 100, Hilo, HI  96720, U.S.A.}
+\address[*]{Correspondence: Andrew E Seaton, Email: aes22@st-andrews.ac.uk}
+
+\begin{abstract}
+A New Abstract Goes Here   
+\end{abstract}
+
+%\begin{keyword}
+%Distance sampling \sep Stochastic partial differential equations \sep Integrated nested Laplace approximation \sep Generalized additive model
+%\end{keyword}
+\end{frontmatter}
+
+\section*{Introduction}
+
+\begin{itemize}
+	\item Estimating population size and spatial distribution is an important question in ecology and conservation
+	\item Here we present the Akepa data:
+		\begin{itemize}
+			\item endangered
+			\item subject of conservation efforts
+			\item require monitoring to understand changes in overall abundance and the spatial distribution to target conservation efforts
+		\end{itemize}
+	\item Estimating the population size and spatial distribution of Akepa is challenging because
+		\begin{enumerate}[(i)]
+			\item cannot do a census (large numbers, dense forest, logistical constraints) and so must subsample in space and time (describe the HFBS design)
+			\item imperfect detection when we do sample - a complex observation process (describe point transect distance sampling approach)
+			\item interest in generating spatial predictions but we usually have missing covariates and use spatial random effects (No covariate for north-south in Akepa data, other studies ambiguous)
+			\item complex models that are difficult to communicate with stakeholders such as conservation managers and policy officers (communicating uncertainty in abundance estimation and prediction maps)
+		\end{enumerate}
+\end{itemize}
+
+In this paper we present an analysis of the Akepa data that seeks to address these issues
+
+\begin{enumerate}[(i)]
+	\item a spatial point process formulation of distance sampling
+	\item a one-stage estimation process to simultaneously estimate the spatial model and the observation process
+	\item a computationally efficient Gaussian Markov random field effect based on a stochastic partial differential equation approach
+	\item model evaluation and communication based on join posterior sampling and excursions package
+\end{enumerate}
+
+We work in a Bayesian context here but note that maximum-likelihood frameworks could also be used.
+
+\section{Study design}
+
+\begin{itemize}
+	\item describe survey protocol in detail
+	\item mini lit review - DS, 2-stage, Joyce
+\end{itemize}
+
+\section{Distance Sampling as a Thinned Point Process}
+
+\section{Iterated INLA}
+
+\begin{itemize}
+	\item mini lit review - communicating uncertainty in spatial models w random effects
+	(should this really be here??  Think about moving)
+\end{itemize}
+
+\section{GMRF + SPDE}
+
+\section{Results}
+
+\section{Model Evaluation}
+
+\begin{itemize}
+	\item Posterior sampling
+	\item Barplot for random effect
+	\item Excursions
+\end{itemize}
+
+\section{Discussion}
+
+Discuss wisely
+
+\end{document}

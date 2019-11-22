@@ -153,6 +153,32 @@ In this paper we present an analysis of the Akepa data that seeks to address the
 
 We work in a Bayesian context here but note that maximum-likelihood frameworks could also be used.
 
+-----
+
+
+The estimation of the size and spatial distribution of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}. Here we present an analysis of wildlife survey data collected on a critically endangered Hawaiian forest bird that aims to meet this objective.  The Hawaiian \akepa{} is an endemic species whose population declined dramatically during the 20th century due to habitat modification \citep{scott_HFBS_1986, pratt_avifaunal_1994}.  The remaining population is the focus of sustained conservation efforts and monitoring is required to inform decision-makers about changes in the overall abundance and spatial distribution.  This information is critical when making decisions about conservation strategies.  However, answering these questions presents many statistical challenges.  
+
+Firstly, as in many ecological surveys, it is impossible to undertake a census.  The existing population numbers in the thousands and lives in dense forest where logistical and ecological challenges mean a census is not feasible.  For this reason, a monitoring survey must sub-sample in space and time in some way.  For the \akepa{} this takes the form of the Hawaii Forest Bird Survey (HFBS) \citep{scott_HFBS_1986} which is a large-scale, quantitative survey of Hawaiian forest birds.  Annual surveys of the \akepa{} study-region consist of survey points located along randomly located transects.    
+
+Secondly, even at sampled locations, detectability of animals is uncertain.  The \akepa{} survey attempts to estimate detectability using a distance sampling approach \citep{buckland_distance_2015} where for each observation the distance to the observer is recorded.  A parametric form of detection function is assumed to decay with increasing distance and is estimated from the observed distances.  Because of this, answering questions related to the abundance and spatial distribution must involve the estimation of a complex observation process.  
+
+Thirdly, due to the spatial sub-sampling, a key aim of the analysis is the generation of spatial predictions.  However, as is the case in many species distribution models, we usually have reason to believe there are drivers of the spatial distribution for which we have no explanatory covariates.  For the \akepa{} this takes the form of a north-south gradient that has been investigated but for which no clear-cut explanatory cause has been found [[cite here?]].  From a statistical perspective this suggests the use of spatially-structured random effects to account for the missing covariates.
+
+Fourthly, the resulting statistical model is complex and it is therefore challenging to effectively communicate the results of the analysis to non-statistically trained stakeholders such as conservation managers and policy officers.  In particular we note the challenge of communicating uncertainty in maps of predicted animal density.
+
+In this paper we present an analysis that seeks to address each of these issues by presenting
+
+\begin{enumerate}[(i)]
+	\item A model-based spatial point process perspective on point transect distance sampling, representing the observation model as a thinning probability function.
+	\item A one-stage approximate Bayesian approach to inference to simultaneously estimate the observation model and spatial distribution.  This is based on iterated model fits using integrated nested Laplace approximations (INLA) \citep{rue_approximate_2009}.
+	\item A computationally efficient Gaussian Markov random field (GMRF) spatial effect based on a stochastic partial differential equation approach \citep{lindgren_explicit_2011} to account for missing covariates.
+	\item An approach to model evaluation and communication based on sampling from the joint posterior of all model parameters and excursions methods \citep{bolin_excursion_2015} for investigating uncertainty in spatial predictions.
+\end{enumerate}
+
+We note that these challenges are generic to many types of wildlife survey data, not only the \akepa{} survey, and can be addressed by a range of possible statistical approaches.  Our analysis here is one possible choice of approach and throughout the remainder of the paper we will highlight differences with existing approaches. It is important to note that we do not claim any overall superiority of this approach over others, although we do highlight some areas for which we believe our approach provides a natural setting for addressing the issues above.  We demonstrate several novel contributions to the problem of species distribution modelling under imperfect detection.  In particular, the point process perspective with incomplete location information, the one-stage approximate Bayesian inference strategy and focus on communicating uncerainty in spatial predictions using excursions are innovations in this area.  We also note that although we use a Bayesian approach, maximum-likelihood frameworks could also have been used.  Finally, we note that many of the themes addressed in this paper apply beyond the field of spatial ecology and will be of interest to the spatial statistics community in general, particularly for applications with complex observation models of latent processes and where spatial predictions are a key output of the analsyis.
+
+The rest of the paper proceeds as follows:  (i) we describe in detail the \akepa{} study-region and survey design; (ii) we present the perspective of distance sampling as a thinned point process; (iii) we describe the GMRF random effect and iterated INLA fitting procedure; (iv) we present the results of the analysis and discuss model evaluation and communication.
+
 \section{Study design}
 
 \begin{itemize}
@@ -184,5 +210,8 @@ We work in a Bayesian context here but note that maximum-likelihood frameworks c
 \section{Discussion}
 
 Discuss wisely
+
+\bibliographystyle{chicago}
+\bibliography{paper}
 
 \end{document}

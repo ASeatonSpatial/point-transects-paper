@@ -123,9 +123,9 @@ A New Abstract Goes Here
 %\end{keyword}
 \end{frontmatter}
 
-\section*{Introduction}
+\section{Introduction}
 
-The estimation of the size and spatial distribution of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}. Here we present an analysis of wildlife survey data collected on a critically endangered Hawaiian forest bird that aims to meet this objective.  The Hawaiian \akepa{} is an endemic species whose population declined dramatically during the 20th century due to habitat modification \citep{scott_HFBS_1986, pratt_avifaunal_1994}.  The remaining population is the focus of sustained conservation efforts and monitoring is required to inform decision-makers about changes in the overall abundance and spatial distribution.  This information is critical when making decisions about conservation strategies.  However, answering these questions presents many statistical challenges.  
+The estimation of the size and spatial distribution of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}. Here we present an analysis of wildlife survey data collected on a critically endangered Hawaiian forest bird that aims to meet this objective.  The Hawaiian \akepa{} is an endemic species whose population declined dramatically during the 20th century [[cite??]].  The remaining population is the focus of sustained conservation efforts and monitoring is required to inform decision-makers about changes in the overall abundance and spatial distribution.  This information is critical when making decisions about conservation strategies.  However, answering these questions presents many statistical challenges.  
 
 Firstly, as in many ecological surveys, it is impossible to undertake a census.  The existing population numbers in the thousands and lives in dense forest where logistical and ecological challenges mean a census is not feasible.  For this reason, a monitoring survey must sub-sample in space and time in some way.  For the \akepa{} this takes the form of the Hawaii Forest Bird Survey (HFBS) \citep{scott_HFBS_1986} which is a large-scale, quantitative survey of Hawaiian forest birds.  Annual surveys of the \akepa{} study-region consist of survey points located along randomly located transects.    
 
@@ -150,12 +150,34 @@ The rest of the paper proceeds as follows:  (i) we describe in detail the \akepa
 
 \section{Study design}
 
-\begin{itemize}
-	\item describe survey protocol in detail
-	\item mini lit review - DS, 2-stage, Joyce
-\end{itemize}
+The \hawaii{} \akepa{} (hereafter \akepa{}; \textit{Loxops coccineus}; nomenclature according to \citealp{usfws_akepa_1970}) is an internationally and federally endangered Hawaiian honeycreeper (\citealp{usfws_akepa_1970, birdlife_akepa_2016}) that is endemic to \hawaii{} Island, USA.  Large-scale, quantitative surveys of Hawaiian forest birds and their habitat commenced in the mid-1970s through the Hawaii Forest Bird Survey (HFBS) \citep{scott_HFBS_1986}. Information from the HFBS was used to update the listing and delisting of endangered species, and establish preserves that coincided with native bird hotspots, including Hakalau Forest National Wildlife Refuge on \hawaii{} Island (hereafter Hakalau) that was the first wildlife refuge with the primary purpose to protect, conserve and manage native forests for threatened and endangered bird and plant species. Due to the broad-scale coverage and robust design HFBS has become the baseline to determine changes in bird species distributions, population sizes and trends in density patterns over time.
 
-\section{Distance Sampling as a Thinned Point Process}
+During the 20th century \akepa{} declined dramatically due to habitat modification \citep{scott_HFBS_1986, pratt_avifaunal_1994},  mosquito-transmitted avian diseases \citep{pratt_avifaunal_1994, atkinson_wildlife_1995}, introduced predators \citep{lepson_akepa_1997}, and food resources competitors \citep{lepson_akepa_1997}. \Akepa{} has a global abundance of approximately 16,200 (95\%CI 10,000\textendash25,200) birds that has been restricted to five spatially distinct populations \citep{judge_akepa_2018}. Hakalau supports the largest \akepa{} population that in 2012 was estimated at more than 11,000 birds \citep{camp_statespace_2016}. Maintaining and expanding the \akepa{} population at Hakalau is a primary conservation concern. Moreover, having unbiased and precise abundance estimates are required by land and resource managers for evaluating management actions and establishing management planning, and policy makers for decision-making processes.
+
+\subsection{Study area and sampling method}
+
+[[Need to update this and the figure with the extended data area]]
+
+Hakalau was established in 1985 to conserve 15,390-ha of montane forest habitat for native forest birds and rainforest plants. Annual forest bird surveys were initiated in 1987 to determine population status and track trends in abundance. Survey points were established along 15 transects following a systematic, random design with points approximately 150 m apart on transects located either 500 or 1,000 m apart. Following \cite{camp_population_2010, camp_statespace_2016}, we restrict our study area to the 3,061 ha open-forest stratum of Hakalau.  The open-forest stratum was previously heavily grazed, and since the removal of cattle in 1988 regeneration has proceeded naturally \citep{maxfield_hakalau_1998}. To the north the study area follows the refuge boundary while to the east it is bounded by a fence line (Fig. \ref{fig:2002studyareapointspt}). The southern boundary was modified from \cite{camp_population_2010} to exclude the non-sampled forested portion of their study area. The west side of the study area is bounded by pasture that is dominated by grass and is unsuitable habitat for \akepa.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{figures/2002studyareapoints_pt}
+	\caption{Study area (light blue) showing the 2002 survey points (black dots) in Hakalau Forest National Wildlife Refuge, \hawaii{} Island.}
+	\label{fig:2002studyareapointspt}
+\end{figure}
+
+Surveys used point-transect methods, recording horizontal distances from survey points to individually detected birds. Surveys commenced at dawn and continued until 11:00 or halted when weather conditions exceeded prescribed conditions that hindered detecting birds (light rain, and wind and gust strength \textgreater Baufort scale 3). During 8-min counts trained observers recorded the species, exact distance to the nearest meter and detection type for each bird detected, along with the sampling conditions cloud cover, rain, wind strength, gust strength, and time of day each point was surveyed.   \cite{camp_population_2010,camp_statespace_2016} provide a detailed description of Hakalau, the open-forest study area and the bird surveys.
+
+\subsection{Data description}
+[[ Need to update this with extended data ]]
+
+For the purposes of our analysis we selected a single survey from the \akepa{} time series that contained on broad sampling of the study area with sufficient numbers of detections to estimate detectability. In 2002, 289 points were sampled using point-transect distance sampling methods within the 3,061 ha open-forest study area of Hakalau (Fig. \ref{fig:2002studyareapointspt}). 276 \akepa{} were detected on 121 point transects. The number of detections within each sampling unit ranged from zero to 6. 
+
+
+\section{Distance sampling as a thinned point process}
+
+
 
 \section{Iterated INLA}
 

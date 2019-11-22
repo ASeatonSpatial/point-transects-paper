@@ -125,37 +125,6 @@ A New Abstract Goes Here
 
 \section*{Introduction}
 
-\begin{itemize}
-	\item Estimating population size and spatial distribution is an important question in ecology and conservation
-	\item Here we present the Akepa data:
-		\begin{itemize}
-			\item endangered
-			\item subject of conservation efforts
-			\item require monitoring to understand changes in overall abundance and the spatial distribution to target conservation efforts
-		\end{itemize}
-	\item Estimating the population size and spatial distribution of Akepa is challenging because
-		\begin{enumerate}[(i)]
-			\item cannot do a census (large numbers, dense forest, logistical constraints) and so must subsample in space and time (describe the HFBS design)
-			\item imperfect detection when we do sample - a complex observation process (describe point transect distance sampling approach)
-			\item interest in generating spatial predictions but we usually have missing covariates and use spatial random effects (No covariate for north-south in Akepa data, other studies ambiguous)
-			\item complex models that are difficult to communicate with stakeholders such as conservation managers and policy officers (communicating uncertainty in abundance estimation and prediction maps)
-		\end{enumerate}
-\end{itemize}
-
-In this paper we present an analysis of the Akepa data that seeks to address these issues
-
-\begin{enumerate}[(i)]
-	\item a spatial point process formulation of distance sampling
-	\item a one-stage estimation process to simultaneously estimate the spatial model and the observation process
-	\item a computationally efficient Gaussian Markov random field effect based on a stochastic partial differential equation approach
-	\item model evaluation and communication based on join posterior sampling and excursions package
-\end{enumerate}
-
-We work in a Bayesian context here but note that maximum-likelihood frameworks could also be used.
-
------
-
-
 The estimation of the size and spatial distribution of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}. Here we present an analysis of wildlife survey data collected on a critically endangered Hawaiian forest bird that aims to meet this objective.  The Hawaiian \akepa{} is an endemic species whose population declined dramatically during the 20th century due to habitat modification \citep{scott_HFBS_1986, pratt_avifaunal_1994}.  The remaining population is the focus of sustained conservation efforts and monitoring is required to inform decision-makers about changes in the overall abundance and spatial distribution.  This information is critical when making decisions about conservation strategies.  However, answering these questions presents many statistical challenges.  
 
 Firstly, as in many ecological surveys, it is impossible to undertake a census.  The existing population numbers in the thousands and lives in dense forest where logistical and ecological challenges mean a census is not feasible.  For this reason, a monitoring survey must sub-sample in space and time in some way.  For the \akepa{} this takes the form of the Hawaii Forest Bird Survey (HFBS) \citep{scott_HFBS_1986} which is a large-scale, quantitative survey of Hawaiian forest birds.  Annual surveys of the \akepa{} study-region consist of survey points located along randomly located transects.    

@@ -177,6 +177,83 @@ For the purposes of our analysis we selected a single survey from the \akepa{} t
 
 \section{Distance sampling as a thinned point process}
 
+\subsection{Overview of distance sampling methods}
+
+Distance sampling methods aim to estimate abundance by using a spatially explicit sampling design and assumed detection model to estimate the detectability of animals as a function of distance from observer (in the case of point transects) or perpendicular distance to a transect line (for line transects) \citep{buckland_advanced_2004, buckland_distance_2015}. In this section we present a brief historical survey of distance sampling approaches and the challenge of combining distance sampling models with spatially explicit statistical models.  We end by introducing the most direct predecessor to our method and note differences with previous approaches. 
+
+Standard distance sampling approaches use a hybrid of design- and model-based inference to estimate population size where the probability of detection is modelled as a function of distance and a randomized sampling design allows the construction of Horvitz-Thompson-like estimators of animal density \citep{horvitz_generalization_1952,  buckland_advanced_2004}.
+
+More recently, interest has focused on fully model-based approaches that include a spatially explicit model for animal density and allow the use of non-randomized survey designs.  These methods also allow density to be associated with spatially-indexed covariates and abundance can, in principle, be estimated for any subregion within the study area \citep{johnson_model-based_2010, miller_spatial_2013, buckland_model-based_2016}.  
+
+Model-based distance sampling has been implemented in a two-stage modelling framework.  In the first stage, detectability is estimated within each sampling unit.  In the second stage, detections within sampling units are binned into counts and used as the response variable in a generalized additive model framework where the detectability estimates from the first stage are used as an offset.  Due to often sparse nature of wildlife survey data this may require consideration of over- or under-dispersion and zero-inflated distributions.  Negative-binomial and Tweedie distributions are common choices to model the distribution of counts.  This two-stage approach has come under the name \textit{density surface models} and \cite{miller_spatial_2013} provide a review and software package \texttt{dsm} to fit the models.  
+
+A key concern with the two-stage approach is the propagation of the uncertainty from the detectability estimates to the second-stage spatial model.  Early attempts to address this focused on bootstrapping \citep{lahiri_resampling_2003, hedley_spatial_2004} but more recent work has pointed to potential difficulties of the bootstrapping approach, noting the difficulty of choosing the resampling units as well as the challenge of combining smoothers and spatial bootstraps \citep{bravington_reliable_2018-1}. Instead, \cite{bravington_reliable_2018-1}  proposed avoiding bootstrapping by propagating error based on a second-order Taylor approximation of detectability around the first-stage maximum-likelihood estimate.
+
+One-stage modelling approaches to distance sampling have also been developed within a Bayesian framework.  These approaches use data augmentation to model unobserved individuals or groups and were fit using Markov-chain Monte Carlo (MCMC) methods \citep{royle_hierarchical_2008, schmidt_using_2012}.  More recently  \cite{oedekoven_bayesian_2014} provided a one-stage model that avoids data augmention by specifying a combined likelihood of the detection and spatially-explicit count models and incorporated model uncertainty by applying a reversible jump MCMC algorithm.
+
+Our approach is also one-stage Bayesian but avoids MCMC and data augmentation by using INLA, an approximate Bayesian approach.  The only paper to use INLA (to the best of our knowledge) to fit a spatially explicit model to distance sampling data is \citet{yuan_point_2017}.  
+
+% UP TO HERE - introduce Yuan now.  Shifted some stuff out of here to GMRF / SPDE section.
+
+Here we present a similar approach to \citet{yuan_point_2017} but instead focus on the case of point transect data.  Point transects require special treatment to account for the fact that the area surveyed increases with increasing distance from the observer.  
+
+Our case study is, to the best of our knowledge, the first analysis of point transect distance sampling data formulated as a thinned point process.  However, the point process viewpoint is not new and has been applied numerous times to line transect data \citep{buckland_model-based_2016, johnson_model-based_2010, hedley_spatial_2004,  hogmander_random_1991, stoyan_remark_1982}.  We also further develop the point process viewpoint to allow point process models to be applied to data with incomplete location information.  It is common for distance sampling surveys to only record the distance to the observer and the observer location.  We show how point process methods can handle this type of data even though the exact location of the point is not known.
+
+We replace the SPDE specification of the detection function in \cite{yuan_point_2017} with a parametric family of detection functions that are more familiar to users of standard distance sampling methods.  This results in components of the additive predictor that are non-linear in their parameters.  To deal with this we use a method of iterated model fits based on a Taylor expansion of the non-linear model components.  We name this approach \textit{iterated INLA}.  
+
+\subsection{Model specification}
+
+In this section we introduce the statistical model for the animal locations and observation process, including a detailed description of how this model can be represented as a modified Poisson likelihood.  We use this formulation to fit the model using the \texttt{R-INLA} implementation of INLA but this likelihood could in principle be used in any statistical software capable of specifying such a modified Poisson form.  
+
+We assume the location of animals are a point pattern that follows a log-Gaussian Cox process with intensity process $\lambda(s)$.  The log-Gaussian Cox process is a flexible approach that can include spatially structured random effects on the intensity process to account for unexplained heterogeneity not captured by fixed-effect covariates.
+
+\sloppy For the case with imperfect detection of points we specify a thinning probability function $g(s) = \mathbb{P}(\text{a point at $s$ is detected})$. A key property of the log-Gaussian Cox process is that a realisation of a point process with intensity process $\lambda(s)$ that is thinned by thinning probability function $g(s)$ also follows a log-Gaussian Cox process with intensity given by $\tl(s) = \lambda(s)g(s)$.
+
+Standard distance sampling approaches specify $g(s)$ as a function that decays with increasing distance.  The distance measured depends on the type of survey.  For line transects the perpendicular distance to the transect line is used.  For point transects the horizontal distance to the observer is the relevant distance.  For the remainder of the paper we assume a point transect survey design.  
+
+The thinning probability function $g(s)$ is specified as a member of a parametric family of functions.  In this paper we demonstrate our approach using the half-normal formulation, although others such as hazard rate, are also common.  If $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$ where $\sigma$ is a variance parameter to be estimated.  The parameter $\sigma$ can only be estimated if an assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption in distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed differences from uniformity can be attributed to detectability and not variation in the intensity.
+
+A point transect distance sampling survey consists of a set of $K$ sampling units.  The $k$-th sample unit we denote $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity we assume that all sampling units are discs with radius $W$ and $\Omega_j \cap \Omega_k = \emptyset$ for all $j \neq k$.  The thinning probability function $g(s)$ is defined relative to the positions of the sample units.  The probability of observing a point at location $s$ in the $k$-th sampling unit $\Omega_k$ we denote $g_k(s)$.  The probability of observing a point outside the surveyed region is zero.
+Since the surveyed regions are non-overlapping each location $s \in \Omega$ is unambigiously associated with a single thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the half-normal thinning probability function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$. The assumption of non-overlapping survey regions can be relaxed by including extra information such as the time of each observation but, for simplicity, we do not consider this here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for $s \in \Omega_k$.
+
+The thinned log-Gaussian Cox process likelihood with observed points at locations $\bm{Y} = (s_1, \ldots, s_n)^\intercal$ is then
+\begin{equation}
+\label{lgcp-likelihood}
+\pi(\bm{Y}) = \exp\left(-\int\displaylimits_{s \in \Omega} \lambda(s) g(s) \mathrm{d}s \right)\prod_{i=1}^n \lambda(s_i)g(s_i)
+\end{equation}
+where we have suppressed parameter vector notation.  The integral component of the likelihood does not usually have analytical solutions.  Replacing the integral with a weighted sum allows the log-likelihood to be rewritten as a weighted Poisson log-likelihood, which we describe below, adapting the approach of \cite{simpson_going_2016} for a fully observed point pattern.
+
+To evaluate the integral we introduce polar coordinates notation $s_k(r, \theta) = s_k + r\left[\cos\theta, \sin\theta \right]^T$ to represent locations in each sampling unit $\Omega_k$.   In general the thinning function depends only on $r$ and not on $\theta$.  We assume this is the case in the following and use the shorthand $g_k(r) = g(s_k(r, \theta))$. It follows that the integral can be rewritten as a sum of weighted one-dimensional integrals $\sum_{k=1}^K 2\pi \lambda(s_k) \int_0^W r g_k(r)\mathrm{d}r$ using the assumption that $\lambda(s)$ is constant within each sampling unit.  For each sampling unit we approximate the one-dimensional integral using a midpoint integration method with $M$ integration locations $r_{k1}, \ldots, r_{kM}$ and associated weights $\alpha_{k1}, \ldots, \alpha_{kM}$.  This gives
+\begin{equation*}
+	\int\displaylimits_{s \in \Omega} \lambda(s)g(s)\mathrm{d}s \approx \sum_{k=1}^K \sum_{j=1}^M \tilde{\alpha}_{kj} \tl(s_{kj})
+\end{equation*}
+where $\tilde{\alpha}_{kj} = 2\pi \alpha_{kj}r_{kj}$ and $\tl(s_{kj}) = \lambda(s_k) g_k(r_{kj})$.
+
+To simplify notation below we let $\tilde{\alpha}_{k} = (\alpha_{k1}, \ldots, \alpha_{kM})^\intercal$ and $\tilde{\alpha} = (\alpha_1^\intercal, \ldots, \alpha_K^\intercal)^\intercal$.  Similarly let $\tl_k = (\tl(s_{k1}), \ldots, \tl(s_{kM}))^\intercal$, $\tl_{int} = (\tl_1^\intercal, \ldots, \tl_K^\intercal)^\intercal$ and denote the intensity evaluated at the observed locations as $\tl_{obs} = (\tl(s_1), \ldots, \tl(s_n))^\intercal$.  Then the approximate log-likelihood is
+\begin{equation}
+\label{approx-log-likelihood}
+	\log \pi(\bm{Y}) \approx - \tilde{\alpha}^\intercal \tl_{int} + 1^\intercal\log\tl_{obs}
+\end{equation}
+This approximation can be written as a modified Poisson likelihood.  To see this let $\exp \eta = (\tl_{int}^\intercal, \tl_{obs}^\intercal)^\intercal$,
+$\alpha = (\tilde{\alpha}^\intercal, 0_{n \times 1}^\intercal)^\intercal$ and construct a vector of pseudo-observations $y = (0_{KM\times 1}^\intercal, 1_{n \times 1}^\intercal)^\intercal$.  Then the approximate likelihood becomes
+\begin{equation}
+\pi(\bm{Y}) \approx \prod_{i=1}^{KM + n} \eta_i^{y_i}\exp(-\alpha_i\eta_i)
+\end{equation}
+This is similar to a Poisson likelihood with a $\log\alpha$ offset and can be specified using the Poisson likelihood implementation available in \texttt{R-INLA}.
+
+
+\subsection{Intensities for incomplete data}
+
+In the above we assume the data are complete records of animal location.  However, in many distance sampling surveys only the location of the observer and the distance to the observer are recorded.  Data of this type can be analysed within a point process framework by deriving the appropriate intensity function for the incomplete data.
+
+Using the polar coordinates notation given above, for a detected point at location $s_k(r, \theta) \in \Omega_k$ we consider the case where we observe $r$ but not $\theta$.  It follows that the intensity for points at a distance $r$ observed within sampling unit $\Omega_k$ is
+\begin{align}
+\label{intensity-incomplete}
+\tl_k(r) &= \oint\displaylimits_{c_k(r)} \lambda(s)g_k(s)\mathrm{d}s \nonumber \\
+&= 2\pi\lambda(s_k)rg_k(r)
+\end{align}
+ where $c_k(r)$ is a circle of radius $r$ centred at $s_k$ and the second line follows from changing to polar coordinates and the assumption of constant intensity within $\Omega_k$.  This intensity differs from the full data case by including the $2\pi$  term to account for the fact that we do not observe $\theta$ and the additional $r$ term to account for the increasing area surveyed at larger distances.
+
 
 
 \section{Iterated INLA}
@@ -187,6 +264,12 @@ For the purposes of our analysis we selected a single survey from the \akepa{} t
 \end{itemize}
 
 \section{GMRF + SPDE}
+
+Yanked from intro:
+
+The reliance on MCMC for one-stage modelling presents a challenge for using spatially-structured random effects, which can be computationally expensive.  \citet{yuan_point_2017} presented a one-stage approach fitted using integrated nested Laplace approximations (INLA).  Applying their method to line-transect distance sampling, they simulateously estimated the detectability and spatial distribution of animals.
+
+Key to their approach is the use of a sparse Gaussian Markov random field (GMRF) approximation to a continously-indexed Gaussian random field (GRF).  They consider the data as a realisation of a spatio-temporal log-Gaussian Cox point process, an approach that avoids the need to bin data into counts and sidesteps the issues of zero-inflation and dispersion.  The observation process is formulated as a thinning of the log-Gaussian Cox process.  Both the log-intensity of points and the detection function were modelled using a stochastic partial differential equation (SPDE) approach \citep{lindgren_explicit_2011}.
 
 \section{Results}
 

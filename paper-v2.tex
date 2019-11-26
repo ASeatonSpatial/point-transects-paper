@@ -133,7 +133,7 @@ Secondly, even at sampled locations, detectability of animals is uncertain.  The
 
 Thirdly, due to the spatial sub-sampling, a key aim of the analysis is the generation of spatial predictions.  However, as is the case in many species distribution models, we usually have reason to believe there are drivers of the spatial distribution for which we have no explanatory covariates.  For the \akepa{} this takes the form of a north-south gradient that has been investigated but for which no clear-cut explanatory cause has been found [[cite here?]].  From a statistical perspective this suggests the use of spatially-structured random effects to account for the missing covariates.
 
-Fourthly, the resulting statistical model is complex and it is therefore challenging to effectively communicate the results of the analysis to non-statistically trained stakeholders such as conservation managers and policy officers.  In particular we note the challenge of communicating uncertainty in maps of predicted animal density.
+Fourthly, the resulting statistical model is complex and therefore challenging to effectively communicate the results of the analysis to non-statistically trained stakeholders such as conservation managers and policy officers.  In particular we note the challenge of communicating uncertainty in maps of predicted animal density.
 
 In this paper we present an analysis that seeks to address each of these issues by presenting
 
@@ -144,7 +144,9 @@ In this paper we present an analysis that seeks to address each of these issues 
 	\item An approach to model evaluation and communication based on sampling from the joint posterior of all model parameters and excursions methods \citep{bolin_excursion_2015} for investigating uncertainty in spatial predictions.
 \end{enumerate}
 
-We note that these challenges are generic to many types of wildlife survey data, not only the \akepa{} survey, and can be addressed by a range of possible statistical approaches.  Our analysis here is one possible choice of approach and throughout the remainder of the paper we will highlight differences with existing approaches. It is important to note that we do not claim any overall superiority of this approach over others, although we do highlight some areas for which we believe our approach provides a natural setting for addressing the issues above.  We demonstrate several novel contributions to the problem of species distribution modelling under imperfect detection.  In particular, the point process perspective with incomplete location information, the one-stage approximate Bayesian inference strategy and focus on communicating uncerainty in spatial predictions using excursions are innovations in this area.  We also note that although we use a Bayesian approach, maximum-likelihood frameworks could also have been used.  Finally, we note that many of the themes addressed in this paper apply beyond the field of spatial ecology and will be of interest to the spatial statistics community in general, particularly for applications with complex observation models of latent processes and where spatial predictions are a key output of the analsyis.
+We note that these challenges are generic to many types of wildlife survey data, not only the \akepa{} survey, and can be addressed by a range of possible statistical approaches.  Our analysis here is one possible choice of approach and throughout the remainder of the paper we will highlight differences with existing approaches.  We demonstrate several novel contributions to the problem of species distribution modelling under imperfect detection.  In particular, the point process perspective with incomplete location information, the one-stage approximate Bayesian inference strategy and focus on communicating uncerainty in spatial predictions using excursions are innovations in this area.  We also note that although we use a Bayesian approach, maximum-likelihood frameworks could also have been used.  Finally, we note that many of the themes addressed in this paper apply beyond the field of spatial ecology and will be of interest to the spatial statistics community in general, particularly for applications with complex observation models of latent processes and where spatial predictions are a key output of the analsyis.  
+
+Our aim is to present a full analysis of the data along with discussion on model specification, inference and model evaluation that reveals key issues in the analysis and our strategies to address them.  Our end hope is that the analysis we present here may provide other researchers with similar data structures an awareness of the issues involved and some options for strategies to use in their own analysis.
 
 The rest of the paper proceeds as follows:  (i) we describe in detail the \akepa{} study-region and survey design; (ii) we present the perspective of distance sampling as a thinned point process; (iii) we describe the GMRF random effect and iterated INLA fitting procedure; (iv) we present the results of the analysis and discuss model evaluation and communication.
 
@@ -179,7 +181,7 @@ For the purposes of our analysis we selected a single survey from the \akepa{} t
 
 \subsection{Overview of distance sampling methods}
 
-Distance sampling methods aim to estimate abundance by using a spatially explicit sampling design and assumed detection model to estimate the detectability of animals as a function of distance from observer (in the case of point transects) or perpendicular distance to a transect line (for line transects) \citep{buckland_advanced_2004, buckland_distance_2015}. In this section we present a brief historical survey of distance sampling approaches and the challenge of combining distance sampling models with spatially explicit statistical models.  We end by introducing the most direct predecessor to our method and note differences with previous approaches. 
+Distance sampling methods aim to estimate abundance by using a spatially explicit sampling design and assumed detection model to estimate the detectability of animals as a function of distance from observer \citep{buckland_advanced_2004, buckland_distance_2015}. In this section we present a brief historical survey of distance sampling approaches and the approaches of combining distance sampling methods with spatially explicit statistical models.  We end by introducing a predecessor to our method and note differences with previous approaches. 
 
 Standard distance sampling approaches use a hybrid of design- and model-based inference to estimate population size where the probability of detection is modelled as a function of distance and a randomized sampling design allows the construction of Horvitz-Thompson-like estimators of animal density \citep{horvitz_generalization_1952,  buckland_advanced_2004}.
 
@@ -189,17 +191,16 @@ Model-based distance sampling has been implemented in a two-stage modelling fram
 
 A key concern with the two-stage approach is the propagation of the uncertainty from the detectability estimates to the second-stage spatial model.  Early attempts to address this focused on bootstrapping \citep{lahiri_resampling_2003, hedley_spatial_2004} but more recent work has pointed to potential difficulties of the bootstrapping approach, noting the difficulty of choosing the resampling units as well as the challenge of combining smoothers and spatial bootstraps \citep{bravington_reliable_2018-1}. Instead, \cite{bravington_reliable_2018-1}  proposed avoiding bootstrapping by propagating error based on a second-order Taylor approximation of detectability around the first-stage maximum-likelihood estimate.
 
-One-stage modelling approaches to distance sampling have also been developed within a Bayesian framework.  These approaches use data augmentation to model unobserved individuals or groups and were fit using Markov-chain Monte Carlo (MCMC) methods \citep{royle_hierarchical_2008, schmidt_using_2012}.  More recently  \cite{oedekoven_bayesian_2014} provided a one-stage model that avoids data augmention by specifying a combined likelihood of the detection and spatially-explicit count models and incorporated model uncertainty by applying a reversible jump MCMC algorithm.
+Concerns about uncertainty propagation can be avoided by one-stage modelling approaches.  In our experience these tend to be developed within a Bayesian framework.  These approaches use data augmentation and to model unobserved individuals or groups and Markov-chain Monte Carlo (MCMC) methods for inference \citep{royle_hierarchical_2008, schmidt_using_2012}.  More recently  \cite{oedekoven_bayesian_2014} provided a one-stage model that avoids data augmention by specifying a combined likelihood of the detection and spatially-explicit count models and incorporated model uncertainty by applying a reversible jump MCMC algorithm.
 
-Our approach is also one-stage Bayesian but avoids MCMC and data augmentation by using INLA, an approximate Bayesian approach.  The only paper to use INLA (to the best of our knowledge) to fit a spatially explicit model to distance sampling data is \citet{yuan_point_2017}.  
+The only Bayesian one-stage analysis that does not use MCMC is, to the best of our knowledge, \citet{yuan_point_2017} who use the approximate Bayesian method INLA applied to line transect data.  INLA can be an attractive choice when working with spatially-structured random effects in large or complex spatial domains.  The SPDE approach \citep{lindgren_explicit_2011} allows the construction of a sparse prior precision matrix which INLA can exploit for gains in computational efficiency and the finite element methods based on triangulation have been shown to be more efficient than regular lattice based approaches \citep{simpson_going_2016}, especially in applications with complex boundaries such as coastlines. 
 
-% UP TO HERE - introduce Yuan now.  Shifted some stuff out of here to GMRF / SPDE section.
+\citet{yuan_point_2017} also take a point process perspective and formulate the detection model as a thinning of the full but imperfectly observed point pattern.  Key to their approach was formulating the detection model using a stochastic partial differential equation.  Similar to spline approaches, choosing a B-spline basis and finite element methods results in a sparse prior precision matrix for the detection model coefficients which can then be incorporated into the latent-Gaussian model framework required by INLA.  Downsides to this approach are that it is challenging to mandate a monotonically decreasing detection function.  The authors suggestion to reject any non-monotonically decreasing functions when sampling from the posterior seems unsatisfactory.    
 
-Here we present a similar approach to \citet{yuan_point_2017} but instead focus on the case of point transect data.  Point transects require special treatment to account for the fact that the area surveyed increases with increasing distance from the observer.  
+Here we present a similar approach to \citet{yuan_point_2017} in that our models are fitted using INLA.  However, we avoid the SPDE detection model, instead allowing the user to specify a parametric family of detection functions, such as the half-normal.  This will be more familiar to users of traditional distance samplign approaches.  This results in components of the additive predictor that are non-linear in their parameters.  To deal with this we use a method of iterated model fits based on a Taylor expansion of the non-linear model components.  We name this approach \textit{iterated INLA}.  
 
-Our case study is, to the best of our knowledge, the first analysis of point transect distance sampling data formulated as a thinned point process.  However, the point process viewpoint is not new and has been applied numerous times to line transect data \citep{buckland_model-based_2016, johnson_model-based_2010, hedley_spatial_2004,  hogmander_random_1991, stoyan_remark_1982}.  We also further develop the point process viewpoint to allow point process models to be applied to data with incomplete location information.  It is common for distance sampling surveys to only record the distance to the observer and the observer location.  We show how point process methods can handle this type of data even though the exact location of the point is not known.
+We also apply the methods to point transect data which require special treatment to account for the fact that the area surveyed increases with increasing distance from the observer.  Our case study is, to the best of our knowledge, the first analysis of point transect distance sampling data formulated as a thinned point process.  However, the point process viewpoint is not new and has been applied numerous times to line transect data \citep{buckland_model-based_2016, johnson_model-based_2010, hedley_spatial_2004,  hogmander_random_1991, stoyan_remark_1982}.  We also further develop the point process viewpoint to allow point process models to be applied to data with incomplete location information.  It is common for distance sampling surveys to only record the distance to the observer and the observer location.  We show how the point process perspective can still handle this type of data even though the exact location of the point cannot be drawn on a map.
 
-We replace the SPDE specification of the detection function in \cite{yuan_point_2017} with a parametric family of detection functions that are more familiar to users of standard distance sampling methods.  This results in components of the additive predictor that are non-linear in their parameters.  To deal with this we use a method of iterated model fits based on a Taylor expansion of the non-linear model components.  We name this approach \textit{iterated INLA}.  
 
 \subsection{Model specification}
 
@@ -254,26 +255,48 @@ Using the polar coordinates notation given above, for a detected point at locati
 \end{align}
  where $c_k(r)$ is a circle of radius $r$ centred at $s_k$ and the second line follows from changing to polar coordinates and the assumption of constant intensity within $\Omega_k$.  This intensity differs from the full data case by including the $2\pi$  term to account for the fact that we do not observe $\theta$ and the additional $r$ term to account for the increasing area surveyed at larger distances.
 
-
-
 \section{Iterated INLA}
 
+The log-intensity for observed points (the thinned intensity) is $\log\tl(s) = \log\lambda(s) + \log g(s)$.  This presents a problem since $\log g(s)$ is not typically linear in its parameters. However, for any single set of parameter values $g(s)$ can be viewed as an offset term. If we could specify $g(s)$ as known then we could proceed with an inference approach suitable for additive linear predictors.
+
 \begin{itemize}
-	\item mini lit review - communicating uncertainty in spatial models w random effects
-	(should this really be here??  Think about moving)
+ \item Description of iterated INLA here
 \end{itemize}
 
-\section{GMRF + SPDE}
+\section{Gaussian Markov random field spatial effect}
 
-Yanked from intro:
+Using spatially-structured random effects can be computationally expensive, resulting in dense prior precision matrices.  A key development in this area is the use of Gaussian Markov random field (GMRF) approximations to Gaussian random fields (GRFs).  The link between them is via a stochastic partial differential equation solved using finite element methods \citep{lindgren_explicit_2011}.
 
-The reliance on MCMC for one-stage modelling presents a challenge for using spatially-structured random effects, which can be computationally expensive.  \citet{yuan_point_2017} presented a one-stage approach fitted using integrated nested Laplace approximations (INLA).  Applying their method to line-transect distance sampling, they simulateously estimated the detectability and spatial distribution of animals.
+To model the intensity of animal locations we use a combination of fixed effects of spatial covariates and a spatially structured random effect.  This allows us to associate our survey data with environmental and ecological conditions that may be relevant to understanding the sdistribution of the species of interest.  For cases where we have insufficient covariates to fully explain the location of animals the spatially structured random effect accounts for additional heterogeneity in the intensity and is required to assume conditional independence between points, given the intensity.
 
-Key to their approach is the use of a sparse Gaussian Markov random field (GMRF) approximation to a continously-indexed Gaussian random field (GRF).  They consider the data as a realisation of a spatio-temporal log-Gaussian Cox point process, an approach that avoids the need to bin data into counts and sidesteps the issues of zero-inflation and dispersion.  The observation process is formulated as a thinning of the log-Gaussian Cox process.  Both the log-intensity of points and the detection function were modelled using a stochastic partial differential equation (SPDE) approach \citep{lindgren_explicit_2011}.
+The log-intensity of animal locations is given by
+\begin{equation*}
+\log \lambda(s) = \beta_0 + \sum_v \beta_v z_v(s) + \xi(s)
+\end{equation*}
+where $\beta_0$ is an intercept parameter, the $z_v(s)$ are spatially indexed covariates with effect parameters $\beta_v$ and $\xi(s)$ is a zero-mean GRF with Mat\'ern covariance
+\begin{equation}
+C(s_1,s_2) = \frac{2^{1-\nu}}{4\pi\kappa^2\tau^2\Gamma(\nu)}(\kappa \|s_1-s_2\|)^{\nu}K_\nu(\kappa \|s_1-s_2\|)
+\end{equation}
+where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  All three parameters are not simultaneously identifiable \citep{zhang_inconsistent_2004} and it is conventional to assume a value for $\nu$ which controls the mean-square differentiability of the process.  We set $\nu = 1$ which is the default value in \texttt{R-INLA}. [[Would like to justify $\nu = 1$ somehow?]]
+
+We use a GMRF approximation of $\xi(s)$ following the approach of \cite{lindgren_explicit_2011} based on specifying $\xi(s)$ via a SPDE.  Given a finite element mesh on the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$ we represent the GRF as $\xi(s) = \sum_l \xi_l \phi_l(s)$.  The parameters $\xi_1, \ldots, \xi_L$ form a GMRF with sparse prior precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices the elements of which are defined via an approximate solution to a SPDE (see Supplementary material). The parameters $\tau$ and $\kappa$ control the shape and rate of decay of the Mat\'ern covariance function.
 
 \section{Results}
 
+We fitted the models using penalised complexity priors for the hyperparameters of the GMRF \citep{simpson_penalising_2017}, setting $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$ where $\rho$ is the range of the Mat\'ern covariance.  The value of 130 was selected based on the minimum distance between sampling locations.  Full code for the analysis can be found in the Supplementary material.
+
+The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.  This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary materials).  The CV plot shows that the CV in the posterior intensity field is lower areas with greater sampling effort.  There is clear preferential sampling and in the north estimated intensities are lower which also contributes to larger CV values.
+\begin{figure}
+	\includegraphics[scale=0.5]{figures/intensity_mean_cv.png}
+	\caption{(left) Posterior mean of the intensity (right) Posterior coefficient of variation of the intensity}
+	\label{fig:intensity-mean-cv}
+\end{figure}
+
 \section{Model Evaluation}
+
+\begin{itemize}
+	\item mini lit review - communicating uncertainty in spatial models w random effects
+\end{itemize}
 
 \begin{itemize}
 	\item Posterior sampling

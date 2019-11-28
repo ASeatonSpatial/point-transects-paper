@@ -283,7 +283,7 @@ We use a GMRF approximation of $\xi(s)$ following the approach of \cite{lindgren
 
 \section{Results}
 
-We fitted the models using penalised complexity priors for the hyperparameters of the GMRF \citep{simpson_penalising_2017}, setting $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$ where $\rho$ is the range of the Mat\'ern covariance.  The value of 130 was selected based on the minimum distance between sampling locations.  Full code for the analysis can be found in the Supplementary materials.
+We fitted the models using penalised complexity priors for the hyperparameters of the GMRF \citep{simpson_penalising_2017}, setting $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$ where $\rho$ is the range of the Mat\'ern covariance.  The value of 130 was selected based on the minimum distance between sampling locations.  Full code for the analysis can be found in the Supplementary materials.  Since only distance to observer was recorded we used the adjusted intensity given in \eqref{intensity-incomplete}.   
 
 The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.  This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary materials).  The CV plot shows that the CV in the posterior intensity field is lower areas with greater sampling effort.  There is clear preferential sampling and in the north estimated intensities are lower which also contributes to larger CV values.
 
@@ -294,7 +294,7 @@ The predicted mean of the posterior intensity is shown in \autoref{fig:intensity
 \end{figure}
 
 Since CV values are influenced both by sampling effort and the magnitude of the estimated intensity means other methods we also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction cell (\autoref{fig:intensity-quantiles}).
-\begin{figure}[!t]
+\begin{figure}[h]
 	\includegraphics[scale=0.5]{figures/intensity_quantiles.png}
 	\caption{The predicted posterior intensity summarised in three plots by the mean (upper),  0.025 quantile (lower left) and 0.975 quantile (lower right) for each prediction grid cell.  All three plots use a common colour scale}
 	\label{fig:intensity-quantiles}
@@ -307,14 +307,13 @@ The posterior detection function \autoref{fig:half-normal} shows that detectabil
 	\label{fig:half-normal}
 \end{figure}
 
-% POSTERIOR MATERN CORRELATION HERE
-Add posterior matern correlation function
-
+The posterior Mat\'ern correlation function is shown in \autoref{fig:matern-posterior}, the grey regions show the 95\% credible interval. 
 \begin{figure}[h]
 	\includegraphics[scale=0.6]{figures/matern_posterior.png}
 	\caption{Posterior Mat\'ern correlation function}
-	\label{fig:half-normal}
+	\label{fig:matern-posterior}
 \end{figure}
+This shows some correlation even at distances of 10,000 metres.  However, the northern-most and souther-most boundaries of the study region are approximately 8,000 metres apart.  The model is estimating positive correlation at distances further apart than were observed.  [[I'm not sure if this a problem??]]
 
 We plot the posterior abundance estimate using a monte-carlo method.  Let $n$ denote the abundance of the population within the region of interest and $N = \int_{\Omega}\lambda(s)\mathrm{d}s$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the posterior intensity field provides a point estimate for the abundance - the expected abundance.  We approximate the $\pi(N | \lambda)$ by a monte-carlo method.  Taking $m$ monte-carlo samples  $\lambda_1, \ldots, \lambda_m$ of the posterior intensity field we estimate the posterior for the abundance as $\pi(N | \lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda_i)$. Each $\pi(N | \lambda = \lambda_i)$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda_i(s)\mathrm{d}s$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of realised abundance $n$ by calculating $\pi(N = n | \lambda)$.
 \begin{figure}
@@ -325,11 +324,14 @@ We plot the posterior abundance estimate using a monte-carlo method.  Let $n$ de
 
 We note that this presentation of abundance estimates differs from typical presentations.  It is common to report a point estimate of the expected abundance and uncertainty in this point estimate.  However, uncertainty in a point estimate will tend to have lower variance than variance of the random variable of interest.  We find the distinction between expected and realised abundance to be a useful one. Here the posterior intensity process is used to generate possible realisations of the intensity, which are then used to generate the abundance estimates.   
 
+Finally, we note that the one-stage approach is a useful approach when it comes to representing uncertainty.  All plots here are based on sampling from the joint posterior of all model parameters.  As such they naturally average over the uncertainty in the detection model.  
+
 \clearpage %figure out figure placements later
 \section{Model Evaluation}
 
 \begin{itemize}
 	\item mini lit review - communicating uncertainty in spatial models w random effects
+	\item IDEA:  lots of papers don't even both themselves with uncertainty.  Could cite a bunch of recent ones, noting the search term in web of knowledge.
 \end{itemize}
 
 \begin{itemize}

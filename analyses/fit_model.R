@@ -44,7 +44,8 @@ g1 <- ggplot() +
   gg(mesh) + 
   gg(study_area) +
   gg(samplers) +
-  gg(realobs, colour = "green")
+  gg(realobs, colour = "green") +
+  coord_equal()
 
 g1
 
@@ -68,7 +69,7 @@ fml <- coordinates + distance ~ grf +
   Intercept
 
 
-starting_values <- data.frame(grf = 0, lsig = 3.4, Intercept = 0)
+starting_values <- data.frame(grf = 0, lsig = 3.36, Intercept = 0)
 
 W <- 60   # transect radius
 distance_domain <- seq(.Machine$double.eps, W, length.out = 30)

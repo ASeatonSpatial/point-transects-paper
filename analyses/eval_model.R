@@ -56,30 +56,80 @@ ggsave(filename = "../figures/halfnormal.png",
 # ggplot() + 
 #   gg(dfun)
 
+## Matern plots ##
+
+plot(spde.posterior(fit, "grf", what = "matern.correlation")) +
+  ylab("correlation") + xlab("distance (m)") +
+  ggtitle("Posterior Matern correlation function")
+
+ggsave(filename = "../figures/matern_posterior.png",
+       width = 5, height = 5, units = "in")
+
+# plot 
+ggplot() + 
+  gg(study_area) +
+  gg(mesh) +
+  gg(samplers, colour = "red") +
+  scale_fill_viridis_c() +
+  xlab("Easting") +
+  ylab("Northing") +
+  coord_equal()
+
+plot(mesh, lwd = 0.2, asp =1, main = "")
+
 # intensity
 pxl = pixels(mesh, nx = 100, ny = 100, mask = study_area)
 pr.int <- predict(fit, pxl, ~ exp(grf + Intercept))
 
 p1 = ggplot() + 
   gg(study_area) +
-  gg(pr.int) +
+  gg(pr.int["mean"]) +
   scale_fill_viridis_c() +
   ggtitle("Posterior mean intensity") +  
   xlab("Easting") +
-  ylab("Northing")
+  ylab("Northing") +
+  coord_equal()
 
 p2 = ggplot() +
   gg(study_area)  +
   gg(pr.int["cv"]) +
-  gg(samplers, colour = "red") +
+  # gg(samplers, colour = "red") +
   scale_fill_viridis_c() +
   ggtitle("Posterior CV of intensity") +  
   xlab("Easting") +
-  ylab("Northing")
+  ylab("Northing") +
+  coord_equal()
 
-png(filename = "../figures/intensity_mean_cv.png",
+p3 = ggplot() +
+  gg(study_area)  +
+  gg(pr.int["sd"]) +
+  # gg(samplers, colour = "red") +
+  scale_fill_viridis_c() +
+  ggtitle("Posterior SD of intensity") +  
+  xlab("Easting") +
+  ylab("Northing") +
+  coord_equal()
+
+layout_matrix <- matrix(c(4, 1, 1, 4, 2, 2, 3, 3), nrow = 2, byrow = TRUE)  # triangle arrangement
+
+png(filename = "../figures/intensity_mean_cv_sd.png",
+    width = 10, height = 10, units = "in", res = 100)
+multiplot(p1, p2, p3, layout = layout_matrix, byrow = TRUE, ncol = 2)
+dev.off()
+
+# png(filename = "../figures/intensity_mean_cv.png",
+#     width = 10, height = 6, units = "in", res = 100)
+# multiplot(p1, p2, p3, cols = 3)
+# dev.off()
+
+png(filename = "../figures/intensity_mean.png",
     width = 10, height = 6, units = "in", res = 100)
-multiplot(p1, p2, cols = 2)
+p1
+dev.off()
+
+png(filename = "../figures/akepa_transects.png",
+    width = 10, height = 6, units = "in", res = 100)
+p3
 dev.off()
 
 # lower and upper quantiles
@@ -94,6 +144,7 @@ p1 = ggplot() +
   gg(study_area) + 
   gg(pr.int) +
   viridisscale +
+  coord_equal() +
   xlab("Easting") +
   ylab("Northing")
 
@@ -101,6 +152,7 @@ p2 = ggplot() +
   gg(study_area) +
   gg(pr.int["q0.025"]) +
   viridisscale +
+  coord_equal() +
   xlab("Easting") +
   ylab("Northing")
 
@@ -108,6 +160,7 @@ p3 = ggplot() +
   gg(study_area) +
   gg(pr.int["q0.975"]) +
   viridisscale +
+  coord_equal() +
   xlab("Easting") +
   ylab("Northing")
 
@@ -118,7 +171,7 @@ png(filename = "../figures/intensity_quantiles.png",
 multiplot(p1, p2, p3, layout = layout_matrix, byrow = TRUE, ncol = 2)
 dev.off()
 
-# show that these maps are misleading:
+s# show that these maps are misleading:
 str(pr.int)
 cell_area = as.numeric(pr.int@grid@cellsize["x"]*pr.int@grid@cellsize["y"])
 sum(pr.int@data["mean"]*cell_area)

@@ -285,15 +285,13 @@ We use a GMRF approximation of $\xi(s)$ following the approach of \cite{lindgren
 
 We fitted the models using penalised complexity priors for the hyperparameters of the GMRF \citep{simpson_penalising_2017}, setting $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$ where $\rho$ is the range of the Mat\'ern covariance.  The value of 130 was selected based on the minimum distance between sampling locations.  Full code for the analysis can be found in the Supplementary materials.  Since only distance to observer was recorded we used the adjusted intensity given in \eqref{intensity-incomplete}.   
 
-The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.  This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary materials).  The CV plot shows that the CV in the posterior intensity field is lower areas with greater sampling effort.  There is clear preferential sampling and in the north estimated intensities are lower which also contributes to larger CV values.
-
+The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.  This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary materials).  The CV plot shows that the CV in the posterior intensity field is lower areas with greater sampling effort.  There is clear preferential sampling with more sampling in the south than the north  (see \autoref{fig:2002studyareapointspt}).  In the north estimated intensities are lower which also contributes to larger CV values.
 \begin{figure}
-	\includegraphics[scale=0.5]{figures/intensity_mean_cv.png}
-	\caption{(left) Posterior mean of the intensity (right) Posterior coefficient of variation of the intensity}
+	\includegraphics[scale=0.5]{figures/intensity_mean_cv_sd.png}
+	\caption{(left) Posterior mean, CV and SD of the intensity}
 	\label{fig:intensity-mean-cv}
 \end{figure}
-
-We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction cell (\autoref{fig:intensity-quantiles}).
+The standard deviation maps shows more overall posterior variability in south where intensity is larger.  We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location (\autoref{fig:intensity-quantiles}).
 \begin{figure}[h]
 	\includegraphics[scale=0.5]{figures/intensity_quantiles.png}
 	\caption{The predicted posterior intensity summarised in three plots by the mean (upper),  0.025 quantile (lower left) and 0.975 quantile (lower right) for each prediction grid cell.  All three plots use a common colour scale}
@@ -302,18 +300,26 @@ We also map the lower and upper quantiles corresponding to a 95\% credible inter
 
 The posterior detection function \autoref{fig:half-normal} shows that detectability drops to just under 0.25 at the maximum observable distance of 60 metres.
 \begin{figure}[h]
-	\includegraphics[scale=0.6]{figures/halfnormal.png}
+	\includegraphics[scale=0.5]{figures/halfnormal.png}
 	\caption{Posterior detection function.  Black line - mean posterior estimate, grey shaded area - 95\% credible interval}
 	\label{fig:half-normal}
 \end{figure}
 
 The posterior Mat\'ern correlation function is shown in \autoref{fig:matern-posterior}, the grey regions show the 95\% credible interval. 
 \begin{figure}[h]
-	\includegraphics[scale=0.6]{figures/matern_posterior.png}
+	\includegraphics[scale=0.5]{figures/matern_posterior.png}
 	\caption{Posterior Mat\'ern correlation function}
 	\label{fig:matern-posterior}
 \end{figure}
 Note that this correlation function shows positive correlation even at distances of 10,000 metres, wider than the full length of the study region (approximately 8,000 metres).  This is the correlation on the log-intensity scale.  [[Can I make a better "range of correlation" plot for the posterior intensity process?]]
+
+To further investigate the ability of the GMRF component to capture the heterogeneity we generated 100 thinned point patterns from the fitted model and calculated the pairwise distances between all observations \autoref{fig:post-pp-distances}.  
+\begin{figure}[h]
+	\includegraphics[scale=0.6]{figures/post_pp_distances.png}
+	\caption{Boxplots of frequency of pairwise distances (tick mark values for end of each bin) based on 100 posterior samples.  Red circles: observed frequency of pairwise distances between observations}
+	\label{fig:post-pp-distances}
+\end{figure}
+The plot shows that the GMRF component captures the relevant scale of clustering in the observed data.
 
 We plot the posterior abundance estimate using a monte-carlo method.  Let $n$ denote the abundance of the population within the region of interest and $N = \int_{\Omega}\lambda(s)\mathrm{d}s$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the posterior intensity field provides a point estimate for the abundance - the expected abundance.  We approximate the $\pi(N | \lambda)$ by a monte-carlo method.  Taking $m$ monte-carlo samples  $\lambda_1, \ldots, \lambda_m$ of the posterior intensity field we estimate the posterior for the abundance as $\pi(N | \lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda_i)$. Each $\pi(N | \lambda = \lambda_i)$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda_i(s)\mathrm{d}s$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of realised abundance $n$ by calculating $\pi(N = n | \lambda)$.
 \begin{figure}
@@ -325,45 +331,28 @@ We plot the posterior abundance estimate using a monte-carlo method.  Let $n$ de
   
 % Add table of estimated model parameters
 % Add 95% CI figures for N
-%% EVAL SPDE AND LGCP POSTERIOR SAMPLING OF barplot k function
 
 \clearpage %sort out figure placements later
 
 \section{Communication of Results}
 
-% This is not quite right - model communication?  
-% in Results add a section evaluating SPDE using boxplot k function 
+The results presented above are consistent with a more traditional two-stage model on binned count data.  Our presentation of the results is broadly consistent with approaches taken in the species distribution modelling literature, although maps of predictive uncertainty (\autoref{fig:intensity-mean-cv} and \autoref{fig:intensity-quantiles}) are not always provided.  We note a worrying tendency in the species distribution mapping literature to include maps of point estimates without any accompanying communication of uncertainty.  Where uncertainty maps are provided these tend to be maps of predictive uncertainty such as standard deviation or CV (recent examples include \cite{ fuller_novel_2018, vallejo_responses_2017,bradbury_mapping_2014}) based either on a posterior predictive distribution or bootstrapping.  Another approach is to map quantiles or the probability of exceeding certain thresholds (recent examples \cite{russell_avoidance_2016, wilson_hierarchical_2010}).  In the above, we chose to communicate uncertainty through maps of CV, standard deviation, and the 0.025 and 0.975 quantiles.  Whilst all of these maps are informative and useful in their own way, our intention in this section is to highlight limitations with these maps and suggest ways to address these limitations.  
 
-\begin{itemize}
-	\item mini lit review - communicating uncertainty in spatial models w random effects
-	\item IDEA:  lots of papers don't even both themselves with uncertainty.  Could cite a bunch of recent ones, noting the search term in web of knowledge.
-\end{itemize}
-
-\begin{itemize}
-	\item Posterior sampling
-	\item Barplot for random effect
-	\item Excursions
-\end{itemize}
-
-The results presented above are consistent with a more traditional two-stage model on binned count data.  Our presentation of the results are broadly consistent with approaches taken in the species distribution modelling literature, although coefficient of variation maps (\autoref{fig:intensity-mean-cv}) and quantile maps (\autoref{fig:intensity-quantiles}) are not always provided.  We note a worrying tendency in the literature to only provide maps of point estimates without any accompanying communication of uncertainty.  Where uncertainty maps are provided they tend to be maps of posterior CV, standard deviation (see for example [[CITE THEM]]) and/or posterior or bootstrapped quantiles (see for example [[CITE]]).  Our intention in this section is to highlight limitations with our above communication of the results and discuss possible remedies.
-
-Whilst summary maps of the posterior intensity process are useful, they can mask certain properties of the fitted model. The mapped posterior mean, for example, will be qualitatively smoother than realisations from the posterior.\autoref{fig:intensity-realizations} shows three such realisations.  Note that each of them has finer-grained spatial structure than is shown in the posterior mean in \autoref{fig:intensity-mean-cv}.  One interpretation of this is that animals will tend to be more clustered than might be expected if we only looked at the posterior mean.
-
+Whilst summary maps of random fields are useful, they all can mask certain properties of the random field. The posterior mean, for example, will be smoother than realisations from the posterior.  \autoref{fig:intensity-realizations} shows three such realisations.  Note that each of them has finer-grained spatial structure than is shown in the posterior mean in \autoref{fig:intensity-mean-cv}.  One interpretation of this is that animals will tend to be more clustered than might be expected if we only looked at the posterior mean.
 \begin{figure}
 	\includegraphics[scale=0.35]{figures/intensity_realized.png}
 	\caption{Three realizations of the posterior intensity field}
 	\label{fig:intensity-realizations}
 \end{figure}
+During model evaluation we recommend producing plots of realisations as these will more closely resemble the spatial structure of the observed data.  
 
-During model evaluation we strongly recommend producing plots of realisations as these will more qualitatively resemble spatial structure of the observed data.  
+The CV map (\autoref{fig:intensity-mean-cv}) can be hard to interpret in regions of low estimated intensity.  If the posterior standard deviation is relatively consistent across the survey region, CV values will be higher in regions of low predicted intensity.  The observed patterns in such maps will highlight regions of relatively lower intensity, not necessarily higher uncertainty.  This is problem is further confounded in the case with spatially varying posterior standard deviation.
 
-More concerning are the problems with the CV, standard deviation and quantile maps.  The CV map is useful but problematic to interpret in regions of low estimated intensity.  If the posterior standard deviation is relatively consistent across the survey region, CV values will be higher in regions of low predicted intensity.  The observed patterns in such maps will just highlight regions of low intensity, not necessarily higher uncertainty.  This is further confounded in the case with spatially varying posterior standard deviation making the CV map hard to interpet.
+The quantile maps also suffer from a potential difficulty in interpretation. The temptation is to interpet the maps as showing possible intensity surfaces that could have produced the observed data.  Presenting these quantiles side by side in a single map obscures the fact that it is vanishingly unlikely for all prediction values to simultaneously achieve the 0.025 or 0.975 quantile.  A similar problem will occur with mapping the marginal probability of exceeding a threshold at each prediction locations.  We believe most non-statistically trained audiences will struggle with this caveat to interpeting the map.  To demonstrate the possible consequences of this we treated the lower and upper quantile plots as though they were intensities and integrated them to obtain an expected abundance estimate of approximately 3,300 for the 0.025 quantile map and 12,400 for the 0.975 quantile map.  A naive (and tempting) interpretation of these numbers is as lower and upper limits of the 95\% credible interval for abundance. However, these abundance estimates are outside the support of the posterior for abundance (see \autoref{fig:realized-abundance-posterior}).  This demonstrates that the natural tendency to interpet these maps as possible intensities leads to interpretations that are inconsistent with the very model that generated the maps.
 
-The quantile maps also suffer from a potential difficulty in interpretation. The temptation is to interpet the maps as showing possible intensity surfaces that could have produced the observed data.  Presenting these quantiles side by side in a single map obscures the fact that it is vanishingly unlikely for all prediction values to simultaneously achieve the 0.025 or 0.975 quantile.  We believe most non-statistically trained audiences will struggle with this caveat to interpeting the map.  To demonstrate the possible consequences of this we treated the lower and upper quantile plots as though they were intensities and integrated them to obtain an expected abundance estimate of approximately 3,300 for the 0.025 quantile map and 12,400 for the 0.975 quantile map.  A naive (and tempting) interpretation of these numbers is as lower and upper limits of the 95\% credible interval for abundance. However, these abundance estimates are outside the support of the posterior for abundance (see \autoref{fig:realized-abundance-posterior}).  This demonstrates that the natural tendency to interpet these maps as possible intensities leads to interpretations that are inconsistent with the model that generated the maps.
+For the standard deviation map care should be given to what the mapped values imply in the context of a given analysis.  A default colour scale will more or less always show some spatial variation in uncertainty, with some regions of relatively high or low uncertainty.  What such a map does not show is whether these values actually matter in the context of the analysis.  For example, it could be the case that the standard deviation values are so large as to make the predictions operationally useless everywhere.  Or, on the other end of the scale, perhaps differences between high and low uncertainty regions (`high' and `low' as defined by some default colour scale) are small enough to be negligible when it comes to decision making, in which case such a spatially varying map is not a relevant output of the analysis.  These are two extreme examples, cases in between suffer from the same problem.  
 
-The standard deviation map is a useful one but care has to be taken to think about what the standard deviation values might imply in the context of a given analysis.  A default colour scale will more or less always show some spatial variation in uncertainty with some regions of relatively high or low uncertainty.  What such a map does not show is whether these values actually matter.  Perhaps the posterior predictions across the entire region are all so uncertain as to the make the predictions operationally useless everywhere.  Or perhaps differences between high and low uncertainty regions (`high' and `'low' as defined by the colour scale) are small enough to be negligible when it comes to decision making, in which case such a spatially varying map is not a relevant output of the analysis.
-
-Our solution to the problems in the quantile and standard deviation maps is to suggest analysts and stakeholders agree \emph{a priori} on values of the process and uncertainty thresholds that are important in the context of the analysis.  These values can then be used to construct summary maps.  We demonstrate this perspective through the use of excursions sets and functions \citep{bolin_excursion_2015}, although there are many possible approaches.  These techniques require the user to specify thresholds of interest for the process itself and acceptable levels of uncertainty. 
+Our solution to the problems in the quantile and standard deviation maps is to suggest that consideration should be given \emph{a priori} to values of the process and levels of uncertainty that are important and suitable given the context of the analysis.  These values can then be used to construct summary maps.  We demonstrate this perspective through the use of excursions sets and functions \citep{bolin_excursion_2015}, although there are many possible approaches.  These techniques require the user to specify thresholds of interest for the process itself and acceptable levels of uncertainty. 
 
 This approach to representing variability in stochastic processes specifically considers the joint probability of events across multiple locations.  The positive excursion set with level $u$ for a function $f(s)$ with domain $\Omega$ is $A_u^{+}(f) = \{ s \in \Omega ; f(s) > u \}$ i.e. the set of all locations in $\Omega$ where $f$ exceeds the a threshold value $u$. For a stochastic process $\lambda(s)$ the positive excursion set with level $u$ and probability $1 - \alpha$ is
 \begin{equation*}
@@ -387,6 +376,7 @@ Our intention in this paper was to present a new approach to analysing point tra
 
 spatio-temporal extension. AR1 through time etc.  Citations for this.
 
+covariates on detection function.  High dimensional taylor falls down at some point?
 
 This difference between summaries of the posterior and possible intensity surfaces that are consistent with the data becomes clear if one generates realizations of the posterior intensity field.  Three such realizations are in \autoref{fig:intensity-realizations}.  There are some notable differences when compared to the mean and quantile summary maps.  Each realization has finer-grained spatial structure than the mean or quantile plots of the posterior intensity.  In practice, this indicates that we should expect more spatial structure in our collected data than what we might expect if we only look at the posterior mean of the field.  The summary plots hide the spatial structure the model has been able to estimate from the data.  In general, the mean of a random field will contain less spatial structure than realisations of the field.
 

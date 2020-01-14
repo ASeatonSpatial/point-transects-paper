@@ -69,7 +69,11 @@ pr.int = do.call(cbind, pr.int)
 # multiplot(p1, p2, cols = 2)
 
 # pr.int.df = cbind(pr.int@data, pr.int@coords)
-write.csv(pr.int, file = "gam_compare_intensity.csv")
+write.table(pr.int, 
+            file = "gam_compare_intensity_1000.csv",
+            sep = ",",
+            col.names = FALSE,
+            row.names = FALSE)
 
 # # log intensity
 # pred.pxl = SpatialPixels(pred.grid.studyarea)

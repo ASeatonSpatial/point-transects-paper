@@ -206,7 +206,7 @@ To account for the imperfect detection of points we specify a thinning probabili
 
 Standard distance sampling approaches specify $g(s)$ as a function that decays with increasing distance.  The type of distance measured depends on the type of survey.  For line transects the perpendicular distance to the transect line is used.  For point transects the horizontal distance to the observer is the relevant distance.  For the remainder of the paper we assume a point transect survey design and hence horizontal distance to the observer located at the centre of the point transect.  
 
-The thinning probability function is specified as a parametric family of functions with parameter vector.  For example, if $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$, where $\sigma$ is a variance parameter to be estimated.  Other types of detection function exist, such as hazard-rate, negative exponential, and they may or may not be adjusted using series expansions to add some flexibility to obtain a better fit to a given dataset \citep{buckland_distance_2015}.  In this analysis we assume a half-normal detection function with no covariates on detection parameters.
+The thinning probability function is specified as a parametric family of functions with parameter vector.  For example, if $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$, where $\sigma^2 > 0$ is a variance parameter to be estimated.  Other types of detection function exist, such as hazard-rate, negative exponential, and they may or may not be adjusted using series expansions to add some flexibility to obtain a better fit to a given dataset \citep{buckland_distance_2015}.  In this analysis we assume a half-normal detection function with no covariates on detection parameters.
 
 The detection function parameters can only be estimated if an assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption in distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed deviations from uniformity can be attributed to detectability and not to variation in the intensity.
 
@@ -252,85 +252,96 @@ Using the polar coordinates notation given above, for a detected point at locati
 \tl_k(r) &= \oint\displaylimits_{c_k(r)} \lambda(s)g_k(s)\mathrm{d}s \nonumber \\
 &= 2\pi\lambda(s_k)rg_k(r) \;\;\; ,
 \end{align}
- where $c_k(r)$ is a circle of radius $r$ centred at $s_k$ and the second line follows from changing to polar coordinates and the assumption of constant intensity within $\Omega_k$.  This intensity differs from the full data case by including the $2\pi$  term to account for the fact that we do not observe $\theta$ and the additional $r$ term to account for the increasing area surveyed at larger distances.
+ where $c_k(r)$ is a circle of radius $r$ centred at $s_k$ and the second line follows from changing to polar coordinates and the assumption of constant intensity within $\Omega_k$.  This intensity differs from the full data case through the $2\pi$  term that accounts for the fact that we do not observe $\theta$ and the additional $r$ term that accounts for the increasing area surveyed at larger distances.  The log-intensity for observed points (the thinned intensity) is thus $\log\tl(s) = \log 2 \pi r + \log\lambda(s) + \log g(s)$.  As we note above, the detection function $g(s)$ is non-linear in its parameters and this component of the additive predictor requires a novel approach to parameter estimation.
 
 \section{Iterated INLA}
 
-The log-intensity for observed points (the thinned intensity) is $\log\tl(s) = \log\lambda(s) + \log g(s)$.  This presents a problem since $\log g(s)$ is not typically linear in its parameters. However, for any single set of parameter values $g(s)$ can be viewed as an offset term. If we could specify $g(s)$ as known then we could proceed with an inference approach suitable for additive linear predictors.
+The half-normal detection function depends on the strictly positive parameter $\sigma^2$.  We choose a log link and consider $g(s | \phi)$, where $\log\sigma^2 = \phi$.   Our approach is based on the observation that for any single choice of $\phi$, the $\log g(s | \phi)$ term acts essentially as an offset. i.e If we could specify $g(s)$ as known then we could proceed with an inference approach suitable for additive linear predictors.
 
 \begin{itemize}
  \item Description of iterated INLA here
 \end{itemize}
 
-\section{Gaussian Markov random field spatial effect}
+\section{Spatially Structured Random Effect}
 \label{GMRFexplanation}
 
-Using spatially-structured random effects can be computationally expensive, resulting in dense prior precision matrices.  A key development in this area is the use of Gaussian Markov random field (GMRF) approximations to Gaussian random fields (GRFs).  The link between them is via a stochastic partial differential equation solved using finite element methods \citep{lindgren_explicit_2011}.
-
-To model the intensity of animal locations we use a combination of fixed effects of spatial covariates and a spatially structured random effect.  This allows us to associate our survey data with environmental and ecological conditions that may be relevant to understanding the sdistribution of the species of interest.  For cases where we have insufficient covariates to fully explain the location of animals the spatially structured random effect accounts for additional heterogeneity in the intensity and is required to assume conditional independence between points, given the intensity.
+Using spatially-structured random effects can be computationally expensive, often resulting in dense prior precision matrices which typically have $\mathcal{O}(n^3)$ cost to factorise for an effect with $n$ parameters - sometimes referred to as the `big $n$ problem'.  A key development in this area is the use of Gaussian Markov random field (GMRF) representations of Gaussian random fields (GRFs).  This representation is constructed via a stochastic partial differential equation solved using finite element methods \citep{lindgren_explicit_2011}.
 
 The log-intensity of animal locations is given by
 \begin{equation*}
 \log \lambda(s) = \beta_0 + \sum_v \beta_v z_v(s) + \xi(s)
 \end{equation*}
-where $\beta_0$ is an intercept parameter, the $z_v(s)$ are spatially indexed covariates with effect parameters $\beta_v$ and $\xi(s)$ is a zero-mean GRF with Mat\'ern covariance
+where $\beta_0$ is an intercept parameter, the $z_v(s)$ are spatial covariates with effect parameters $\beta_v$ and $\xi(s)$ is a zero-mean GRF with Mat\'ern covariance
 \begin{equation}
 C(s_1,s_2) = \frac{2^{1-\nu}}{4\pi\kappa^2\tau^2\Gamma(\nu)}(\kappa \|s_1-s_2\|)^{\nu}K_\nu(\kappa \|s_1-s_2\|)
 \end{equation}
-where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  All three parameters are not simultaneously identifiable \citep{zhang_inconsistent_2004} and it is conventional to assume a value for $\nu$ which controls the mean-square differentiability of the process.  We set $\nu = 1$ which is the default value in \texttt{R-INLA}. [[Would like to justify $\nu = 1$ somehow?]]
+where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  All three parameters are not simultaneously identifiable \citep{zhang_inconsistent_2004} and it is conventional to assume a value for $\nu$ which specifies the mean-square differentiability of the process.  We set $\nu = 1$ which is the default value in \texttt{R-INLA}.
 
-We use a GMRF approximation of $\xi(s)$ following the approach of \cite{lindgren_explicit_2011} based on specifying $\xi(s)$ via a SPDE.  Given a finite element mesh on the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$ we represent the GRF as $\xi(s) = \sum_l \xi_l \phi_l(s)$.  The parameters $\xi_1, \ldots, \xi_L$ form a GMRF with sparse prior precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices the elements of which are defined via an approximate solution to a SPDE (see Supplementary material). The parameters $\tau$ and $\kappa$ control the shape and rate of decay of the Mat\'ern covariance function.
+We use a GMRF representation of $\xi(s)$ following the approach of \cite{lindgren_explicit_2011} based on specifying $\xi(s)$ via a SPDE.  Given a finite element mesh on the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$ we represent the GRF as $\xi(s) = \sum_l \xi_l \phi_l(s)$.  The parameters $\xi_1, \ldots, \xi_L$ form a GMRF with sparse prior precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices the elements of which are defined via an approximate solution to a SPDE (see Supplementary material). The parameters $\tau$ and $\kappa$ control the shape and rate of decay of the Mat\'ern covariance function. 
+
+The SPDE approach can at first appear to be fundamentally different to other spatial random effect approaches such as penalised regression splines.  However, the two methods are closely related and the GRF model component in our model plays a similar role to a tensor product spline on $s$ with an appropriate smoothing penalty.  See \cite{yue_bayesian_2014, miller_understanding_2019} for more details on the similarites between penalised regression splines and the SPDE approach.  
 
 \section{Results}
 
-We fitted the models using penalised complexity priors for the hyperparameters of the GMRF \citep{simpson_penalising_2017}, setting $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$ where $\rho$ is the range of the Mat\'ern covariance.  The value of 130 was selected based on the minimum distance between sampling locations.  Full code for the analysis can be found in the Supplementary materials.  Since only distance to observer was recorded we used the adjusted intensity given in \eqref{intensity-incomplete}.   
+We fitted the models using penalised complexity priors for the hyperparameters of the GMRF \citep{simpson_penalising_2017}, setting $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$, where $\rho$ is the range parameter of the Mat\'ern covariance.  The value of 130 was selected based on the minimum distance between sampling locations.  The complete code for the analysis can be found in the Supplementary materials.  Since only distance to observer was recorded we used the adjusted intensity given in \eqref{intensity-incomplete}.   
 
-The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.  This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary materials).  The CV plot shows that the CV in the posterior intensity field is lower areas with greater sampling effort.  There is clear preferential sampling with more sampling in the south than the north  (see \autoref{fig:2002studyareapointspt}).  In the north estimated intensities are lower which also contributes to larger CV values.
-\begin{figure}
-	\includegraphics[scale=0.5]{figures/intensity_mean_cv_sd.png}
-	\caption{(left) Posterior mean, CV and SD of the intensity}
-	\label{fig:intensity-mean-cv}
-\end{figure}
-The standard deviation maps shows more overall posterior variability in south where intensity is larger.  We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location (\autoref{fig:intensity-quantiles}).
+The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.  
 \begin{figure}[h]
-	\includegraphics[scale=0.5]{figures/intensity_quantiles.png}
-	\caption{The predicted posterior intensity summarised in three plots by the mean (upper),  0.025 quantile (lower left) and 0.975 quantile (lower right) for each prediction grid cell.  All three plots use a common colour scale}
-	\label{fig:intensity-quantiles}
+	\begin{center}
+		\includegraphics[scale=0.4]{figures/intensity_mean_cv_sd.png}
+		\caption{Posterior mean, CV and SD of the intensity}
+		\label{fig:intensity-mean-cv}
+	\end{center}
+\end{figure}
+This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary material).  The CV plot shows that the CV in the posterior intensity field is lower areas with greater sampling effort.  There is a clear indication of preferential sampling with more survey effort in the south, where densities are higher, compared to the north  (see \autoref{fig:2002studyareapointspt}).  In the north, estimated intensities are lower, which also contributes to larger CV values.  The standard deviation map shows stronger overall posterior variability in the south where intensity is larger.  We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location.  [[Say something about these - hard to know what to say about them?]]   (\autoref{fig:intensity-quantiles}).
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[scale=0.4]{figures/intensity_quantiles.png}
+		\caption{The predicted posterior intensity summarised in three plots by the mean (upper),  0.025 quantile (lower left) and 0.975 quantile (lower right) for each prediction grid cell.  All three plots use a common colour scale}
+		\label{fig:intensity-quantiles}
+	\end{center}
 \end{figure}
 
 The posterior detection function \autoref{fig:half-normal} shows that detectability drops to just under 0.25 at the maximum observable distance of 60 metres.
 \begin{figure}[h]
-	\includegraphics[scale=0.5]{figures/halfnormal.png}
-	\caption{Posterior detection function.  Black line - mean posterior estimate, grey shaded area - 95\% credible interval}
-	\label{fig:half-normal}
+	\begin{center}
+		\includegraphics[scale=0.4]{figures/halfnormal.png}
+		\caption{Posterior detection function.  Black line - mean posterior estimate, grey shaded area - 95\% credible interval}
+		\label{fig:half-normal}
+	\end{center}
 \end{figure}
-
 The posterior Mat\'ern correlation function is shown in \autoref{fig:matern-posterior}, the grey regions show the 95\% credible interval. 
 \begin{figure}[h]
-	\includegraphics[scale=0.5]{figures/matern_posterior.png}
-	\caption{Posterior Mat\'ern correlation function}
-	\label{fig:matern-posterior}
+	\begin{center}
+		\includegraphics[scale=0.4]{figures/matern_posterior.png}
+		\caption{Posterior Mat\'ern correlation function}
+		\label{fig:matern-posterior}
+	\end{center}
 \end{figure}
-Note that this correlation function shows positive correlation even at distances of 10,000 metres, wider than the full length of the study region (approximately 8,000 metres).  This is the correlation on the log-intensity scale.  [[Can I make a better "range of correlation" plot for the posterior intensity process?]]
+Note that this correlation function shows positive correlation even at distances of 10,000 metres, wider than the full length of the study region (approximately 8,000 metres).  This is the correlation range on the log-intensity scale.  [[Can I make a better "range of correlation" plot for the posterior intensity process?  How can I convert this to something on the intensity scale?  For process $Z$ with covariance $C$ is there an implied covariance for $exp(Z)$?]]
 
-To further investigate the ability of the GMRF component to capture the heterogeneity we generated 100 thinned point patterns from the fitted model and calculated the pairwise distances between all observations \autoref{fig:post-pp-distances}.  
+To further investigate the ability of the GMRF component to capture the heterogeneity we generated 100 thinned point patterns from the fitted model and calculated the pairwise distances between all observations for each of these patterns \autoref{fig:post-pp-distances}.  
 \begin{figure}[h]
-	\includegraphics[scale=0.6]{figures/post_pp_distances.png}
-	\caption{Boxplots of frequency of pairwise distances (tick mark values for end of each bin) based on 100 posterior samples.  Red circles: observed frequency of pairwise distances between observations}
-	\label{fig:post-pp-distances}
+	\begin{center}
+		\includegraphics[scale=0.6]{figures/post_pp_distances.png}
+		\caption{Boxplots of frequency of pairwise distances (tick mark values for end of each bin) based on 100 posterior samples.  Red circles: observed frequency of pairwise distances between observations}
+		\label{fig:post-pp-distances}
+	\end{center}
 \end{figure}
-The plot shows that the GMRF component captures the relevant scale of clustering in the observed data.
+The plot shows that the GMRF component broadly captures the relevant scale of clustering in the observed data.  There is some evidence of over-predicting the strength of the clustering at distances between 1,000 and 2,500 m.  
 
-We plot the posterior abundance estimate using a monte-carlo method.  Let $n$ denote the abundance of the population within the region of interest and $N = \int_{\Omega}\lambda(s)\mathrm{d}s$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the posterior intensity field provides a point estimate for the abundance - the expected abundance.  We approximate the $\pi(N | \lambda)$ by a monte-carlo method.  Taking $m$ monte-carlo samples  $\lambda_1, \ldots, \lambda_m$ of the posterior intensity field we estimate the posterior for the abundance as $\pi(N | \lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda_i)$. Each $\pi(N | \lambda = \lambda_i)$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda_i(s)\mathrm{d}s$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of realised abundance $n$ by calculating $\pi(N = n | \lambda)$.
-\begin{figure}
-	\includegraphics[scale=0.6]{figures/realized_abundance_posterior.png}
-	\caption{Posterior of realized abundance.  The blue line marks the expected abundance}
-	\label{fig:realized-abundance-posterior}
+We plot the posterior abundance estimate using a Monte Carlo method.
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[scale=0.4]{figures/realized_abundance_posterior.png}
+		\caption{Posterior of realized abundance.  The blue line marks the expected abundance}
+		\label{fig:realized-abundance-posterior}
+	\end{center}
 \end{figure}
-
+Let $n$ denote the abundance of the population within the region of interest and $N = \int_{\Omega}\lambda(s)\mathrm{d}s$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the posterior intensity field provides a point estimate for the abundance, i.e. the expected abundance.  We approximate the posterior $\pi(N | \lambda)$ by a Monte Carlo method.  Taking $m$ Monte Carlo samples  $\lambda_1, \ldots, \lambda_m$ of the posterior intensity field we estimate the posterior for the abundance as $\pi(N | \lambda) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda_i)$. Each $\pi(N | \lambda = \lambda_i)$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda_i(s)\mathrm{d}s$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of realised abundance $n$ by calculating $\pi(N = n | \lambda)$.
   
 % Add table of estimated model parameters
-% Add 95% CI figures for N
+% Add 95% CI figures for N?
 
 \clearpage %sort out figure placements later
 

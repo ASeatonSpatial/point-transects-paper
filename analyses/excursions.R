@@ -89,8 +89,8 @@ p1 = ggplot() +
   theme_void() +
   theme(legend.position = "bottom", 
         legend.direction = "vertical",
-        plot.margin = margin(0.1, 0, 0.1, 0, "in"),
-        legend.box.margin = margin(-10,0,0,0)) +
+        plot.margin = margin(0.1, 0, 0.3, 0, "in"),
+        legend.box.margin = margin(-4,0,0,0)) +
   guides(fill = guide_legend(title.vjust = 0.95,
                              title.theme = element_blank(),
                              label.theme = element_text(size = 16, hjust = 0.5)))

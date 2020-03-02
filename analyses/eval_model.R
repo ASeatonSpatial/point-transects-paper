@@ -44,7 +44,7 @@ summary(fit)
 
 # half-normal
 
-W = 60   # transect radius
+W = 58   # transect radius
 distdf <- data.frame(distance = seq(1,W,length=100))
 
 hnpred <- predict(fit, distdf, ~hn(distance,lsig))

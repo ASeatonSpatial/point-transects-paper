@@ -215,20 +215,25 @@ The thinning probability function is specified as a parametric family of functio
 The detection function parameters can only be estimated if an assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption in distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed deviations from uniformity can be attributed to detectability and not to variation in the intensity.
 
 A point transect distance sampling survey consists of a set of $K$ point transects.   We denote $k$-th subset of space covered by the $k-th$ point transect as $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region is $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity, we assume that all point transects are non-overlapping discs with radius $W$, as is the case in the HFBS survey.  The probability of observing a point at location $s \in \Omega_k$ given it is at $s \in \Omega_k$ we denote $g_k(s)$.  The probability of observing a point outside the surveyed region is zero.
-Since the point transects are non-overlapping, each location $s \in \Omega$ is unambigiously associated with a single thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the half-normal thinning probability function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$.  In practice the observer is always located at the centre of the point transect.  The assumption of non-overlapping survey regions could be relaxed by including extra information such as the time of each observation but this is not a requirement here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for $s \in \Omega_k$.
+Since the point transects are non-overlapping, each location $s \in \Omega$ is unambigiously associated with a single thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the centre of the disc, the half-normal thinning probability function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$.  In practice the observer is always located at the centre of the point transect.  The assumption of non-overlapping survey regions could be relaxed by including extra information such as the time of each observation but this is not a requirement here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for $s \in \Omega_k$.
 
 The thinned log-Gaussian Cox process likelihood with observed points at locations $\bm{Y} = (s_1, \ldots, s_n)^\intercal$ is then
 \begin{equation}
 \label{lgcp-likelihood}
 \pi(\bm{Y}) = \exp\left( |\Omega| -\int\displaylimits_{s \in \Omega} \lambda(s) g(s) \mathrm{d}s \right)\prod_{i=1}^n \lambda(s_i)g(s_i)
 \end{equation}
-where $\lambda(.)$ and $g(.)$ both depend on parameter vectors omitted for readability and $|\Omega|$ is the area of $\Omega$.  
+where $\lambda(.)$ and $g(.)$ both depend on parameter vectors omitted for readability and $|\Omega|$ is the area of the total surveyed region.  
 
 \subsection{Writing the model as a modified Poisson likelihood}
 
-Here we show how to approximate the thinned log Gaussian Cox process model with modified Poisson likelihood.  The integral component $\int\displaylimits_{s \in \Omega} \lambda(s) g(s) \mathrm{d}s$ in \autoref{lgcp-likelihood} does not have analytical solutions.  Replacing the integral with a weighted sum allows the log-likelihood to be approximated as a weighted Poisson log-likelihood, which we describe below, adapting the approach developed by \cite{simpson_going_2016} for a fully observed point pattern.
+\sloppy Here we show how to approximate the thinned log Gaussian Cox process model with a modified Poisson likelihood.  The integral component $\int\displaylimits_{s \in \Omega} \lambda(s) g(s) \mathrm{d}s$ in \autoref{lgcp-likelihood} does not have analytical solutions.  Replacing the integral with a weighted sum allows the log-likelihood to be approximated as a weighted Poisson log-likelihood, which we describe below, adapting the approach developed by \cite{simpson_going_2016} for a fully observed point pattern.
 
-To evaluate the integral we use polar coordinates notation $s_k(r, \theta) = s_k + r\left[\cos\theta, \sin\theta \right]^T$ to represent locations in each sampling unit $\Omega_k$.   In general, the thinning function depends only on $r$ and not on $\theta$.  We assume this is the case in the following and use the shorthand $g_k(r) = g(s_k(r, \theta))$. The integral can then be rewritten as a sum of weighted one-dimensional integrals $\sum_{k=1}^K 2\pi \lambda(s_k) \int_0^W r g_k(r)\mathrm{d}r$ using the assumption that $\lambda(s)$ is constant within each sampling unit.  For each sampling unit we approximate the one-dimensional integral using a midpoint integration method with $M$ integration locations $r_{k1}, \ldots, r_{kM}$ and associated weights $\alpha_{k1}, \ldots, \alpha_{kM}$.  This gives
+To evaluate the integral we use polar coordinates notation $s_k(r, \theta) = s_k + r\left[\cos\theta, \sin\theta \right]^T$ to represent locations in each sampling unit $\Omega_k$.   In general, the thinning function depends only on $r$ and not on $\theta$.  We assume this is the case in the following and use the shorthand $g_k(r) = g(s_k(r, \theta))$. The integral in the likelihood can be simplified using an assumption that $\lambda(s)$ is linear within each sampling unit.  This assumption implies that $\lambda(s_k(r, \theta)) + \lambda(s_k(r, \theta + \pi)) = 2\lambda(s_k)$ and so
+\begin{align*}
+	\int_0^{2\pi} \lambda(s(r, \theta))g_k(r)\mathrm{d}\theta &= \int_0^\pi \left[\lambda(s(r, \theta)) + \lambda(s(r, \theta + \pi)) \right] g_k(r)\mathrm{d}\theta \\
+	&= 2\pi \lambda(s_k)g(r)
+\end{align*}
+We note that this is a relaxation of the traditional assumption in distance sampling that the intensity is constant within each sampling unit.  A similar relaxation is also possible in the case of line transects \citep{yuan_point_2017} and this assumption complements the choice of piece-wise linear basis functions we use to model $\lambda$ (see section 5).  Integrating with respect to $r$ and accounting for the change of variables gives $\int \lambda(s)g(s) \mathrm{d}s = \sum_{k=1}^K 2\pi \lambda(s_k) \int_0^W r g_k(r)\mathrm{d}r$.   For each sampling unit we approximate the one-dimensional integral with respect to $r$ using a midpoint integration method with $M$ integration locations $r_{k1}, \ldots, r_{kM}$ and associated weights $\alpha_{k1}, \ldots, \alpha_{kM}$.  This gives
 \begin{equation*}
 	\int\displaylimits_{s \in \Omega} \lambda(s)g(s)\mathrm{d}s \approx \sum_{k=1}^K \sum_{j=1}^M \tilde{\alpha}_{kj} \tl(s_{kj}) \;\;\; ,
 \end{equation*}
@@ -239,12 +244,12 @@ To simplify notation below we let $\tilde{\alpha}_{k} = (\alpha_{k1}, \ldots, \a
 \label{approx-log-likelihood}
 	\log \pi(\bm{Y}) \approx - \tilde{\alpha}^\intercal \tl_{int} + 1^\intercal\log\tl_{obs}
 \end{equation}
-This approximation can be expressed as a modified Poisson likelihood.  To see this let $\exp \eta = (\tl_{int}^\intercal, \tl_{obs}^\intercal)^\intercal$,
-$\alpha = (\tilde{\alpha}^\intercal, 0_{n \times 1}^\intercal)^\intercal$ and construct a vector of pseudo-observations $y = (0_{KM\times 1}^\intercal, 1_{n \times 1}^\intercal)^\intercal$.  Then the approximate likelihood becomes
+This approximation can be expressed as a modified Poisson likelihood.  To see this let $\eta = (\tl_{int}^\intercal, \tl_{obs}^\intercal)^\intercal$,
+$\alpha = (\tilde{\alpha}^\intercal, 0_{n \times 1}^\intercal)^\intercal$ and construct a vector of pseudo-observations $z = (0_{KM\times 1}^\intercal, 1_{n \times 1}^\intercal)^\intercal$.  Then the approximate likelihood becomes
 \begin{equation}
-\pi(\bm{Y}) \approx \prod_{i=1}^{KM + n} \eta_i^{y_i}\exp(-\alpha_i\eta_i)
+\pi(\bm{Y}) \approx C \prod\limits_{i=1}^{KM + n} \eta_i^{z_i}\exp(-\alpha_i\eta_i)
 \end{equation}
-This is similar to a Poisson likelihood with offset $\log\alpha$ and can be specified using the Poisson likelihood implementated in \texttt{R-INLA} and \texttt{inlabru}.  The approach presented here is similar to the Berman-Turner device \citep{berman_approximating_1992, baddeley_practical_2000} although we relax the assumption that the observed points form part of the quadrature scheme.
+where $C$ is a constant.  This approximate likelihood is implemented in \texttt{inlabru} as a \texttt{"cp"} likelihood.  This is similar to the Berman-Turner device \citep{berman_approximating_1992, baddeley_practical_2000} although without the assumption that the locations of observed points form a part of the quadrature scheme.
 
 \subsection{Intensities for incomplete data}
 
@@ -253,10 +258,10 @@ In the above, we assume the data are complete records of animal locations.  Howe
 Using the polar coordinates notation given above, for a detected point at location $s_k(r, \theta) \in \Omega_k$ we consider the case where we observe $r$ but not $\theta$.  It follows that the intensity for points at a distance $r$ observed within sampling unit $\Omega_k$ is
 \begin{align}
 \label{intensity-incomplete}
-\tl_k(r) &= \oint\displaylimits_{c_k(r)} \lambda(s)g_k(s)\mathrm{d}s \nonumber \\
+\tl_k(r) &= \oint\displaylimits_{c_k(r)} \lambda(s)g_k(r)\mathrm{d}s \nonumber \\
 &= 2\pi\lambda(s_k)rg_k(r) \;\;\; ,
 \end{align}
- where $c_k(r)$ is a circle of radius $r$ centred at $s_k$ and the second line follows from changing to polar coordinates and the assumption of constant intensity within $\Omega_k$.  This intensity differs from the full data case through the $2\pi$  term that accounts for the fact that we do not observe $\theta$ and the additional $r$ term that accounts for the increasing area surveyed at larger distances.  The log-intensity for observed points (the thinned intensity) is thus $\log\tl(s) = \log 2 \pi r + \log\lambda(s) + \log g(s)$.  As we note above, the detection function $g(s)$ is non-linear in its parameters and this component of the additive predictor requires a novel approach to parameter estimation.
+ where $c_k(r)$ is a circle of radius $r$ centred at $s_k$ and the second line follows from changing to polar coordinates and the assumption of linear intensity within $\Omega_k$.  This intensity differs from the full data case through the $2\pi$  term that accounts for the fact that we do not observe $\theta$ and the additional $r$ term that accounts for the increasing area surveyed at larger distances.  The log-intensity for observed points (the thinned intensity) is thus $\log\tl(s) = \log 2 \pi r + \log\lambda(s) + \log g(s)$ and so can be implemented during fitting by using an offset.  As we noted above, the detection function $g(s)$ is non-linear in its parameters and this component of the additive predictor requires a novel approach to parameter estimation.
 
 \section{Iterated INLA}
 

@@ -13,7 +13,7 @@ init.tutorial()
 
 #### WARNING!!!! THIS WILL OVERWRITE EXISTING OBJECT!!!!
 to_save = TRUE
-file_name = "akepa_2002_fitted_model.RDS"
+file_name = "akepa_2002_fitted_model_new_inlabru.RDS"
 
 
 #### Load Data ####
@@ -52,9 +52,12 @@ g1
 #### Specify and fit model ####
 
 # SPDE:
+
+# What are the shorter distances between transects?
 # (xrange <- study_area@bbox["x",2] - study_area@bbox["x",1])
 # (yrange <- study_area@bbox["y",2] - study_area@bbox["y",1])
 # sort(gDistance(pts, byid = TRUE), decreasing = TRUE)
+
 matern <- inla.spde2.pcmatern(mesh, 
                               prior.sigma = c(2, 0.01),    
                               prior.range = c(130, 0.01))
@@ -71,19 +74,22 @@ fml <- coordinates + distance ~ grf +
 
 starting_values <- data.frame(grf = 0, lsig = 3.36, Intercept = 0)
 
-W <- 60   # transect radius
-distance_domain <- seq(.Machine$double.eps, W, length.out = 30)
+W <- 58   # transect radius
+distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
 
+
+inlabru:::iinla.setOption(iinla.verbose = TRUE)
+inlabru:::iinla.getOption("iinla.verbose")
 fit <-  lgcp(components = cmp, 
              data = realobs,
              samplers = samplers,
-             # domain = list(coordinates = mesh, distance = distance_domain),
-             domain = list(distance = distance_domain),
+             domain = list(coordinates = mesh,
+                           distance = distance_domain),
              formula = fml,
-             options = list(result = starting_values, max.iter = 40))
+             options = list(result = starting_values, 
+                            max.iter = 40))
 
 summary(fit)
-
 
 #### Save model object ####
 

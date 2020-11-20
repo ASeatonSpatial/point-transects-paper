@@ -78,8 +78,8 @@ W <- 58   # transect radius
 distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
 
 
-inlabru:::iinla.setOption(iinla.verbose = TRUE)
-inlabru:::iinla.getOption("iinla.verbose")
+# inlabru:::iinla.setOption(iinla.verbose = TRUE)
+# inlabru:::iinla.getOption("iinla.verbose")
 fit <-  lgcp(components = cmp, 
              data = realobs,
              samplers = samplers,

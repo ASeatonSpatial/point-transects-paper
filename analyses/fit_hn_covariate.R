@@ -1,7 +1,6 @@
 library(inlabru)
 library(INLA)
 library(dplyr)
-library(patchwork)
 
 init.tutorial()
 
@@ -76,7 +75,7 @@ fml <- coordinates + distance ~ grf +
 
 W <- 58/1000   # transect radius
 distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
-starting_values <- list(lsig_int = 3.36 - log(1000))    # lsig_strat = 0 implied here
+starting_values <- list(lsig_int = 3.36 - log(1000))    # lsig_x = 0 implied here
 
 fit <-  lgcp(components = cmp, 
              data = realobs,

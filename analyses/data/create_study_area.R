@@ -22,7 +22,9 @@ samplersnew = samplers[samplers$Stratum == "CF",]
 
 # bnd.csv = read.csv("bnd_forest2.csv")
 bnd.csv = read.csv("OpenClosedForestBoundary.csv")
-study_area_new <- SpatialPolygons(list(Polygons(list(Polygon(bnd.csv)), ID=1)))
+bnd.xy = data.frame(x = bnd.csv$EASTING / 1000,
+                    y = bnd.csv$NORTHING / 1000)
+study_area_new <- SpatialPolygons(list(Polygons(list(Polygon(bnd.xy)), ID=1)))
 
 ggplot() +
   gg(study_area_new) +

@@ -6,8 +6,8 @@ library(inlabru)   # for quick plotting
 
 newdata = read.csv("AnalysisDataset2002.csv", stringsAsFactors = FALSE)
 
-old_obs = readRDS("obs_2002_no_crs.RDS")
-old_samplers = readRDS("samplers_no_crs.RDS")
+# old_obs = readRDS("obs_2002_no_crs.RDS")
+# old_samplers = readRDS("samplers_no_crs.RDS")
 
 # Stratum codes:
 # OF = open forest
@@ -20,14 +20,20 @@ newdata %>%
   distinct() -> samplers
 
 samplers$weight = 1
-coordinates(samplers) = ~ Easting + Northing
+samplers$x = samplers$Easting/1000
+samplers$y = samplers$Northing/1000
+coordinates(samplers) = ~ x + y
 
 obs = newdata %>% 
   select(SampleLabel, Distance, Easting, Northing, Stratum) %>% 
   filter(Stratum %in% c("OF", "CF"), !is.na(Distance)) %>% 
   rename(distance = Distance) -> obs
 
-coordinates(obs) = ~ Easting + Northing
+obs$x = obs$Easting/1000
+obs$y = obs$Northing/1000
+obs$distance = obs$distance / 1000
+
+coordinates(obs) = ~ x + y
 
 # check it looks okay
 

@@ -1,9 +1,11 @@
 # Load required packages
 library(inlabru)
 library(INLA)  # need testing version of inla
+library(rgeos)
 
 point_transects <- readRDS("samplers_extended_no_crs.RDS")
 study_area <- readRDS("study_area_extended_no_crs.RDS")
+outer_boundary = gBuffer(study_area, width = 20)
 
 # meshbuilder()
 
@@ -13,18 +15,25 @@ study_area <- readRDS("study_area_extended_no_crs.RDS")
 ## (fmesher supports SpatialPolygons, but this app is not (yet) intelligent enough for that.)
 boundary <- list(
   as.inla.mesh.segment(study_area),
-  NULL)
+  as.inla.mesh.segment(outer_boundary))
 
 ## Build the mesh:
 mesh <- inla.mesh.2d(boundary=boundary,
-                     max.edge=c(280, 960),
-                     min.angle=c(30, 21),
+                     max.edge=c(0.2, 4.1),
+                     min.angle=c(27, 25),
                      max.n=c(48000, 16000), ## Safeguard against large meshes.
                      max.n.strict=c(128000, 128000), ## Don't build a huge mesh!
-                     cutoff=2, ## Filter away adjacent points.
-                     offset=c(1100, 2000)) ## Offset for extra boundaries, if needed.
+                     cutoff=0.076, ## Filter away adjacent points.
+                     offset=c(0.1, 0.3)) ## Offset for extra boundaries, if needed.
 
-ggplot() + gg(mesh) + gg(point_transects, colour = "red") + coord_equal()
+
+# plot whole mesh
+ggplot() + gg(mesh) + gg(point_transects, colour = "red") +
+  coord_equal()
+
+# zoom in a bit
+ggplot() + gg(mesh) +
+  coord_equal() + xlim(c(250, 267)) + ylim(c(2183, 2210))
 
 # save the mesh
 saveRDS(object = mesh, file = "mesh_extended_no_crs.RDS")

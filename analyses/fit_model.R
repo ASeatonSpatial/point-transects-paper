@@ -12,7 +12,7 @@ init.tutorial()
 #### Save Fitted Model Object? ####
 
 #### WARNING!!!! THIS WILL OVERWRITE EXISTING OBJECT!!!!
-to_save = TRUE
+to_save = FALSE
 file_name = "akepa_2002_fitted_model_new_inlabru.RDS"
 
 
@@ -60,10 +60,10 @@ g1
 
 matern <- inla.spde2.pcmatern(mesh, 
                               prior.sigma = c(2, 0.01),    
-                              prior.range = c(130, 0.01))
+                              prior.range = c(300/1000, 0.01))   # was 300 before, now km units so divide
 
-cmp <- ~ grf(map = coordinates, model = matern) + 
-  lsig + Intercept
+cmp <- ~ grf(main = coordinates, model = matern) + 
+  lsig(1) + Intercept(1)
 
 # Predictor formula:
 fml <- coordinates + distance ~ grf +
@@ -72,22 +72,26 @@ fml <- coordinates + distance ~ grf +
   Intercept
 
 
-starting_values <- data.frame(grf = 0, lsig = 3.36, Intercept = 0)
 
-W <- 58   # transect radius
+W <- 58/1000   # transect radius
 distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
 
 
 # inlabru:::iinla.setOption(iinla.verbose = TRUE)
 # inlabru:::iinla.getOption("iinla.verbose")
+
+starting_values <- list(lsig = 3.36 - log(1000))
+
 fit <-  lgcp(components = cmp, 
              data = realobs,
              samplers = samplers,
              domain = list(coordinates = mesh,
                            distance = distance_domain),
              formula = fml,
-             options = list(result = starting_values, 
-                            max.iter = 40))
+             options = list(bru_max_iter = 40,
+                            bru_result = starting_values,
+                            # bru_method = list(taylor = "legacy"),
+                            bru_verbose = 3))
 
 summary(fit)
 

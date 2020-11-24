@@ -15,7 +15,7 @@ newdata = read.csv("AnalysisDataset2002.csv", stringsAsFactors = FALSE)
 # RF = reforested    - no akepa here
 
 newdata %>%
-  select(SampleLabel, Easting, Northing, Stratum) %>% 
+  select(SampleLabel, Easting, Northing, Stratum, HabCode) %>% 
   filter(Stratum %in% c("OF", "CF")) %>%
   distinct() -> samplers
 
@@ -25,7 +25,7 @@ samplers$y = samplers$Northing/1000
 coordinates(samplers) = ~ x + y
 
 obs = newdata %>% 
-  select(SampleLabel, Distance, Easting, Northing, Stratum) %>% 
+  select(SampleLabel, Distance, Easting, Northing, Stratum, HabCode) %>% 
   filter(Stratum %in% c("OF", "CF"), !is.na(Distance)) %>% 
   rename(distance = Distance) -> obs
 

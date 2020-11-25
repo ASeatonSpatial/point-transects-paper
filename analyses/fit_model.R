@@ -6,13 +6,12 @@ library(INLA)  # need testing version of inla
 # library(rgeos)
 # library(raster)  # raster::crs() easy way to remove CRS information
 # library(maptools)
-
-init.tutorial()
+# init.tutorial()
 
 #### Save Fitted Model Object? ####
 
 #### WARNING!!!! THIS WILL OVERWRITE EXISTING OBJECT!!!!
-to_save = FALSE
+to_save = TRUE
 file_name = "akepa_2002_fitted_model_new_inlabru.RDS"
 
 
@@ -71,15 +70,8 @@ fml <- coordinates + distance ~ grf +
   log(2*pi) +   # 2*pi offset for not knowing angle theta
   Intercept
 
-
-
 W <- 58/1000   # transect radius
 distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
-
-
-# inlabru:::iinla.setOption(iinla.verbose = TRUE)
-# inlabru:::iinla.getOption("iinla.verbose")
-
 starting_values <- list(lsig = 3.36 - log(1000))
 
 fit <-  lgcp(components = cmp, 
@@ -90,13 +82,25 @@ fit <-  lgcp(components = cmp,
              formula = fml,
              options = list(bru_max_iter = 40,
                             bru_result = starting_values,
-                            # bru_method = list(taylor = "legacy"),
-                            bru_verbose = 3))
+                            bru_verbose = 3,
+                            control.inla = list(int.strategy = "eb")))
+
+# now fit once with int.strategy = "auto"
+fit2 = lgcp(components = cmp, 
+           data = realobs,
+           samplers = samplers,
+           domain = list(coordinates = mesh,
+                         distance = distance_domain),
+           formula = fml,
+           options = list(bru_max_iter = 1,
+                          bru_result = fit,
+                          control.inla = list(int.strategy = "auto")))
 
 summary(fit)
+summary(fit2)
 
 #### Save model object ####
 
-if (to_save) saveRDS(object = fit, file = file_name)
+if (to_save) saveRDS(object = fit2, file = file_name)
 
   

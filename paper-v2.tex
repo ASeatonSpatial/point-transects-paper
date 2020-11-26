@@ -265,11 +265,18 @@ Using the polar coordinates notation given above, for a detected point at locati
 
 \section{Iterated INLA}
 
-The half-normal detection function depends on the strictly positive parameter $\sigma^2$.  We choose a log link and consider $g(s | \phi)$, where $\log\sigma^2 = \phi$.   Our approach is based on the observation that for any single choice of $\phi$, the $\log g(s | \phi)$ term acts essentially as an offset. i.e If we could specify $g(s)$ as known then we could proceed with an inference approach suitable for additive linear predictors.
+The half-normal detection function depends on the strictly positive parameter $\sigma^2$.  We choose a log link and consider $g(s | \phi)$, where $\log\sigma^2 = \phi$.  However, this cannot be estimated in standard INLA formulation as the predictor is not linear in its parameters.  To address this we use an approximate method based on a first-order Taylor approximation of the non-linear predictor.  Let $\eta(\bm{u}) = \log \tilde{\lambda}(\bm{u})$ where $\bm{u}$ is the parameter vector of the predictor (which includes $\phi$ as well as any parameters for fixed and random effects).  Denote by $\bar{\eta}_{\bm{u}_0}$ the first-order Taylor approximation of $\eta(\bm{u})$ at the point $\bm{u}_0$.  That is
+\begin{equation*}
+\bar{\eta}_{\bm{u}_0} = \eta(\bm{u_0}) + \bm{B}_{\bm{u}_0}(\bm{u} - \bm{u}_0)
+\end{equation*}
+where $\bm{B}_{\bm{u}_0}$ is the derivative matrix of $\eta(\bm{u})$ evaluated at $\bm{u}_0$.  Since $\bar{\eta}_{\bm{u}_0}$ is linear in $\bm{u}$ it is possible to fit an approximate model in INLA by replacing the non-linear $\eta$ with the linear Taylor approximation $\bar{\eta}_{\bm{u_0}}$.   The question then is how to choose the linearisation point $\bm{u}_0$.  The approach taken is via a fixed point iteration scheme.  There are many possible choices here and we describe the approach in the current implementation of \texttt{inlabru} \citep{bachl_inlabru_2019}.  However, more options are likely to be added in the future.  We denote by $\bar{p}_{\bm{v}}$ the posterior distribution of the model parameters given the linearised model configuration at linearisation point $\bm{v}$ and define the functional
+\begin{equation}
+	f(\bar{p}_{\bm{v}}) = \left\{ \argmax_{\bm{u}_i} \: \bar{p}_{\bm{v}}(u_i | \bm{Y}), \quad i = 1, \ldots, n_{\bm{u}} \right\}
+\end{equation}  
+where $n_{\bm{u}}$ is the length of $\bm{u}$.  Each $\bar{p}_{\bm{v}} (u_i | \bm{Y})$ is approximated and the mode estimated during the model fitting using the standard INLA method.
+We then seek a fixed point of this functional so that $\bm{u}_0 = f(\bar{p}_{\bm{u}_0})$.  This fixed point is identified via an iterative scheme.  Given a current choice of linearisation point $\bm{v}$, estimate $\bar{p}_{\bm{v}}$ and set $\bm{u}_* :=f(\bar{p}_v)$ to use as the new linearisation point.  Iterate this procedure until a fixed point is identified within a chosen tolerance.  
 
-\begin{itemize}
- \item Description of iterated INLA here
-\end{itemize}
+In practice the point $\bm{u}_*$ may be problematic and result in a linearised model configuration that is challenging to fit.  Instead this point is considered only as an initial candidate point.  The next linearisation point is chosen by setting $\bm{u}_{\alpha} = (1 - \alpha)\bm{v} + \alpha \bm{u}_*$ and finding the value of $\alpha$ that minimises $ \lVert \eta(\bm{u}_{\alpha}) - \bar{\eta}_{\bm{v}} \rVert$.  This means that the new linearisation point remains close to a feasible region for fitting, assuming the current point $\bm{v}$ is reasonable.  We estimate $\alpha$ using an approximate line search method that avoids many potentially expensive evaluations of the non-linear predictor.  This iterative method is implemented in the R package \texttt{inlabru} \citep{bachl_inlabru_2019}.
 
 \section{Spatially Structured Random Effect}
 \label{GMRFexplanation}

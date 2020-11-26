@@ -265,7 +265,7 @@ Using the polar coordinates notation given above, for a detected point at locati
 
 \section{Iterated INLA}
 
-The half-normal detection function depends on the strictly positive parameter $\sigma^2$.  We choose a log link and consider $g(s | \phi)$, where $\log\sigma^2 = \phi$.  However, this cannot be estimated in standard INLA formulation as the predictor is not linear in its parameters.  To address this we use an approximate method based on a first-order Taylor approximation of the non-linear predictor.  Let $\eta(\bm{u}) = \log \tilde{\lambda}(\bm{u})$ where $\bm{u}$ is the parameter vector of the predictor (which includes $\phi$ as well as any parameters for fixed and random effects).  Denote by $\bar{\eta}_{\bm{u}_0}$ the first-order Taylor approximation of $\eta(\bm{u})$ at the point $\bm{u}_0$.  That is
+The half-normal detection function depends on the strictly positive parameter $\sigma^2$.  We choose a log link and consider $g(s | \phi)$, where $\log\sigma^2 = \phi$.  However, this model cannot be directly fitted using INLA since $\log g(s | \phi)$ is not linear in its parameters.  To address this we use an approximate method based on a first-order Taylor approximation of the non-linear predictor.  Let $\eta(\bm{u}) = \log \tilde{\lambda}(\bm{u})$ where $\bm{u}$ is the parameter vector of the predictor (which includes $\phi$ as well as any parameters for fixed and random effects).  Denote by $\bar{\eta}_{\bm{u}_0}$ the first-order Taylor approximation of $\eta(\bm{u})$ at the point $\bm{u}_0$.  That is
 \begin{equation*}
 \bar{\eta}_{\bm{u}_0} = \eta(\bm{u_0}) + \bm{B}_{\bm{u}_0}(\bm{u} - \bm{u}_0)
 \end{equation*}

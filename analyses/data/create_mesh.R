@@ -2,8 +2,9 @@
 library(inlabru)
 library(INLA)  # need testing version of inla
 
-point_transects <- readRDS("samplers_no_crs.RDS")
-study_area <- readRDS("study_area_no_crs.RDS")
+data_path = here::here("analyses", "data")
+point_transects <- readRDS(here::here(data_path, "samplers_no_crs.RDS"))
+study_area <- readRDS(here::here(data_path,"study_area_no_crs.RDS"))
 
 # meshbuilder()
 
@@ -27,4 +28,4 @@ mesh <- inla.mesh.2d(boundary=boundary,
 ggplot() + gg(mesh) + gg(point_transects, colour = "red")
 
 # save the mesh
-saveRDS(object = mesh, file = "mesh_no_crs.RDS")
+saveRDS(object = mesh, file = here::here(data_path,"mesh_no_crs.RDS"))

@@ -3,8 +3,9 @@ library(inlabru)
 library(INLA)  # need testing version of inla
 library(rgeos)
 
-point_transects <- readRDS("samplers_extended_no_crs.RDS")
-study_area <- readRDS("study_area_extended_no_crs.RDS")
+data_path = here::here("analyses", "data")
+point_transects <- readRDS(here::here(data_path, "samplers_no_crs.RDS"))
+study_area <- readRDS(here::here(data_path,"study_area_extended_no_crs.RDS"))
 outer_boundary = gBuffer(study_area, width = 20)
 
 # meshbuilder()
@@ -36,4 +37,4 @@ ggplot() + gg(mesh) +
   coord_equal() + xlim(c(250, 267)) + ylim(c(2183, 2210))
 
 # save the mesh
-saveRDS(object = mesh, file = "mesh_extended_no_crs.RDS")
+saveRDS(object = mesh, file = here::here(data_path,"mesh_extended_no_crs.RDS"))

@@ -12,12 +12,17 @@ theme_set(theme_minimal())
 set.seed(1525)
 
 #### Fitted model  ####
-file_name = "akepa_2002_fitted_model.RDS"
-fit = readRDS(file_name)
+model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
+fit = readRDS(model_path)
 
-study_area = readRDS("data/study_area_extended_no_crs.RDS")
-samplers = readRDS("data/samplers_extended_no_crs.RDS")
-mesh = readRDS("data/mesh_extended_no_crs.RDS")
+#### Other things ####
+data_path = here::here("analyses", "data")
+study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
+samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
+mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
+
+#### Where to save figures ####
+fig_path = here::here("figures")
 
 #### monte-carlo samples of intensity ####
 
@@ -25,6 +30,8 @@ mesh = readRDS("data/mesh_extended_no_crs.RDS")
 
 # There must be a way to get the actual values from
 # predict with n.samples > 1 ?
+
+# yes update this to use generate
 
 n.mc = 500     # lower this when fiddling with things
 pxl = pixels(mesh, nx = 100, ny = 100, mask = study_area)
@@ -56,15 +63,15 @@ Fpxl$F = ex$F
 
 # png(filename = "../figures/excursion_function.png",
 #     width = 4.5, height = 5.5, units = "cm", res = 1000)
-p2 = ggplot() + 
+p2 = ggplot() +
   gg(study_area) +
   gg(Fpxl) +
-  scale_fill_viridis_c(limits = c(0,1), 
+  scale_fill_viridis_c(limits = c(0,1),
                        breaks = c(0, 0.5, 1),
                        labels = c(0, 0.5, 1))+
   coord_equal() +
   theme_void() +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "bottom",
         legend.direction = "horizontal") +
         #plot.margin = margin(0.1, 0, 0.1, 0, "in")) +
   guides(fill = guide_colourbar(title.vjust = 0.95,
@@ -87,7 +94,7 @@ p1 = ggplot() +
   scale_fill_manual(values = c("blue"),
                     labels = c("Excursion set")) +
   theme_void() +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "bottom",
         legend.direction = "vertical",
         plot.margin = margin(0.1, 0, 0.3, 0, "in"),
         legend.box.margin = margin(-4,0,0,0)) +
@@ -100,7 +107,7 @@ p1
 # ggsave(filename = "../figures/excursion_set.png",
 #        width = 5, height = 6, units = "in")
 
-png(filename = "../figures/excursions.png",
+png(filename = here::here(fig_path, "excursions.png"),
     width = 10, height = 5, units = "in", res = 100)
 plot_grid(NULL, p1, NULL, p2, NULL,
           labels = c("", "A", "", "B", ""),

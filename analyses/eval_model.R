@@ -3,6 +3,7 @@ library(INLA)
 library(inlabru)
 library(scales)
 library(cowplot)
+library(rgeos)
 
 # set ggplot theme
 theme_set(theme_minimal())
@@ -12,12 +13,17 @@ set.seed(9701071)
 #### WARNING - as it stands this script will overwrite figures for the paper
 
 #### Fitted model  ####
-file_name = "akepa_2002_fitted_model.RDS"
-fit = readRDS(file_name)
+model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
+fit = readRDS(model_path)
 
-study_area = readRDS("data/study_area_extended_no_crs.RDS")
-samplers = readRDS("data/samplers_extended_no_crs.RDS")
-mesh = readRDS("data/mesh_extended_no_crs.RDS")
+#### Other things ####
+data_path = here::here("analyses", "data")
+study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
+samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
+mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
+
+#### Where to save figures ####
+fig_path = here::here("figures")
 
 #### ggplot theme ####
 theme_set(theme_classic())
@@ -25,7 +31,7 @@ theme_set(theme_classic())
 #### Specify detection functions  ####
 
 # Log half-normal
-log_hn = function(distance, lsig){ 
+log_hn = function(distance, lsig){
   -0.5*(distance/exp(lsig))^2
 }
 
@@ -33,7 +39,7 @@ log_hn = function(distance, lsig){
 hn <- function(distance, lsig) exp(log_hn(distance, lsig))
 
 # Include r for switching to polar coords
-dsamp = function(distance, lsig){ 
+dsamp = function(distance, lsig){
   log(distance) + log_hn(distance, lsig)
 }
 
@@ -48,27 +54,31 @@ W = 58   # transect radius
 distdf <- data.frame(distance = seq(1,W,length=100))
 
 hnpred <- predict(fit, distdf, ~hn(distance,lsig))
-ghn = ggplot() + 
+ghn = ggplot() +
         gg(hnpred) +
         ylab("probability of detection\n") +
         xlab("\ndistance (m)") +
         theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 16))
 
-## Matern plots ##
+# detectability per transect
+df = ipoints(c(0, W), 50, name = "distance")
+dpred = predict(fit, df, ~ 2/W^2*sum(weight*exp(dsamp(distance, lsig))))
+
+# Matern plots ##
 
 blah = spde.posterior(fit, "grf", what = "matern.correlation")
 blah$x = blah$x / 1000
 gm = ggplot() +
       gg(blah) +
-      ylab("correlation\n") + 
+      ylab("correlation\n") +
       xlab("\ndistance (km)") +
       theme(axis.title = element_text(size = 16, vjust = 0.3),
             axis.text = element_text(size = 16))
-      
+
 gm
 
-png(filename = "../figures/detfn_and_matern.png",
+png(filename = here::here(fig_path, "detfn_and_matern.png"),
     width = 10, height = 5, units = "in", res = 100)
 plot_grid(NULL, ghn, NULL, gm, NULL,
           labels = c("", "A", "", "B", ""),
@@ -80,8 +90,8 @@ dev.off()
 #        width = 5, height = 5, units = "in")
 
 
-# plot 
-# ggplot() + 
+# plot
+# ggplot() +
 #   gg(study_area) +
 #   gg(mesh) +
 #   gg(samplers, colour = "red") +
@@ -89,10 +99,10 @@ dev.off()
 #   xlab("Easting") +
 #   ylab("Northing") +
 #   coord_equal()
-# 
+#
 # plot(mesh, lwd = 0.2, asp =1, main = "")
 
-# intensity plots 
+# intensity plots
 pxl = pixels(mesh, nx = 100, ny = 100, mask = study_area)
 pr.int <- predict(fit, pxl, ~ exp(grf + Intercept))
 
@@ -106,21 +116,21 @@ upper = signif(upper, digits = 3)
 upper
 
 mean_breaks = c(lower, upper)
-p1 = ggplot() + 
+p1 = ggplot() +
   gg(study_area) +
   gg(pr.int["mean"]) +
   scale_fill_viridis_c(breaks = mean_breaks, labels = mean_breaks) +
-  # ggtitle("A") +  
+  # ggtitle("A") +
   xlab("Easting") +
   ylab("Northing") +
-  coord_equal() +   
+  coord_equal() +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
   guides(fill = guide_colourbar(title.vjust = 0.95,
                                 title.theme = element_text(size = 18),
                                 label.theme = element_text(size = 16)))
 
-p1 
+p1
 
 # cv
 lower = min(pr.int$cv)
@@ -137,7 +147,7 @@ p2 = ggplot() +
   gg(study_area)  +
   gg(pr.int["cv"]) +
   scale_fill_viridis_c(breaks = cv_breaks, labels = cv_breaks) +
-  # ggtitle("B") +  
+  # ggtitle("B") +
   xlab("Easting") +
   ylab("Northing") +
   coord_equal() +
@@ -147,7 +157,7 @@ p2 = ggplot() +
                                 title.theme = element_text(size = 18),
                                 label.theme = element_text(size = 16)))
 
-p2 
+p2
 
 # sd
 lower = min(pr.int$sd)
@@ -177,7 +187,7 @@ p3 = ggplot() +
 
 p3
 
-png(filename = "../figures/intensity_mean_cv_sd.png",
+png(filename = here::here(fig_path, "intensity_mean_cv_sd.png"),
     width = 10, height = 5, units = "in", res = 100)
 plot_grid(NULL, p1, NULL, p2, NULL, p3, NULL,
           labels = c("", "A", "", "B", "", "C", ""),
@@ -190,12 +200,12 @@ dev.off()
 # multiplot(p1, p2, p3, cols = 3)
 # dev.off()
 
-png(filename = "../figures/intensity_mean.png",
+png(filename = here::here(fig_path, "intensity_mean.png"),
     width = 10, height = 6, units = "in", res = 100)
 p1
 dev.off()
 
-png(filename = "../figures/akepa_transects.png",
+png(filename = here::here(fig_path, "figures/akepa_transects.png"),
     width = 10, height = 6, units = "in", res = 100)
 p3
 dev.off()
@@ -248,7 +258,7 @@ p3 = ggplot() +
 
 p3
 
-png(filename = "../figures/intensity_quantiles.png",
+png(filename = here::here(fig_path, "intensity_quantiles.png"),
     width = 10, height = 5, units = "in", res = 100)
 plot_grid(NULL, p2, NULL, p3, NULL,
           labels = c("", "A", "", "B", ""),
@@ -274,8 +284,8 @@ draw_all = c(draw1["mean"]@data,
 
 viridisscale = scale_fill_viridis_c(limits = range(draw_all))
 
-p1 = ggplot() + 
-  gg(study_area) + 
+p1 = ggplot() +
+  gg(study_area) +
   gg(draw1["mean"]) +
   viridisscale +
   xlab("Easting") +
@@ -283,8 +293,8 @@ p1 = ggplot() +
   theme_void() +
   theme(legend.position = "none")
 
-p2 = ggplot() + 
-  gg(study_area) + 
+p2 = ggplot() +
+  gg(study_area) +
   gg(draw2["mean"]) +
   viridisscale +
   xlab("Easting") +
@@ -292,8 +302,8 @@ p2 = ggplot() +
   theme_void() +
   theme(legend.position = "none")
 
-p3 = ggplot() + 
-  gg(study_area) + 
+p3 = ggplot() +
+  gg(study_area) +
   gg(draw3["mean"]) +
   viridisscale +
   xlab("Easting") +
@@ -301,7 +311,7 @@ p3 = ggplot() +
   theme_void() +
   theme(legend.position = "none")
 
-png(filename = "../figures/intensity_realized.png",
+png(filename = here::here(fig_path, "intensity_realized.png"),
     width = 10, height = 5, units = "in", res = 100)
 plot_grid(NULL, p1, NULL, p2, NULL, p3, NULL,
           labels = c("", "A", "", "B", "", "C", ""),
@@ -315,63 +325,11 @@ spde.range = spde.posterior(fit, "grf", what = "range")
 spde.logvar = spde.posterior(fit, "grf", what = "log.variance")
 
 plot(spde.range)
-ggsave(filename = "../figures/range_posterior.png",
+ggsave(filename = here::here(fig_path, "range_posterior.png"),
        width = 5, height = 5, units = "in")
 
 plot(spde.logvar)
-ggsave(filename = "../figures/spde_logvar_posterior.png",
+ggsave(filename = here::here(fig_path, "spde_logvar_posterior.png"),
        width = 5, height = 5, units = "in")
 
-# Posterior abundance
-source("AS.Nposterior.R") 
-predpts = ipoints(study_area, mesh)
-# abnc = AS.Nposterior(fit, predpts, 
-#                      n.sd = 5, 
-#                      n.grid = 100, 
-#                      n.samples = 100)   # n.samples = 1000 default
 
-# First get range using mean + sd in expected abundance
-n.sd = 5
-n.grid = 100
-Lambda <- predict(fit, predpts, ~ sum(weight * exp(grf + Intercept))) 
-Nlow <- round(Lambda$mean - n.sd*Lambda$sd)
-Nhigh <- round(Lambda$mean + n.sd*Lambda$sd)
-by <- round((Nhigh - Nlow)/n.grid)   # should give roughly n.grid 
-Nrange <- seq(Nlow, Nhigh, by = by)
-
-getNpost = function(){
-  predict(fit, predpts, 
-                ~ data.frame(N = Nrange, 
-                             dpois(Nrange, lambda = sum(weight * exp(grf + Intercept)))),
-                n.samples = 100)
-}
-
-n.blah = 100
-Npost = matrix(NA, nrow = n.grid+1, ncol = n.blah)
-for (i in 1:n.blah) {
-  print(paste("i = ", i))
-  Npost[,i] = getNpost()$mean
-  gc()
-}
-
-Npost.mean = data.frame(N=Nrange, mean = rowMeans(Npost))
-saveRDS(Npost.mean, file = "Npost.mean.RDS")
-
-ggplot() +
-  geom_line(data = Npost.mean, aes(x = N, y = mean)) +
-  ylab("Posterior probability\n") +
-  xlab("\nAbundance") +
-  theme(axis.title = element_text(size = 16),
-        axis.text = element_text(size = 16),
-        plot.margin = margin(0.2,0.5,0.2,0.2, "in"))
-  
-ggsave("../figures/realized_abundance_posterior.png",
-       width = 5, height = 5, units = "in")
-
-Npost$Nexp = dpois(Npost$N, lambda = abnc$Nexp$mean)
-ggplot() +
-  geom_line(data = Npost, aes(x = N, y = mean)) +
-  geom_line(data = Npost, aes(x = N, y = Nexp), linetype = "dashed")
-
-ggsave("../figures/realized_abundance_vs_exp.png",
-       width = 5, height = 5, units = "in")

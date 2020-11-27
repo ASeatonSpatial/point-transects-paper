@@ -12,20 +12,20 @@ library(INLA)  # need testing version of inla
 
 #### WARNING!!!! THIS WILL OVERWRITE EXISTING OBJECT!!!!
 to_save = TRUE
-file_name = "akepa_2002_fitted_model_new_inlabru.RDS"
-
+model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
 
 #### Load Data ####
 
-realobs <- readRDS("data/obs_extended_no_crs.RDS")
-samplers <- readRDS("data/samplers_extended_no_crs.RDS")
-study_area <- readRDS("data/study_area_extended_no_crs.RDS")
-mesh <- readRDS("data/mesh_extended_no_crs.RDS")
+data_path = here::here("analyses", "data")
+realobs <- readRDS(here::here(data_path, "obs_extended_no_crs.RDS"))
+study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
+samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
+mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
 
 #### Specify detection function  ####
 
 # Log half-normal
-log_hn = function(distance, lsig){ 
+log_hn = function(distance, lsig){
   -0.5*(distance/exp(lsig))^2
 }
 
@@ -33,14 +33,14 @@ log_hn = function(distance, lsig){
 hn <- function(distance, lsig) exp(log_hn(distance, lsig))
 
 # Include r for switching to polar coords
-dsamp = function(distance, lsig){ 
+dsamp = function(distance, lsig){
   log(distance) + log_hn(distance, lsig)
 }
 
 
 # Plot the data
 g1 <- ggplot() +
-  gg(mesh) + 
+  gg(mesh) +
   gg(study_area) +
   gg(samplers) +
   gg(realobs, colour = "green") +
@@ -57,16 +57,16 @@ g1
 # (yrange <- study_area@bbox["y",2] - study_area@bbox["y",1])
 # sort(gDistance(pts, byid = TRUE), decreasing = TRUE)
 
-matern <- inla.spde2.pcmatern(mesh, 
-                              prior.sigma = c(2, 0.01),    
+matern <- inla.spde2.pcmatern(mesh,
+                              prior.sigma = c(2, 0.01),
                               prior.range = c(300/1000, 0.01))   # was 300 before, now km units so divide
 
-cmp <- ~ grf(main = coordinates, model = matern) + 
+cmp <- ~ grf(main = coordinates, model = matern) +
   lsig(1) + Intercept(1)
 
 # Predictor formula:
 fml <- coordinates + distance ~ grf +
-  dsamp(distance, lsig) + 
+  dsamp(distance, lsig) +
   log(2*pi) +   # 2*pi offset for not knowing angle theta
   Intercept
 
@@ -74,7 +74,7 @@ W <- 58/1000   # transect radius
 distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
 starting_values <- list(lsig = 3.36 - log(1000))
 
-fit <-  lgcp(components = cmp, 
+fit <-  lgcp(components = cmp,
              data = realobs,
              samplers = samplers,
              domain = list(coordinates = mesh,
@@ -86,7 +86,7 @@ fit <-  lgcp(components = cmp,
                             control.inla = list(int.strategy = "eb")))
 
 # now fit once with int.strategy = "auto"
-fit2 = lgcp(components = cmp, 
+fit2 = lgcp(components = cmp,
            data = realobs,
            samplers = samplers,
            domain = list(coordinates = mesh,
@@ -101,6 +101,5 @@ summary(fit2)
 
 #### Save model object ####
 
-if (to_save) saveRDS(object = fit2, file = file_name)
+if (to_save) saveRDS(object = fit2, file = model_path)
 
-  

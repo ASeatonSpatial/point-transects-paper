@@ -6,16 +6,17 @@ library(raster)
 library(patchwork)
 
 #### Fitted model  ####
-file_name = "akepa_2002_fitted_model_new_inlabru.RDS"
-fit = readRDS(file_name)
+model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
+data_path = here::here("analyses", "data")
+fit = readRDS(model_path)
 
-study_area = readRDS("data/study_area_extended_no_crs.RDS")
-samplers = readRDS("data/samplers_extended_no_crs.RDS")
-mesh = readRDS("data/mesh_extended_no_crs.RDS")
+study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
+samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
+mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
 
 # generate samples from joint posterior of Intercept and grf st dev
 n.mc =  1000
-ps = generate(fit, 
+ps = generate(fit,
               formula = ~ data.frame(Intercept_latent, Stdev_for_grf),
               n.samples = n.mc)
 

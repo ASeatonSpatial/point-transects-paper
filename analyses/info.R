@@ -4,6 +4,7 @@ library(inlabru)
 library(sp)
 library(raster)
 library(patchwork)
+library(rgeos)
 
 #### Fitted model  ####
 model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
@@ -35,10 +36,10 @@ max(A1)
 
 # Info and plot it
 Info = 1 - A1 / A0
-pxl$Info = Info
+pxl$Info_var = Info
 
-ggplot() +
-  gg(pxl) +
+g1 = ggplot() +
+  gg(pxl, mapping = aes(fill = Info_var)) +
   gg(samplers, colour = "red") +
   coord_equal() +
   scale_fill_viridis_c() +
@@ -52,20 +53,41 @@ ggplot() +
 
 Info_sd = 1 - sqrt(A1) / sqrt(A0)
 pxl$Info_sd = Info_sd
-g1 = ggplot() +
+g2 = ggplot() +
   gg(pxl, mapping = aes(fill = Info_sd)) +
   gg(samplers, colour = "red") +
   coord_equal() +
   scale_fill_viridis_c() +
   theme_minimal()
 
+
+# Coefficient of variation version:
+A1_cv = pred$cv
+A0_cv = sqrt(A0) / mean(exp(ps[,1]))
+
+Info_cv = 1 - A1_cv / A0_cv
+pxl$Info_cv = Info_cv
+
+g3 = ggplot() +
+  gg(pxl, mapping = aes(fill = Info_cv)) +
+  gg(samplers, colour = "red") +
+  coord_equal() +
+  scale_fill_viridis_c() +
+  theme_minimal()
+
+g1 + g2 + g3
+
+
+# Regular sd plot
 pxl$sd = pred$sd
-g2 = ggplot() +
+g4 = ggplot() +
   gg(pxl, mapping = aes(fill = sd)) +
   gg(samplers, colour = "red") +
   coord_equal() +
   scale_fill_viridis_c() +
   theme_minimal()
 
-g1 + g2
+
+#  Where am I with this:  possibly include this in the thesis
+#  Don't bother putting this in the draft paper for now.
 

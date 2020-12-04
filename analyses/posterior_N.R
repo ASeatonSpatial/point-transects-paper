@@ -1,6 +1,9 @@
 library(INLA)
 library(inlabru)
 library(rgeos)
+library(patchwork)
+library(dplyr)
+source(here::here("analyses", "gg.R"))   # some small edits to inlabru gg methods
 
 # set ggplot theme
 theme_set(theme_minimal())
@@ -13,92 +16,191 @@ fit = readRDS(model_path)
 data_path = here::here("analyses", "data")
 study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
 samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
+obs = readRDS(here::here(data_path, "obs_2002_no_crs.RDS"))
 mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
 
 #### Where to save figures ####
 fig_path = here::here("figures")
 
-#### A new way: don't predict within transects ####
-# Unfinished - need to create my own buffer around the point locations
-# gBuffer doesn't create things that are close enough to a circle for my liking
 
 # Total surveyed region as % of study area?
-nrow(samplers@data)*pi*58^2 / gArea(study_area) * 100  # 58m radius for point transects
+W = 58 / 1000
+nrow(samplers@data)*pi*W^2  / gArea(study_area) * 100
 
-# Buffer samplers to create transects
-samplers_buffered = gBuffer(samplers, width = 58, byid = TRUE)
-gArea(samplers_buffered) - nrow(samplers@coords)*pi*58^2   # this doesn't look great
+# Buffer samplers points df to create transects
+samplers_buffered = gBuffer(samplers, width = W, byid = TRUE)
+
+# did this buffer produce something of the right area?
+abs(gArea(samplers_buffered) - nrow(samplers@coords)*pi*W^2) / nrow(samplers@data)*pi*W^2 * 100
+# seems pretty close.
 
 # Remove transects from study area
 study_area_no_samplers = gDifference(study_area, samplers_buffered)
-gArea(study_area) - gArea(study_area_no_samplers) - gArea(samplers_buffered)  # should be zero but isn't
+abs(gArea(study_area) - (gArea(study_area_no_samplers) + gArea(samplers_buffered))) / gArea(study_area) * 100
+# less than 1/5th percent difference seems... okay?  Not perfect though
+
+# For integration points before they are projected to mesh nodes
+# use method = "direct"
+#
+# ips_unsurveyed = ipoints(study_area_no_samplers,
+#                          domain = mesh,
+#                          int.args = list(method = "direct"))
+#
+# ips_full = ipoints(study_area,
+#                    domain = mesh,
+#                    int.args = list(method = "direct"))
+
+# Create integration points for full and for unsurveyed region
+ips_unsurveyed = ipoints(study_area_no_samplers,
+                         domain = mesh)
+
+ips_full = ipoints(study_area,
+                   domain = mesh)
+
+# plot to check things look sensible
+g1 = ggplot() +
+  gg(mesh) +
+  gg(ips_full, aes(size = weight, colour = weight)) +
+  gg(study_area_no_samplers, alpha = 0.01) +
+  coord_equal(xlim = c(258, 259),
+              ylim = c(2191, 2192)) +
+  scale_colour_viridis_c() +
+  ggtitle("whole study area")
+
+g2 = ggplot() +
+  gg(mesh) +
+  gg(ips_unsurveyed, aes(size = weight, colour = weight)) +
+  gg(study_area_no_samplers, alpha = 0.01) +
+  coord_equal(xlim = c(258, 259),
+              ylim = c(2191, 2192)) +
+  scale_colour_viridis_c() +
+  ggtitle("unsurveyed region")
+
+g1 + g2
 
 
+# create integration points object
 
-#### The original way of doing it ####
-# Posterior abundance
+ips_unsurveyed$distance = W + 10    # just anything larger than W here
+W = 0.058
+distance_domain = inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
+distance_ips = ipoints(distance_domain,
+                       name = "distance",
+                       int.args = list(nsub = 4))
+ips_surveyed = cprod(ipoints(samplers), distance_ips)
+ips_surveyed$weight = ips_surveyed$weight * 2 * pi * ips_surveyed$distance
 
-# try the new way:
-ips = ipoints(study_area_no_samplers, domain = mesh)
-ggplot() +
-  gg(study_area) +
-  gg(ips) +
-  coord_equal()
+# should be close
+sum(ips_surveyed$weight)
+gArea(samplers_buffered)
 
-# how does this compare?
-ips2 = ipoints(study_area, domain = mesh)
-nrow(ips)
-nrow(ips2)
+ips_surveyed@data = ips_surveyed@data[,c("weight", "distance")]
 
-# source("AS.Nposterior.R")
-predpts = ipoints(study_area, mesh)
-# abnc = AS.Nposterior(fit, predpts,
-#                      n.sd = 5,
-#                      n.grid = 100,
-#                      n.samples = 100)   # n.samples = 1000 default
+# should be close
+sum(ips_unsurveyed$weight)
+gArea(study_area_no_samplers)
 
-# First get range using mean + sd in expected abundance
-n.sd = 5
-n.grid = 100
-Lambda <- predict(fit, predpts, ~ sum(weight * exp(grf + Intercept)))
-Nlow <- round(Lambda$mean - n.sd*Lambda$sd)
-Nhigh <- round(Lambda$mean + n.sd*Lambda$sd)
-by <- round((Nhigh - Nlow)/n.grid)   # should give roughly n.grid
-Nrange <- seq(Nlow, Nhigh, by = by)
+ips_full$distance = -1    # another indicator
 
-getNpost = function(){
-  predict(fit, predpts,
-          ~ data.frame(N = Nrange,
-                       dpois(Nrange, lambda = sum(weight * exp(grf + Intercept)))),
-          n.samples = 100)
+ips = rbind(ips_unsurveyed,
+            ips_surveyed,
+            ips_full)
+
+# should be close
+sum(ips$weight)
+gArea(study_area)
+
+# Log half-normal
+log_hn = function(distance, lsig){
+  -0.5*(distance/exp(lsig))^2
 }
 
-n.blah = 100
-Npost = matrix(NA, nrow = n.grid+1, ncol = n.blah)
-for (i in 1:n.blah) {
-  print(paste("i = ", i))
-  Npost[,i] = getNpost()$mean
-  gc()
+# Half-normal
+hn <- function(distance, lsig) exp(log_hn(distance, lsig))
+
+# How can I do this all at once?
+
+int_formulas = ~ {
+  tmp <- c(
+    unsurveyed = sum(weight * exp(Intercept + grf) * (distance > W)),
+    surveyed_unobserved = sum(weight * exp(Intercept + grf) * (distance <= W & distance > 0) * (1 - hn(distance, lsig)))
+  )
+  c(tmp,
+    predict_unobserved = sum(tmp),
+    predict_surveyed_observed = sum(weight * exp(Intercept + grf) * (distance <= W & distance > 0) * hn(distance, lsig)),
+    predict_everywhere = sum(weight * exp(Intercept + grf) * (distance > 0)),
+    predict_old_way = sum(weight * exp(Intercept + grf) * (distance < 0))
+  )
 }
 
-Npost.mean = data.frame(N=Nrange, mean = rowMeans(Npost))
-#  saveRDS(Npost.mean, file = here::here("analyses", "Npost.mean.RDS"))
+# test these integration schemes:
+test = generate(fit,
+                ips,
+                formula = int_formulas,
+                n.samples = 100)
 
-ggplot() +
-  geom_line(data = Npost.mean, aes(x = N, y = mean)) +
-  ylab("Posterior probability\n") +
-  xlab("\nAbundance") +
-  theme(axis.title = element_text(size = 16),
-        axis.text = element_text(size = 16),
-        plot.margin = margin(0.2,0.5,0.2,0.2, "in"))
+head(test[,1:4])
+test2 = test[c("predict_unobserved", "predict_surveyed_observed", "predict_everywhere"),]
+test3 = colSums(test2[c(1,2),]) - test2[3,]
+max(test3)
 
-ggsave(here::here(fig_path, "realized_abundance_posterior.png"),
+# compare integration schemes
+test4 = test["predict_everywhere",] - test["predict_old_way",]
+hist(test4, main = "difference between integration schemes")
+
+# define range of
+N_min = round(mean(test["predict_everywhere",]) - 4*sd(test["predict_everywhere",]))
+N_max = round(mean(test["predict_everywhere",]) + 4*sd(test["predict_everywhere",]))
+by = round((N_max - N_min)/100)
+N_seq = seq(N_min, N_max, by = by) # should be roughly length 100
+
+n.mc = 3000
+N_post = predict(fit,
+                 ips,
+                 ~ {
+                   c(unobserved = dpois(N_seq,
+                                      lambda = sum(weight * exp(Intercept + grf) *
+                                        ((distance > W) +
+                                        (distance <= W & distance > 0)*(1 - hn(distance, lsig))))),
+                     predict_everywhere = dpois(N_seq,
+                                                lambda = sum(weight * exp(Intercept + grf) * (distance > 0)))
+                   )
+                 },
+                 n.samples = n.mc)
+
+# For unobserved we need to shift
+# shift PMF to be PMF for total abundance, not just unobserved.  Can then compare
+# with the "predict everywhere" approach
+N_post$N = c(N_seq + nrow(obs), N_seq)
+N_post$type = rep(c("use observed counts", "predict everywhere"), each = length(N_seq))
+
+ggplot(N_post) +
+  geom_line(aes(x = N, y = mean, colour = type)) +
+  geom_ribbon(aes(x = N,
+                  ymin = mean - 2 * sd / sqrt(n.mc),
+                  ymax = mean + 2 * sd / sqrt(n.mc),
+                  fill = type),
+              alpha = 0.2) +
+  theme(legend.title = element_blank()) +
+  scale_colour_manual(values = c("black", "blue")) +
+  scale_fill_manual(values = c("black", "blue")) +
+  ylab("p(N)")
+
+ggsave(filename = here::here(fig_path, "compare_N_posteriors.png"),
        width = 5, height = 5, units = "in")
 
-Npost$Nexp = dpois(Npost$N, lambda = abnc$Nexp$mean)
-ggplot() +
-  geom_line(data = Npost, aes(x = N, y = mean)) +
-  geom_line(data = Npost, aes(x = N, y = Nexp), linetype = "dashed")
+# Just the abundance posterior
+N_post %>%
+  filter(type == "predict everywhere") %>%
+  ggplot() +
+  geom_line(aes(x = N, y = mean)) +
+  geom_ribbon(aes(x = N,
+                  ymin = mean - 2 * sd / sqrt(n.mc),
+                  ymax = mean + 2 * sd / sqrt(n.mc)),
+              alpha = 0.2) +
+  ylab("p(N)")
 
-ggsave(here::here(fig_path,"realized_abundance_vs_exp.png"),
+ggsave(filename = here::here(fig_path, "N_posterior.png"),
        width = 5, height = 5, units = "in")
+
+

@@ -41,14 +41,42 @@ abs(gArea(study_area) - (gArea(study_area_no_samplers) + gArea(samplers_buffered
 
 # For integration points before they are projected to mesh nodes
 # use method = "direct"
-#
-# ips_unsurveyed = ipoints(study_area_no_samplers,
-#                          domain = mesh,
-#                          int.args = list(method = "direct"))
-#
-# ips_full = ipoints(study_area,
-#                    domain = mesh,
-#                    int.args = list(method = "direct"))
+
+ips_unsurveyed = ipoints(study_area_no_samplers,
+                         domain = mesh,
+                         int.args = list(method = "direct"))
+
+ips_full = ipoints(study_area,
+                   domain = mesh,
+                   int.args = list(method = "direct"))
+
+g1 = ggplot() +
+  gg(mesh) +
+  gg(ips_full, aes(colour = weight), cex = 0.3) +
+  gg(study_area_no_samplers, alpha = 0.01) +
+  coord_equal(xlim = c(257.75, 258.25),
+              ylim = c(2190.75, 2191.25)) +
+  scale_colour_viridis_c() +
+  ggtitle("whole study area") +
+  xlab("") +
+  ylab("") +
+  guides(colour = FALSE)
+
+g2 = ggplot() +
+  gg(mesh) +
+  gg(ips_unsurveyed, aes(colour = weight), cex = 0.3) +
+  gg(study_area_no_samplers, alpha = 0.01) +
+  coord_equal(xlim = c(257.75, 258.25),
+              ylim = c(2190.75, 2191.25)) +
+  scale_colour_viridis_c() +
+  ggtitle("unsurveyed region only") +
+  xlab("") +
+  ylab("")
+
+g1 + g2 + plot_layout(guides = "collect")
+
+ggsave(filename = here::here(fig_path, "compare_int_scheme_raw.png"),
+       width = 10, height = 5, units = "in", dpi = 150)
 
 # Create integration points for full and for unsurveyed region
 ips_unsurveyed = ipoints(study_area_no_samplers,
@@ -62,22 +90,30 @@ g1 = ggplot() +
   gg(mesh) +
   gg(ips_full, aes(size = weight, colour = weight)) +
   gg(study_area_no_samplers, alpha = 0.01) +
-  coord_equal(xlim = c(258, 259),
-              ylim = c(2191, 2192)) +
+  coord_equal(xlim = c(257.75, 258.25),
+              ylim = c(2190.75, 2191.25)) +
   scale_colour_viridis_c() +
-  ggtitle("whole study area")
+  ggtitle("whole study area") +
+  xlab("") +
+  ylab("") +
+  guides(size = FALSE)
 
 g2 = ggplot() +
   gg(mesh) +
   gg(ips_unsurveyed, aes(size = weight, colour = weight)) +
   gg(study_area_no_samplers, alpha = 0.01) +
-  coord_equal(xlim = c(258, 259),
-              ylim = c(2191, 2192)) +
+  coord_equal(xlim = c(257.75, 258.25),
+              ylim = c(2190.75, 2191.25)) +
   scale_colour_viridis_c() +
-  ggtitle("unsurveyed region")
+  ggtitle("unsurveyed region only") +
+  xlab("") +
+  ylab("") +
+  guides(size = FALSE, colour = FALSE)
 
-g1 + g2
+g1 + g2 + plot_layout(guides = "collect")
 
+ggsave(filename = here::here(fig_path, "compare_int_scheme_projected.png"),
+       width = 10, height = 5, units = "in", dpi = 150)
 
 # create integration points object
 

@@ -50,10 +50,14 @@ summary(fit)
 
 # half-normal
 
-W = 58   # transect radius
-distdf <- data.frame(distance = seq(1,W,length=100))
+W = 58/1000
+Wm = 58    # transect radius in metres
+distdf <- data.frame(distance = seq(.Machine$double.eps, Wm, length=100))
 
-hnpred <- predict(fit, distdf, ~hn(distance,lsig))
+# adjust for change of units (km in model fit, metres here)
+hnpred <- predict(fit, distdf, ~ hn(distance, lsig + log(1000)),
+                  n.samples = 100)
+
 ghn = ggplot() +
         gg(hnpred) +
         ylab("probability of detection\n") +
@@ -61,14 +65,10 @@ ghn = ggplot() +
         theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 16))
 
-# detectability per transect
-df = ipoints(c(0, W), 50, name = "distance")
-dpred = predict(fit, df, ~ 2/W^2*sum(weight*exp(dsamp(distance, lsig))))
-
 # Matern plots ##
 
 blah = spde.posterior(fit, "grf", what = "matern.correlation")
-blah$x = blah$x / 1000
+# blah$x = blah$x / 1000
 gm = ggplot() +
       gg(blah) +
       ylab("correlation\n") +
@@ -86,41 +86,23 @@ plot_grid(NULL, ghn, NULL, gm, NULL,
           ncol = 5)
 dev.off()
 
-# ggsave(filename = "../figures/matern_posterior.png",
-#        width = 5, height = 5, units = "in")
-
-
-# plot
-# ggplot() +
-#   gg(study_area) +
-#   gg(mesh) +
-#   gg(samplers, colour = "red") +
-#   scale_fill_viridis_c() +
-#   xlab("Easting") +
-#   ylab("Northing") +
-#   coord_equal()
-#
-# plot(mesh, lwd = 0.2, asp =1, main = "")
-
 # intensity plots
-pxl = pixels(mesh, nx = 100, ny = 100, mask = study_area)
+pxl = pixels(mesh, nx = 300, ny = 300, mask = study_area)
+nrow(pxl@coords)
 pr.int <- predict(fit, pxl, ~ exp(grf + Intercept))
 
 # mean
 lower = min(pr.int["mean"]$mean)
-lower = signif(lower, digits = 3)
-lower
-
 upper = max(pr.int["mean"]$mean)
-upper = signif(upper, digits = 3)
-upper
-
 mean_breaks = c(lower, upper)
+mean_labels = c(signif(lower, digits = 3),
+                signif(upper, digits = 3))
+
 p1 = ggplot() +
   gg(study_area) +
   gg(pr.int["mean"]) +
-  scale_fill_viridis_c(breaks = mean_breaks, labels = mean_breaks) +
-  # ggtitle("A") +
+  scale_fill_viridis_c(breaks = mean_breaks,
+                       labels = mean_labels) +
   xlab("Easting") +
   ylab("Northing") +
   coord_equal() +
@@ -134,20 +116,16 @@ p1
 
 # cv
 lower = min(pr.int$cv)
-lower = signif(lower, digits = 3)
-lower
-
 upper = max(pr.int$cv)
-upper = signif(upper, digits = 3)
-upper
-
 cv_breaks = c(lower, upper)
+cv_labels = c(signif(lower, digits = 3),
+              signif(upper, digits = 3))
 
 p2 = ggplot() +
   gg(study_area)  +
   gg(pr.int["cv"]) +
-  scale_fill_viridis_c(breaks = cv_breaks, labels = cv_breaks) +
-  # ggtitle("B") +
+  scale_fill_viridis_c(breaks = cv_breaks,
+                       labels = cv_labels) +
   xlab("Easting") +
   ylab("Northing") +
   coord_equal() +
@@ -161,21 +139,18 @@ p2
 
 # sd
 lower = min(pr.int$sd)
-lower = signif(lower, digits = 3)
-lower = 2.23e-06
-
 upper = max(pr.int$sd)
-upper = signif(upper, digits = 3)
-upper
-
 sd_breaks = c(lower, upper)
-sd_labels = format(sd_breaks, scientific = TRUE)
+sd_labels = format(c(signif(lower, digits = 3),
+                     signif(upper, digits = 3)),
+                   scientific = TRUE)
+
 
 p3 = ggplot() +
   gg(study_area)  +
   gg(pr.int["sd"]) +
-  scale_fill_viridis_c(breaks = sd_breaks, labels = sd_labels) +
-  # ggtitle("C") +
+  scale_fill_viridis_c(breaks = sd_breaks,
+                       labels = sd_labels) +
   xlab("Easting") +
   ylab("Northing") +
   coord_equal() +
@@ -200,15 +175,15 @@ dev.off()
 # multiplot(p1, p2, p3, cols = 3)
 # dev.off()
 
-png(filename = here::here(fig_path, "intensity_mean.png"),
-    width = 10, height = 6, units = "in", res = 100)
-p1
-dev.off()
+# png(filename = here::here(fig_path, "intensity_mean.png"),
+#     width = 10, height = 6, units = "in", res = 100)
+# p1
+# dev.off()
 
-png(filename = here::here(fig_path, "figures/akepa_transects.png"),
-    width = 10, height = 6, units = "in", res = 100)
-p3
-dev.off()
+# png(filename = here::here(fig_path, "figures/akepa_transects.png"),
+#     width = 10, height = 6, units = "in", res = 100)
+# p3
+# dev.off()
 
 # lower and upper quantiles
 
@@ -216,20 +191,18 @@ v = c(pr.int$q0.025, pr.int$q0.975)
 
 # scale legend breaks
 lower = min(v)
-lower = signif(lower, digits = 3)
-lower = 8.32e-08
-
 upper = max(v)
-upper = signif(upper, digits = 3)
-upper = 0.000943
-
 q_breaks = c(lower, upper)
-q_labels = format(q_breaks, scientific = TRUE)
+q_labels = sd_labels = format(c(signif(lower, digits = 3),
+                                signif(upper, digits = 3)),
+                              scientific = TRUE)
 
 p2 = ggplot() +
   gg(study_area) +
   gg(pr.int["q0.025"]) +
-  scale_fill_viridis_c(limits = range(v), breaks = q_breaks, labels = q_labels)+
+  scale_fill_viridis_c(limits = q_breaks,
+                       breaks = q_breaks,
+                       labels = q_labels)+
   coord_equal() +
   xlab("Easting") +
   ylab("Northing") +
@@ -245,7 +218,9 @@ p2
 p3 = ggplot() +
   gg(study_area) +
   gg(pr.int["q0.975"]) +
-  scale_fill_viridis_c(limits = range(v), breaks = q_breaks, labels = q_labels)+
+  scale_fill_viridis_c(limits = q_breaks,
+                       breaks = q_breaks,
+                       labels = q_labels)+
   coord_equal() +
   xlab("Easting") +
   ylab("Northing") +
@@ -274,6 +249,7 @@ sum(pr.int@data["q0.025"]*cell_area)
 sum(pr.int@data["q0.975"]*cell_area)
 
 # plot "realized intensity" a few times
+set.seed(1989)
 draw1 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw2 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw3 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)

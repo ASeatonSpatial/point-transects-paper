@@ -5,23 +5,27 @@ A brief tour of this repository:
 
 ### Data files
 
-**obs_2002_no_crs.RDS**    -  point transects locations with observed distances
+**obs__extended2002_no_crs.RDS**    -  point transects locations with observed distances
 
-**samplers_no_crs.RDS**    -  point transect locations
+**samplers_extended_no_crs.RDS**    -  point transect locations
 
 **study_area_no_crs.RDS**  -  study area polygon
 
-**create_mesh.R**          -  creates INLA mesh and saves as mesh_no_crs.RDS 
+**create_extended_mesh.R** -  creates INLA mesh
 
 ### Analyses
 
 Once mesh is created:
 
-**fit_model.R**            -  fit the model, saved as akepa_20020_fitted_model.RDS
+**fit_model.R**            -  fit the model
 
 **eval_model.R**           -  model summary figures for the paper
 
+**eval_spde.R** 					 -  compare observed pairwise distances with simulated point patterns
+
 **excursions.R**           -  create excursions plots for the paper
+
+**posterior_N.R**					 -  create posterior plot and investigate various approximation strategies for estimating abundance
 
 ### Figures
 

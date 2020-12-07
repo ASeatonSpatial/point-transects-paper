@@ -2,6 +2,7 @@
 library(INLA)
 library(inlabru)
 library(excursions)
+library(cowplot)
 source("gg.R")   # small edit of gg.SpatialPixelsDataFrame
 
 ## todo - replace predict loop with generate() ?
@@ -34,22 +35,25 @@ fig_path = here::here("figures")
 # yes update this to use generate
 
 n.mc = 500     # lower this when fiddling with things
-pxl = pixels(mesh, nx = 100, ny = 100, mask = study_area)
-X = matrix(NA, nrow = nrow(pxl@coords), ncol = n.mc)
-for (i in 1:n.mc){
-  print(paste("i = ", i))
-  int_draw <- predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
-  X[,i] = int_draw@data$mean
-}
+pxl = pixels(mesh, nx = 300, ny = 300, mask = study_area)
+
+X = generate(fit,
+             pxl,
+             ~ exp(grf + Intercept),
+             n.samples = n.mc)
+
+# X = matrix(NA, nrow = nrow(pxl@coords), ncol = n.mc)
+# for (i in 1:n.mc){
+#   print(paste("i = ", i))
+#   int_draw <- predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
+#   X[,i] = int_draw@data$mean
+# }
 
 #### Try excursions ####
 
-# re-scale X.  Currently per m^2
-# per km^2:
-Xkm = X*1000000
-
-# per hectare:
-Xhec = X*10000
+# re-scale X (per km)
+# o per hectare:
+Xhec = X/100
 
 # per hectare threshold:
 u = 1
@@ -116,16 +120,16 @@ plot_grid(NULL, p1, NULL, p2, NULL,
 dev.off()
 
 # contour map - how to visualise this?  ?
-cm = contourmap.mc(Xhec, levels = c(0.1, 0.5, 0.8, 1.5, 2, 4), alpha = alpha)
-str(cm)
-
-Gpxl = pxl
-Gpxl$G = cm$G
-ggplot() +
-  gg(Gpxl)
-
-cm = contourmap.mc(Xhec, levels = c(1), alpha = alpha)
-Gpxl = pxl
-Gpxl$G = cm$G
-ggplot() +
-  gg(Gpxl)
+# cm = contourmap.mc(Xhec, levels = c(0.1, 0.5, 0.8, 1.5, 2, 4), alpha = alpha)
+# str(cm)
+#
+# Gpxl = pxl
+# Gpxl$G = cm$G
+# ggplot() +
+#   gg(Gpxl)
+#
+# cm = contourmap.mc(Xhec, levels = c(1), alpha = alpha)
+# Gpxl = pxl
+# Gpxl$G = cm$G
+# ggplot() +
+#   gg(Gpxl)

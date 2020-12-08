@@ -77,7 +77,41 @@ This plot shows there is not a great deal of difference between the two approach
 
 \section*{Understanding where we have gained information}
 
-Given we have a posterior random field describing the density of birds, it is natural to ask questions along the lines of ``which areas of space have we learned more/less about the distribution of birds?".  Given that there is a correlation that decays with distance, we have clearly learned more than just the density within each point transect, but how can we say exactly where we have learned the most, given the locations of the point transects and the observations made there.  In this section I consider an approach to answering a question these types of questions by defining various metrics that seek to quantify this idea.  However, we will see that the resulting metrics are largely driven by the assumptions of the model and, although inspired by similar approaches in the geostatistical literature, they may not easily carry over into the Poisson point process setting.  
+Given we have a posterior random field describing the density of birds, it is natural to ask questions along the lines of ``which areas of space have we learned more/less about the distribution of birds?".  Given that there is a correlation that decays with distance, we have clearly learned more than just the density within each point transect, but how can we say exactly where we have learned the most, given the locations of the point transects and the observations made there.  In this section I consider an approach to answering a question these types of questions by defining various metrics that seek to quantify this idea.  However, we will see that the resulting metrics are largely driven by the assumptions of the model and, although inspired by similar approaches in the geostatistical literature, they do not easily carry over into the Poisson process setting.  The basic intuition is to compare the posterior random field informed by the data $\lambda | \bm{Y}, \theta$ and the random field conditioned only on the posterior covariance structure $\lambda | \theta$, where $\theta$ is the hyper-parameters of the SPDE as well as the intercept variable.  The intercept should be included since the GRF and the intercept are not independent.  We consider two quantities
+\begin{align}
+   V_0(\bs) &= \mathbb{E}_{\theta | \bm{Y}} \left[ \text{Var}(\lambda(\bs) | \theta) \right] + \text{Var}_{\theta | \bm{Y}}\left[\mathbb{E}(\lambda(\bs) | \theta)\right] \\  
+   V_{\bm{Y}}(\bs) &= \mathbb{E}_{\theta | \bm{Y}} \left[ \text{Var}(\lambda(\bs) | \theta, \bm{Y}) \right] + \text{Var}_{\theta | \bm{Y}}\left[\mathbb{E}(\lambda(\bs) | \theta, \bm{Y})\right].
+\end{align}
+Note that by the law of total variance $V_{\bm{Y}}(\bs) = \text{Var}(\lambda(\bs) | \bm{Y})$, the usual the usual posterior variance.  $V_0(\bs)$ is a adjusted version of these where the random field is considered only conditional on $\theta$ but not on the data directly.  This is a form of null model describing a random field with the same posterior covariance structure but no observations directly informing $\lambda$.  Note that $V_0(\bs) = V_{\bm{Y}}(\bs)$ and so by constructing metrics of the form
+\begin{equation*}
+		I_{\text{Var}}(\bs) = 1 - \frac{V_{\bm{Y}}(\bs)}{V_0(\bs)}
+\end{equation*}  
+we get a measure between 0 and 1 that describes how much the observations $\bm{Y}$ have informed the posterior random field at location $\bs$.  The subscript here indicates this is using the variance measure directly.  I also consider two alternatives:
+\begin{align*}
+	I_{\text{sd}}(\bs) &= 1 - \frac{\sqrt{V_{\bm{Y}}(\bs)}}{\sqrt{V_0(\bs)}} \\ \\
+	I_{\text{cv}}(\bs) &= 1 - \frac{\sqrt{V_{\bm{Y}}(\bs)}/ \mu_{\bm{Y}}(\bs)}{\sqrt{V_0(\bs)}/\mu_0} \\
+\end{align*}
+where $\mu_{\bm{Y}}$ is the mean of $\lambda(\bs) | \bm{Y}, \theta$ and $\mu_0$ is the mean of $\lambda | \theta$.  These are the standard deviation and the coefficient of variation versions of the metric based on the variance.  The idea for considering all three is that the variance and standard deviation have a strong relationship with the mean due to the Poisson assumption. 
+
+The usual posterior variance, standard deviation and coefficient of variation are all estimable by posterior sampling in \texttt{inlabru}.  I describe now a way to estimate $V_0(\bs)$ using Monte-carlo sampling based on the moments of the log-normal distribution.  This estimate can then be transformed as required for the $I_{\text{sd}}$ and $I_{\text{cv}}$ metrics.  We have $\log \lambda | \theta \sim N(m, \sigma^2)$ where the parameters $m$ and $\sigma^2$ are either included in or derivable from the parameter vector $\theta$.  Therefore,
+\begin{align*}
+   V_0(\bs) &= \mathbb{E}_{\theta | \bm{Y}} \left[ \text{Var}(\lambda(\bs) | \theta) \right] + \text{Var}_{\theta | \bm{Y}}\left[\mathbb{E}(\lambda(\bs) | \theta)\right] \\
+   &= \mathbb{E}_{\theta | \bm{Y}} \left[ \exp(2m + \sigma^2)(\exp(\sigma^2) - 1) \right] + \text{Var}_{\theta | \bm{Y}}\left[ \exp(m + \sigma^2/2) \right]
+\end{align*}
+Given Monte-carlo samples $\theta^{(k)} \sim \theta | \bm{Y}$ for $k = 1, \ldots, K$ this can be estimated as
+\begin{align*}
+V_0(\bs) &\approx \frac{1}{K} \sum_k \exp(2m_k + \sigma^2_k)(\exp(\sigma_k^2) - 1) + \phantom{y} \\ 
+&\phantom{\approx} \;\;\frac{1}{K} \sum_k \exp(2m_k + \sigma_k^2) - \frac{1}{K^2}\left[\sum_k \exp(m_k + \sigma_k^2 / 2) \right]^2 \\
+&= \frac{1}{K} \sum_k \exp(2m_k + 2\sigma^2_k) - \frac{1}{K^2}\left[\sum_k \exp(m_k + \sigma_k^2 / 2) \right]^2
+\end{align*}
+The three metrics are shown in Figure \ref{fig:info.png}.
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{figures/info.png}
+	\caption{Comparing different information metrics.  From left to right:  $I_{\text{Var}}$,  $I_{\text{sd}}$ and $I_{\text{cv}}$.}.
+	\label{fig:info.png}
+\end{figure}
+The variance and standard deviation maps are dominated by the Poisson assumption.  Compare these to the posterior intensity and the look extremely similar.  The standard deviation metric looks to me more natural, in this example $V_0$ proved to be quite large (on order of 600,000) and so the metric is extremely close to 1 almost everywhere.  Taking the square root of this (about 775) provided a number more comparable with the scale of the variation in the posterior intensity.  Perhaps the most useful plot is $I_{\text{cv}}$.  This shows an intuitive map - in the north, where sampling effort is lower, we have less information than in the south, where sampling effort is higher.  One thing to note is that the posterior range of the random field is very large relative to the size of the study region.  For random fields where this range of correlation is lower, one might expect to see ``bumps" of higher information around each sampled location.  In this example the posterior field is too correlated for such an effect to be apparent.  It would be interested to try out these metrics in other settings as a useful way of communicating which regions of space we have the most information about.  The exact scale of each metric is hard to interpret, for now I am just looking at these differences in a relative sense (``more" or ``less" information compared to other regions).  
 
 \section*{Spatio-temporal models}
 

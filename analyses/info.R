@@ -11,6 +11,9 @@ model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
 data_path = here::here("analyses", "data")
 fit = readRDS(model_path)
 
+#### Where to save figures ####
+fig_path = here::here("figures")
+
 study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
 samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
 mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
@@ -20,8 +23,12 @@ n.mc =  1000
 ps = generate(fit,
               formula = ~ data.frame(Intercept_latent, Stdev_for_grf),
               n.samples = n.mc)
-
 ps = do.call(rbind, ps)
+head(ps)
+range(ps$Intercept_latent)
+range(ps$Stdev_for_grf)
+hist(ps$Stdev_for_grf)
+
 e1 = exp(2*(ps[,1] + ps[,2]))
 e2 = exp(ps[,1] + ps[,2]/2)
 
@@ -42,8 +49,10 @@ g1 = ggplot() +
   gg(pxl, mapping = aes(fill = Info_var)) +
   gg(samplers, colour = "red") +
   coord_equal() +
-  scale_fill_viridis_c() +
+  scale_fill_viridis_c(name = "I_var") +
   theme_minimal()
+
+g1
 
 # This looks like the inverse of the intensity map.  In the north
 # sampling effort is lower and almost no birds detected.
@@ -55,11 +64,12 @@ Info_sd = 1 - sqrt(A1) / sqrt(A0)
 pxl$Info_sd = Info_sd
 g2 = ggplot() +
   gg(pxl, mapping = aes(fill = Info_sd)) +
-  gg(samplers, colour = "red") +
+  gg(samplers, colour = "red", pch = 1) +
   coord_equal() +
-  scale_fill_viridis_c() +
+  scale_fill_viridis_c(name = "I_sd") +
   theme_minimal()
 
+g2
 
 # Coefficient of variation version:
 A1_cv = pred$cv
@@ -70,19 +80,24 @@ pxl$Info_cv = Info_cv
 
 g3 = ggplot() +
   gg(pxl, mapping = aes(fill = Info_cv)) +
-  gg(samplers, colour = "red") +
+  gg(samplers, colour = "red", pch = 1) +
   coord_equal() +
-  scale_fill_viridis_c() +
+  scale_fill_viridis_c(name = "I_cv") +
   theme_minimal()
 
+g3
+
+
 g1 + g2 + g3
+ggsave(filename = here::here(fig_path, "info.png"),
+       width = 10, height = 5, dpi = 150)
 
 
 # Regular sd plot
 pxl$sd = pred$sd
 g4 = ggplot() +
   gg(pxl, mapping = aes(fill = sd)) +
-  gg(samplers, colour = "red") +
+  gg(samplers, colour = "red", pch = 1) +
   coord_equal() +
   scale_fill_viridis_c() +
   theme_minimal()

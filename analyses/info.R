@@ -47,7 +47,7 @@ pxl$Info_var = Info
 
 g1 = ggplot() +
   gg(pxl, mapping = aes(fill = Info_var)) +
-  gg(samplers, colour = "red") +
+  gg(samplers, colour = "red", pch = 1) +
   coord_equal() +
   scale_fill_viridis_c(name = "I_var") +
   theme_minimal()
@@ -87,11 +87,9 @@ g3 = ggplot() +
 
 g3
 
-
-g1 + g2 + g3
+g1 + g2 + g3 + plot_annotation(tag_levels = "A")
 ggsave(filename = here::here(fig_path, "info.png"),
        width = 10, height = 5, dpi = 150)
-
 
 # Regular sd plot
 pxl$sd = pred$sd

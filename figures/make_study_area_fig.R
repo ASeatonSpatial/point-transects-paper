@@ -16,6 +16,13 @@ ggplot() +
   gg(samplers) +
   coord_equal() +
   xlab("Easting") +
-  ylab("Northing")
+  ylab("Northing") +
+  theme(legend.position = "bottom",
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 12, vjust = 0.75),
+        legend.text = element_text(size = 12),
+        legend.key.size = unit(2, "line"))
+
 
 dev.off()

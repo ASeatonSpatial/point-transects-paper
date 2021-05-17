@@ -47,10 +47,15 @@ pxl$Info_var = Info
 
 g1 = ggplot() +
   gg(pxl, mapping = aes(fill = Info_var)) +
-  gg(samplers, colour = "red", pch = 1) +
   coord_equal() +
-  scale_fill_viridis_c(name = "I_var") +
-  theme_minimal()
+  scale_fill_viridis_c(name = expression("I"["Var"])) +
+  theme_minimal() +
+  theme(legend.position = "right",
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 12, vjust = 0.75),
+        legend.text = element_text(size = 12),
+        legend.key.size = unit(2, "line"))
 
 g1
 
@@ -64,10 +69,15 @@ Info_sd = 1 - sqrt(A1) / sqrt(A0)
 pxl$Info_sd = Info_sd
 g2 = ggplot() +
   gg(pxl, mapping = aes(fill = Info_sd)) +
-  gg(samplers, colour = "red", pch = 1) +
   coord_equal() +
-  scale_fill_viridis_c(name = "I_sd") +
-  theme_minimal()
+  scale_fill_viridis_c(name = expression("I"["sd"])) +
+  theme_minimal() +
+  theme(legend.position = "right",
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 12, vjust = 0.75),
+        legend.text = element_text(size = 12),
+        legend.key.size = unit(2, "line"))
 
 g2
 
@@ -80,10 +90,15 @@ pxl$Info_cv = Info_cv
 
 g3 = ggplot() +
   gg(pxl, mapping = aes(fill = Info_cv)) +
-  gg(samplers, colour = "red", pch = 1) +
   coord_equal() +
-  scale_fill_viridis_c(name = "I_cv") +
-  theme_minimal()
+  scale_fill_viridis_c(name = expression("I"["cv"])) +
+  theme_minimal() +
+  theme(legend.position = "right",
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 12, vjust = 0.75),
+        legend.text = element_text(size = 12),
+        legend.key.size = unit(2, "line"))
 
 g3
 

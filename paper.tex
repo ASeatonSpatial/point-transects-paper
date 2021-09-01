@@ -1,37 +1,12 @@
-% Put any feedback in the feedback branch
+\documentclass{stylefile16/statsoc}
+\usepackage[a4paper]{geometry}   % otherwise statsoc class doesn't compile to A4 correctly
 
-%% Template article for Elsevier's document class `elsarticle'
-%% with numbered style bibliographic references
-\documentclass[preprint,12pt]{elsarticle}
-
-% remove preprint footnote
-\makeatletter
-\def\ps@pprintTitle{%
- \let\@oddhead\@empty
- \let\@evenhead\@empty
- \def\@oddfoot{\centerline{\thepage}}%
- \let\@evenfoot\@oddfoot}
-\makeatother
-
-
-\usepackage{setspace}
-\doublespacing
+%\usepackage{setspace}
+%\doublespacing
 
 \usepackage[hidelinks]{hyperref} % auto detect ref type
 \usepackage{natbib}
-\setcitestyle{authoryear}
-
-%% Use the option review to obtain double line spacing
-%% \documentclass[preprint,review,12pt]{elsarticle}
-
-%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
-%% for a journal layout:
-%% \documentclass[final,1p,times]{elsarticle}
-%% \documentclass[final,1p,times,twocolumn]{elsarticle}
-%% \documentclass[final,3p,times]{elsarticle}
-%% \documentclass[final,3p,times,twocolumn]{elsarticle}
-%% \documentclass[final,5p,times]{elsarticle}
-%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+\setcitestyle{stylefile16/rss}
 
 \usepackage{graphicx}
 \usepackage{amssymb}
@@ -39,18 +14,6 @@
 \usepackage{enumerate}
 \usepackage{caption}
 \usepackage{textcomp}    % for Hawaii characters
-%\usepackage{listings}
-%\lstset{language=R}
-\usepackage[T1]{fontenc}  % tilde in middle in lstlisting
-\usepackage[formats]{listings}
-\lstset{language=R,
-		basicstyle=\ttfamily,
-		columns=fixed,
-		basewidth=0.5em,
-		literate={~}{{$\sim$}}1
-		}
-
-\biboptions{comma,round}
 
 % shortcuts
 \newcommand{\bbeta}{\boldsymbol{\beta}}
@@ -69,79 +32,55 @@
 \newcommand{\hawaii}{Hawai\textquotesingle i}   % adds Hawaiian diacritical marks
 \DeclareMathOperator*{\argmax}{arg\,max}  % * means _ puts thing beneath operator
 
+\title[One-stage point transect distance sampling using iterated INLA]{One-stage point transect distance sampling using iterated integrated nested Laplace approximations}
+
+\author[Andrew E. Seaton {\it et al.}]{Andrew E. Seaton}
+\address{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, 
+	University of St Andrews, 
+	St Andrews,
+	UK}
+\email{aes22@st-andrews.ac.uk}
+
+\author{Janine B. Illian}
+\address{School of Mathematics and Statistics, University of Glasgow, Glasgow, UK}
+
+\author{Finn Lindgren}
+\address{School of Mathematics, University of Edinburgh, Edinburgh, UK}
+
+\author{Richard J. Camp}
+\address{U. S. Geological Survey, Pacific Island Ecosystems Research Center, P.O. Box 44, \hawaii{} National Park, HI 96718, U.S.A.}
+
+% seems like this document class uses short author from the last author
+% macro in the preamble?  
+\author[Andrew E. Seaton \textit{et al.}]{Steve J. Kendall}
+\address{U. S. Fish and Wildlife, Big Island National Wildlife Refuge Complex, 60 Nowelo St., Suite 100, Hilo, HI  96720, U.S.A.}
+
 \begin{document}
-\begin{frontmatter}
-\title{One-stage point transect distance sampling using iterated integrated nested Laplace approximations}
-
-%% use the tnoteref command within \title for footnotes;
-%% use the tnotetext command for the associated footnote;
-%% use the fnref command within \author or \address for footnotes;
-%% use the fntext command for the associated footnote;
-%% use the corref command within \author for corresponding author footnotes;
-%% use the cortext command for the associated footnote;
-%% use the ead command for the email address,
-%% and the form \ead[url] for the home page:
-%%
-%% \title{Title\tnoteref{label1}}
-%% \tnotetext[label1]{}
-%% \author{Name\corref{cor1}\fnref{label2}}
-%% \ead{email address}
-%% \ead[url]{home page}
-%% \fntext[label2]{}
-%% \cortext[cor1]{}
-%% \address{Address\fnref{label3}}
-%% \fntext[label3]{}
-
-
-%% use optional labels to link authors explicitly to addresses:
-%% \author[label1,label2]{<author name>}
-%% \address[label1]{<address>}
-%% \address[label,2]{<address>}
-
-% RJC 09/08/2019 Added co-authors and affiliations. Note that I used \affil[]{} instead of \address[]{}
-\author[1,*]{Andrew E Seaton}
-\author[1,2]{Richard J Camp}
-\author[3]{Finn Lindgren}
-\author[1]{Janine B Illian}
-\author[1]{David L Borchers}
-\author[1]{David L Miller}      % Ask about co-authoring the manuscript
-\author[1]{Len Thomas}          % Ask about co-authoring the manuscript
-\author[1]{Stephen T Buckland}  % Ask about co-authoring the manuscript
-\author[4]{Steve J Kendall}     % It is Steve's data we are using and I have already mentioned this manuscript to him.
-
-%\address{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, University of St Andrews, St Andrews, Fife, Scotland}
-\address[1]{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, University of St Andrews, St Andrews, Fife, Scotland}
-\address[2]{U. S. Geological Survey, Pacific Island Ecosystems Research Center, P.O. Box 44, \hawaii{} National Park, HI 96718, U.S.A.}
-\address[3]{School of Mathematics, University of Edinburgh, Edinburgh, Scotland}
-\address[4]{U. S. Fish and Wildlife, Big Island National Wildlife Refuge Complex, 60 Nowelo St., Suite 100, Hilo, HI  96720, U.S.A.}
-\address[*]{Correspondence: Andrew E Seaton, Email: aes22@st-andrews.ac.uk}
 
 \begin{abstract}
-Distance sampling methods aim to estimate the size and spatial distribution of populations of wild animals.  Here we present an analysis of point transect distance sampling data collected on a tropical forest bird.  We consider the full workflow from model specification, inference procedure, model evaluation and communication of results, at each stage discussing the statistical challenges involved and our strategies to address them.  We take a novel point process perspective on point transect data, viewing observations as a thinned log-Gaussian Cox process with a spatially structured random effect specified via a computationally efficient Gaussian Markov random field approximation to Gaussian random field \citep{lindgren_explicit_2011}.  One-stage inference is achieved within a Bayesian framework by using an approach based on iterated fitting of latent Gaussian models using integrated nested Laplace approximations \citep{rue_approximate_2009} to account for non-linear model components, simultaneously estimating detectability and spatial distribution.  Model outputs are based on samples from the joint posterior of all model parameters and so naturally incorporate uncertainty due to detectability, a key advantage of the one-stage Bayesian approach.  We discuss limitations of methods to represent uncertainty in mapped estimates of species distributions and advocate for the \textit{a priori} selection of relevant thresholds and uncertainty levels by using excursions methods \citep{bolin_excursion_2015} to avoid these issues. The methods presented are general, flexible and applicable in a wide range of areas in spatial statistics beyond just species distribution mapping.
-\bigskip
+Distance sampling methods aim to estimate the size and spatial distribution of populations of wild animals.  Here we present an analysis of point transect distance sampling data collected on an endangered tropical forest bird.  We consider a workflow from model specification, inference method, model evaluation and communication of results, at each stage discussing the statistical challenges involved and our strategies to address them.  We take a point process perspective on point transect data, viewing observations of birds as a thinned log-Gaussian Cox process with a spatially structured random effect describing the spatial distribution of animals specified via a computationally efficient Gaussian Markov random field approximation to Gaussian random field \citep{lindgren_explicit_2011}.  
+
+We use a novel approximate Bayesian inference approach based on iterated fitting of latent Gaussian models using integrated nested Laplace approximations (INLA) \citep{rue_approximate_2009} to account for non-linear model components and jointly estimate detectability and spatial distribution, a process that is usually separated into two models.  Outputs from the model are based on samples from the joint posterior of all model parameters and so naturally incorporate uncertainty due to detectability, a key advantage of the one-stage Bayesian approach.  We discuss limitations of methods to represent uncertainty in mapped estimates of species distributions and advocate for the \textit{a priori} selection of relevant thresholds and uncertainty levels by using excursions methods \citep{bolin_excursion_2015}.
+
+We present an example of a computationally efficient one-stage Bayesian approach to analysing distance sampling data.  However, the inference method presented is general, flexible and applicable in a wide range of areas in statistics beyond modelling species distributions.
+
 \end{abstract}
 
-\begin{keyword}
-Distance sampling \sep Species distribution modelling \sep Estimating abundance \sep Stochastic partial differential equations \sep Integrated nested Laplace approximation
-\bigskip
-\end{keyword}
-\end{frontmatter}
+\keywords{Distance sampling, Species distribution modelling, Estimating abundance, Stochastic partial differential equations, Integrated nested Laplace approximation, SPDE approach}
+
+
 
 \section{Introduction}
 
-The estimation of the size and spatial distribution of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}. Here we present an analysis of wildlife survey data collected on a critically endangered Hawaiian forest bird that aims to meet this objective.  The \hawaii{} \akepa{} (hereafter \akepa{}; \textit{Loxops coccineus}; nomenclature according to \citealp{usfws_akepa_1970}) is an endemic species whose population declined dramatically during the 20th century  \citep{usfws_revised_2006, judge_akepa_2018}.  The remaining population is the focus of sustained conservation efforts and monitoring is required to inform decision-makers about changes in the overall abundance and spatial distribution.  This information is critical when decisions about conservation strategies are made.  However, answering these questions presents many statistical challenges.
+The estimation of the size and spatial distribution of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}. Here we present an analysis of wildlife survey data collected on a critically endangered \hawaii{}an forest bird that aims to meet this objective.  The \hawaii{} \akepa{} (hereafter \akepa{}; \textit{Loxops coccineus}; nomenclature according to \citealp{usfws_akepa_1970}) is an endemic species whose population declined dramatically during the 20th century  \citep{usfws_revised_2006, judge_akepa_2018}.  The remaining population is the focus of sustained conservation efforts and monitoring is required to inform decision-makers about changes in the overall abundance and spatial distribution.  This information is critical when decisions about conservation strategies are made.  However, estimating the abundance and spatial distribution of wild populations of animals presents many statistical challenges.
 
-Firstly, as in many ecological surveys, it is impossible to undertake a full census (i.e. the complete enumeration of all individuals within a defined study region).  The existing population numbers in the thousands and lives in dense forest where logistical and ecological challenges mean a census is not feasible.  For this reason, a monitoring survey must sub-sample appropriately in space and time.  For the \akepa{} this takes the form of the \hawaii Forest Bird Survey (HFBS) \citep{scott_HFBS_1986}, which is a large-scale, quantitative survey of Hawaiian forest birds.  Annual surveys of the \akepa{} study-region consist of a number of point transects located along randomly located line transects.
+First, as in many ecological surveys, it is impossible to undertake a full census (i.e. the complete enumeration of all individuals within a defined study region).  The existing population numbers in the thousands and lives in dense tropical forest where logistical and ecological challenges mean a census is not feasible.  For this reason, a monitoring survey must sub-sample appropriately in space and time.  For the \akepa{} this takes the form of the \hawaii Forest Bird Survey (HFBS) \citep{scott_HFBS_1986}, which is a large-scale, quantitative survey of Hawaiian forest birds.  Annual surveys of the \akepa{} study-region consist of a number of point transects located along randomly located line transects.
 
-Secondly, even at sampled locations, detectability of animals is unknown.  The \akepa{} survey estimates detectability using a point transect distance sampling approach \citep{buckland_distance_2015} where, for each observation, the distance to the observer is recorded.  The approach assumes a parametric form of detection function that decays with increasing distance.  The detection function parameters are estimated from the observed distances, assuming the true density is uniform. This combination of spatio-temporal subsampling and unknown detectability means statistical methods to analyse such data must model a complex observation process along with the spatio-temporal distribution of animals.
+Second, even at surveyed locations, the detectability of animals is unknown.  The \akepa{} survey estimates detectability using a point transect distance sampling approach \citep{buckland_distance_2015} where, for each observation, the distance to the observer is recorded.  The probability of detecting a bird is modelled using a parametric detection function that decays with increasing distance.  The detection function parameters are estimated from the observed distances by assuming the true density is uniform with respect to distance and attributing deviations from uniformity to imperfect detectability. The combination of spatio-temporal subsampling and unknown detectability means statistical methods to analyse distance sampling data must model a complex observation process alongside the spatial distribution of animals.
 
-Thirdly, a key aim of the analysis is to predict animal density at un-sampled locations.  If density is modelled using spatial covariates the usual approach is to assume the relationship between the animals and spatial covariates is the same in the un-sampled locations as it is at the sampled locations.  Predictions can then be based on estimating this relationship using the observed data.  However, we usually have reason to believe there are drivers of the spatial distribution for which we have no explanatory covariates available or for which, in principle, no covariate could be constructed (e.g. the 'sociality' of the species or other behavioural characteristics).  For the \akepa{} data, one example of an unexplained driver of the spatial distribution is a north-south gradient that has been investigated but for which no straightforward explanatory cause has been found [[CITE: Rick accepted Ecography paper - no doi available yet]].  From a statistical perspective, this suggests the inclusion of spatially-structured random effects in the model, which necessitates the use of appropriate statistical software capable of fitting such models.
+Third, a key aim of the analysis is to predict animal density at unsurveyed locations.  If animal density is modelled using spatial covariates then the covariate effects estimated in the surveyed region can be extrapolated to unsurveyed location.  However, in many ecological contexts there can be good reason to believe there are drivers of the spatial distribution for which we have no explanatory covariates available or for which, in principle, no covariate could be constructed (e.g. the `sociality' of the species).  For the \akepa{} data, one example of an unexplained driver of the spatial distribution is a north-south gradient for which no straightforward explanatory cause has been found \cite{camp_dsm_2020}.  From a statistical perspective, this heterogeneity that cannot be explained by available covariates suggests the inclusion of spatially structured random effects in the model.  Such effects require a careful consideration of the model structure and inference methods to ensure that model fitting remains computationally feasible.
 
-Lastly, the above challenges mean the resulting statistical model is necessarily complex and it is therefore challenging to communicate the results of the analysis to non-statistically trained audiences.  The data has been collected with the clear objective of monitoring the population and informing conservation management decisions.  These decisions will be taken by stakeholders with a range of statistical expertise who should have a good understanding of the full range of possible inferences implied by the model even if they do not understand all the statistical technicalities involved.  This final step of communicating results is therefore key and should be considered with as much care as the rest of the analysis.  This requires the input of statisticians to ensure uncertainty is appropriately captured and communicated in the key outputs of the analysis upon which decisions will be based.  In particular, in the context of species distribution modelling, we note the challenge of communicating uncertainty in maps of predicted animal density.
-
-The most common method to communicate uncertainty in a spatial estimate tend is to produce maps of predictive uncertainty such as standard deviation or CV \citep{fuller_novel_2018, vallejo_responses_2017,bradbury_mapping_2014} based either on a posterior predictive distribution or bootstrapping.  Another approach is to map quantiles or the probability of exceeding certain thresholds \citep{russell_avoidance_2016, wilson_hierarchical_2010}.  In Section \ref{results} we produce maps of the CV, standard deviation, and the 0.025 and 0.975 quantiles of a posterior spatially structured random field.  Whilst maps that summarise spatial predictions are useful, they all mask certain properties we may care about when communicating the results of an analysis.  For example, maps of the posterior mean will always be smoother than realisations of the posterior random field itself.  This can obscure the spatial structure we would expect if we observed a realisation of process itself.  Maps of the posterior coefficient of variation are hard to interpret when estimated densities are close to zero and posterior quantiles are tempting to interpret jointly when they should be viewed independently.  This challenges mean careful consideration must be given to the communication.
-
-The most important consequences of an analysis are the possible conclusions and decisions that will be taken on the basis of the results.  Here we advocate the view that model estimates should be converted into outputs, with associated uncertainty, that are most directly relevant to these conclusions and decisions.  In this paper we provide an example based on a scenario where the most important aim of the analysis is identification of areas where animal density is above a certain threshold.  It is not always the case that the most appropriate output of a species distribution model is a map of the predicted mean density.
+Lastly, the above challenges mean the resulting statistical model is necessarily complex. It is therefore challenging to communicate the results of the analysis to non-statistically trained audiences.  The \akepa{} data is collected with the clear objective of monitoring the population and informing conservation management decisions.  These decisions will be taken by stakeholders with a range of statistical expertise.  This final step of communicating results should therefore be considered with as much care as the rest of the analysis.  This requires the input of statisticians to ensure uncertainty is appropriately captured and communicated in the key outputs of the analysis upon which decisions will be based.  In particular, in the context of species distribution modelling, we note the challenge of communicating uncertainty in maps of predicted animal density.
 
 In this paper, we present an analysis that seeks to address these statistical challenges by presenting
 
@@ -364,6 +303,10 @@ Our intention in this section is to highlight limitations with mapped summaries 
 
 \subsection{Limitations of mapped summaries}
 
+The most common method to communicate uncertainty in a spatial estimate tend is to produce maps of predictive uncertainty such as standard deviation or CV \citep{fuller_novel_2018, vallejo_responses_2017,bradbury_mapping_2014} based either on a posterior predictive distribution or bootstrapping.  Another approach is to map quantiles or the probability of exceeding certain thresholds \citep{russell_avoidance_2016, wilson_hierarchical_2010}.  In Section \ref{results} we produce maps of the CV, standard deviation, and the 0.025 and 0.975 quantiles of a posterior spatially structured random field.  Whilst maps that summarise spatial predictions are useful, they all mask certain properties we may care about when communicating the results of an analysis.  For example, maps of the posterior mean will always be smoother than realisations of the posterior random field itself.  This can obscure the spatial structure we would expect if we observed a realisation of process itself.  Maps of the posterior coefficient of variation are hard to interpret when estimated densities are close to zero and posterior quantiles are tempting to interpret jointly when they should be viewed independently.  This challenges mean careful consideration must be given to the communication.
+
+The most important consequences of an analysis are the possible conclusions and decisions that will be taken on the basis of the results.  Here we advocate the view that model estimates should be converted into outputs, with associated uncertainty, that are most directly relevant to these conclusions and decisions.  In this paper we provide an example based on a scenario where the most important aim of the analysis is identification of areas where animal density is above a certain threshold.  It is not always the case that the most appropriate output of a species distribution model is a map of the predicted mean density.
+
 The mapped posterior mean is the most common map one encounters in the literature.  However, the mean will always be smoother than realisations from the posterior random field.
 \begin{figure}
 	\includegraphics[scale=0.525]{figures/intensity_realized.png}
@@ -425,7 +368,7 @@ In summary, we have presented a novel framework for analysing point transect dis
 % Mention modelling on sphere is possible without projecting on to R^2?
 
 \clearpage
-\bibliographystyle{chicago}
+\bibliographystyle{stylefile16/rss}
 \bibliography{paper}
 
 \end{document}

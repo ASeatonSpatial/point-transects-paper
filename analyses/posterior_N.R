@@ -101,10 +101,14 @@ g1 = ggplot() +
   coord_equal(xlim = c(257.75, 258.25),
               ylim = c(2190.75, 2191.25)) +
   scale_colour_viridis_c() +
-  ggtitle("whole study area") +
   xlab("") +
   ylab("") +
-  guides(size = FALSE)
+  guides(size = FALSE) +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 12, vjust = 0.75),
+        legend.text = element_text(size = 12),
+        legend.key.size = unit(2, "line"))
 
 g2 = ggplot() +
   gg(mesh) +
@@ -113,12 +117,16 @@ g2 = ggplot() +
   coord_equal(xlim = c(257.75, 258.25),
               ylim = c(2190.75, 2191.25)) +
   scale_colour_viridis_c() +
-  ggtitle("unsurveyed region only") +
   xlab("") +
   ylab("") +
-  guides(size = FALSE, colour = FALSE)
+  guides(size = FALSE, colour = FALSE) +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 12),
+        legend.title = element_text(size = 12, vjust = 0.75),
+        legend.text = element_text(size = 12),
+        legend.key.size = unit(2, "line"))
 
-g1 + g2 + plot_layout(guides = "collect")
+g1 + g2 + plot_layout(guides = "collect") + plot_annotation(tag_levels = "A")
 
 ggsave(filename = here::here(fig_path, "compare_int_scheme_projected.png"),
        width = 10, height = 5, units = "in", dpi = 150)

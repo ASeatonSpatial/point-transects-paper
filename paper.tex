@@ -19,6 +19,7 @@
 \newcommand{\bbeta}{\boldsymbol{\beta}}
 \newcommand{\blambda}{\boldsymbol{\lambda}}
 \newcommand{\T}{\intercal}
+\newcommand{\bs}{\mathbf{s}}
 \newcommand{\bS}{\mathbf{S}}
 \newcommand{\bQ}{\mathbf{Q}}
 \newcommand{\bSigma}{\boldsymbol{\Sigma}}
@@ -68,8 +69,6 @@ We present an example of a computationally efficient one-stage Bayesian approach
 
 \keywords{Distance sampling, Species distribution modelling, Estimating abundance, Stochastic partial differential equations, Integrated nested Laplace approximation, SPDE approach}
 
-
-
 \section{Introduction}
 
 The estimation of the size and spatial distribution of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}. Here we present an analysis of wildlife survey data collected on a critically endangered \hawaii{}an forest bird that aims to meet this objective.  The \hawaii{} \akepa{} (hereafter \akepa{}; \textit{Loxops coccineus}; nomenclature according to \citealp{usfws_akepa_1970}) is an endemic species whose population declined dramatically during the 20th century  \citep{usfws_revised_2006, judge_akepa_2018}.  The remaining population is the focus of sustained conservation efforts and monitoring is required to inform decision-makers about changes in the overall abundance and spatial distribution.  This information is critical when decisions about conservation strategies are made.  However, estimating the abundance and spatial distribution of wild populations of animals presents many statistical challenges.
@@ -108,7 +107,7 @@ During the 20th century, the \akepa{} population declined dramatically due to ha
 
 Hakalau was established in 1985 to conserve 15,390 ha of montane forest habitat for native forest birds and rainforest plants. Annual forest bird surveys were initiated in 1987 to determine the population status and track trends in abundance. Survey points were established along 14 line transects following a systematic, random design with point transects located approximately 150m apart on line transects located either 500m or 1,000m apart. We limit our study area to the open-forest and closed-forest strata of Hakalau (\autoref{fig:2002studyareapointspt}), an extension of the area considered in \cite{camp_population_2010, camp_statespace_2016}, who omitted the closed-forest stratum because it was not sampled in the early years of the surveys.  For our analysis, we use data from a later year in which the closed-forest stratum was sampled and so we are able to include it.  The open-forest stratum was previously heavily grazed, and, since the removal of cattle in 1988, regeneration has proceeded naturally \citep{maxfield_hakalau_1998}. The closed-forest stratum was historically least modified by grazing and is relatively intact forest habitat.  The northern boundary of the study area follows the refuge boundary while to the east it is bounded by a fence line (Fig. \ref{fig:2002studyareapointspt}). The southern boundary is the same as that in \cite{camp_population_2010}, chosen to exclude unsurveyed regions to the south of Hakalau but does not represent a physical boundary. To the west of the study area is pasture that is dominated by grass and is unsuitable habitat for \akepa{} and the boundary here marks the edge of the forest.
 
-\begin{figure}
+\begin{figure}[!htb]
 	\centering
 	\includegraphics[scale=0.5]{figures/study_area_design.png}
 	\caption{Study area showing the 2002 survey points (black dots) in Hakalau Forest National Wildlife Refuge, \hawaii{} Island.  Eastings and Northings are in kilometres.}
@@ -117,7 +116,9 @@ Hakalau was established in 1985 to conserve 15,390 ha of montane forest habitat 
 
 The survey follows a point-transect distance sampling design, recording the horizontal distances from observers to detected birds. Surveys commenced at dawn and continued until 11:00 or halted when weather conditions exceeded prescribed conditions that hindered detecting birds (light rain, and wind and gust strength greater than Beaufort scale 3). During 8-minute counts, trained observers recorded the species, distance to the nearest metre and detection type for each bird detected, along with the sampling conditions cloud cover, rain, wind strength, gust strength, and time of day each point was surveyed.  \cite{camp_population_2010,camp_statespace_2016} provide a detailed description of Hakalau, the study area and the bird surveys.
 
-The survey data in the open forest stratum is available for download \citep{camp_datarelease_2002} and the full time series data was analysed in a spatio-temporal context in \citep{camp_dsm_2020}.  For the purposes of our analysis we select a single survey year from the \akepa{} time series (2002) that contains a broad sampling of the study area with sufficient numbers of detections to estimate detectability. In 2002, 289 points were sampled using point-transect distance sampling methods within the 4,603 ha study area of Hakalau (Fig. \ref{fig:2002studyareapointspt}) during which 276 \akepa{} were detected on 121 point transects. The number of detections within each point transect ranged from zero to six. We selected data from a single year to demonstrate our approach in a simplified setting that does not require a temporal model component.  The choice of year is somewhat arbitrary and the model has also been tested analysing data from other years with similar results to those presented here.  However, our approach is readily extendible to a multi-year analysis, similar to that in \cite{camp_dsm_2020}, which we discuss in more detail in Section \ref{sec-discussion}.
+The survey data in the open forest stratum is available for download \citep{camp_datarelease_2002} and the full time series data was analysed in a spatio-temporal context in \citep{camp_dsm_2020}.  For the purposes of our analysis we select a single survey year from the \akepa{} time series (2002) that contains a broad sampling of the study area with sufficient numbers of detections to estimate detectability. In 2002, there were a total of 289 point transects sampled within the 4,603 ha study area of Hakalau. (Fig. \ref{fig:2002studyareapointspt}) A total of 276 \akepa{} were detected on 121 point transects. The number of detections within each point transect ranged from zero to six. We selected data from a single year to demonstrate our approach in a simplified setting that does not require a temporal model component.  The choice of year is somewhat arbitrary and the model has also been tested analysing data from other years with similar results to those presented here.  However, our approach is readily extendible to a multi-year analysis, similar to that in \cite{camp_dsm_2020}, which we discuss in more detail in Section \ref{sec-discussion}.
+
+\vfill
 
 \section{Distance sampling as a thinned point process}
 \label{sec-ds-pp}
@@ -144,29 +145,27 @@ Here we present an approach that is closely related to \citet{yuan_point_2017}. 
 
 We fit the model to point transect \akepa{} data, which differ from line transect methods in that there is a need to account for the increasing area surveyed as distance increases from the transect.  Our analysis is, to the best of our knowledge, the first analysis of point transect distance sampling data formulated as a thinned point process.  However, the point process viewpoint is not new and has been taken numerous times in analyses of line transect data \citep{buckland_model-based_2016, niemi_bayesian_2010, johnson_model-based_2010, waagepetersen_likelihood-based_2006, hedley_spatial_2004,  hogmander_random_1991, stoyan_remark_1982}.
 
+\vfill
+
 \subsection{Model specification}
 
-In this section we introduce the statistical model for the spatial pattern of animal locations and the observation process, including a detailed description of how this model can be written as a modified Poisson likelihood.  We use this formulation to fit the model using the software package \texttt{inlabru} \citep{bachl_inlabru_2019}, an extension to the \texttt{R-INLA} implementation of INLA, which implements the iterated INLA approach and is available through the Comprehensive R Archive Network \citep{r_2017}.
+This section describes the statistical model for the spatial pattern of observed animal locations. We assume the location of animals are a point pattern that follows a log-Gaussian Cox process with intensity process $\lambda$, i.e.  the intensity at location $\bs$ is a random variable denoted $\lambda(\bs)$.  The log-Gaussian Cox process is a flexible model that can include spatial covariates to model the mean intensity as well a mean-zero spatially structured random effect to account for unexplained heterogeneity not captured by the covariates \citep{moller_log_1998}.  To account for the imperfect detection of points we specify a thinning probability function $g(\bs) = \mathbb{P}(\text{a point at $\bs$ is detected } |\text{ a point is at $\bs$})$. A key property of the log-Gaussian Cox process is that the point pattern of \textit{detected} points itself follows a log-Gaussian Cox process with intensity process $\tl(\bs) := \lambda(\bs)g(\bs)$.  Using a log link this implies that $\log g(\bs)$ is included as an additive term to the model for $\log \lambda(\bs)$.  
 
-We assume the location of animals are a point pattern that follows a log-Gaussian Cox process with intensity process $\lambda(.)$, i.e.  the intensity at location $s$ is a random variable $\lambda(s)$.  The log-Gaussian Cox process is a flexible approach that can include spatial covariates to model the mean intensity and a mean-zero spatially structured random effect to account for unexplained heterogeneity not captured by the covariates \citep{moller_log_1998}.
+Distance sampling models specify the thinning function $g(\bs)$ as a function that decays with increasing distance.  The type of distance measured depends on the type of survey.  For line transects the perpendicular distance to the transect line is used whereas for point transects it is the horizontal distance to the observer.  For the remainder of the paper we assume a point transect survey design and hence horizontal distance to an observer located at the centre of each point transect.  
 
-To account for the imperfect detection of points we specify a thinning probability function $g(s) = \mathbb{P}(\text{a point at $s$ is detected | a point is at $s$})$. A key property of the log-Gaussian Cox process is that a realisation of a point process with intensity process $\lambda(s)$ that is thinned by thinning probability function $g(s)$ also follows a log-Gaussian Cox process with intensity given by $\tl(s) = \lambda(s)g(s)$.
+The thinning probability function is specified as a parametric family of functions. For example, if $r(\bs)$ denotes the distance of a point at $\bs$ from an observer, the half-normal thinning probability function is $g(\bs | \sigma) = \exp(-r(\bs)^2 / 2\sigma^2)$, where $\sigma^2 > 0$ is a variance parameter to be estimated.  Other types of detection function, such as hazard-rate, negative exponential, can also be used. Their parameters themselves can be modelled using appropriate link functions to incorporate covariates that may affect detectability.  In addition to these parametric forms, additional adjustments have been proposed to increase the flexibility of such models by including trigonometric series expansions \citep{buckland_distance_2015}.  
 
-Standard distance sampling approaches specify $g(s)$ as a function that decays with increasing distance.  The type of distance measured depends on the type of survey.  For line transects the perpendicular distance to the transect line is used.  For point transects the horizontal distance to the observer is the relevant distance.  For the remainder of the paper we assume a point transect survey design and hence horizontal distance to the observer located at the centre of the point transect.
+In this analysis we assume a half-normal detection function with no covariates on detection parameters to demonstrate the approach in a simplified setting.  The detection function parameters can only be estimated if an assumption is made about $\lambda(\bs)$ otherwise $g(\bs)$ and the intensity are confounded.  The standard assumption in distance sampling is that the intensity is constant with respect to changes in $r(\bs)$. The usual approach for two stage models is to assume $\lambda(\bs)$ is constant within each spatial unit, however we are able to relax this assumption slightly to allow $\lambda(\bs)$ to be a linear function within in each transect.  Given such an assumption, any observed deviations from uniformity can be attributed to detectability and not to variation in the intensity.
 
-The thinning probability function is specified as a parametric family of functions with parameter vector.  For example, if $r(s)$ denotes the distance of a point at $s$ from the observer, the half-normal thinning probability function is $g(s | \sigma) = \exp(-r(s)^2 / 2\sigma^2)$, where $\sigma^2 > 0$ is a variance parameter to be estimated.  Other types of detection function exist, such as hazard-rate, negative exponential, and they may or may not be adjusted using series expansions to add some flexibility to obtain a better fit to a given dataset \citep{buckland_distance_2015}.  In this analysis we assume a half-normal detection function with no covariates on detection parameters.
+A point transect distance sampling survey consists of a set of $K$ point transects.   We denote $k$th subset of space covered by the $k$th point transect as $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region is $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity, we assume that all point transects are non-overlapping discs with equal radius $W$, as is the case in the HFBS survey.  It would be straightforward to relax this assumption.  The probability of observing a point at location $\bs \in \Omega_k$ given it is at $\bs \in \Omega_k$ we denote $g_k(\bs)$.  The probability of observing a point outside the surveyed region is zero.
+Since the point transects are non-overlapping, each location $\bs \in \Omega$ is unambiguously associated with a single thinning probability function $g_k$.  For example, letting $\bs_k$ denote the centre of transect $\Omega_k$, the half-normal thinning probability function for points in $\Omega_k$ is $g_k(\bs) = \exp(-\lVert \bs - \bs_k \rVert_2^2 / 2\sigma^2)$.  The assumption of non-overlapping survey regions could be relaxed by including extra information such as the time of each observation.  The thinning probability function for any $\bs \in \Omega$ is then given by $g(\bs) = g_{k(\bs)}(\bs)$ where $k(\bs)$ is an indexing function such that $k(\bs) = k$ for $\bs \in \Omega_k$.
 
-The detection function parameters can only be estimated if an assumption is made about the intensity of the animal locations.  Without such an assumption detectability and intensity are confounded.  The standard assumption in distance sampling is that the intensity is constant with respect to changes in $r(s)$.  Thus any observed deviations from uniformity can be attributed to detectability and not to variation in the intensity.
-
-A point transect distance sampling survey consists of a set of $K$ point transects.   We denote $k$-th subset of space covered by the $k-th$ point transect as $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region is $\Omega = \cup_{k=1}^K \Omega_k$.  For simplicity, we assume that all point transects are non-overlapping discs with radius $W$, as is the case in the HFBS survey.  The probability of observing a point at location $s \in \Omega_k$ given it is at $s \in \Omega_k$ we denote $g_k(s)$.  The probability of observing a point outside the surveyed region is zero.
-Since the point transects are non-overlapping, each location $s \in \Omega$ is unambigiously associated with a single thinning probability function $g_k$.  For example, for an observer at location $s_k \in \Omega_k$, the centre of the disc, the half-normal thinning probability function is $g_k(s) = \exp(-\lVert s - s_k \rVert_2^2 / 2\sigma^2)$.  In practice the observer is always located at the centre of the point transect.  The assumption of non-overlapping survey regions could be relaxed by including extra information such as the time of each observation but this is not a requirement here.  The thinning probability function for any $s \in \Omega$ is then given by $g(s) = g_{k(s)}(s)$ where $k(s) = k$ for $s \in \Omega_k$.
-
-The thinned log-Gaussian Cox process likelihood with observed points at locations $\bm{Y} = (s_1, \ldots, s_n)^\intercal$ is then
+The thinned log-Gaussian Cox process likelihood for observed points at locations $\bm{Y} = (s_1, \ldots, s_n)^\intercal$ is
 \begin{equation}
 \label{lgcp-likelihood}
-\pi(\bm{Y}) = \exp\left( |\Omega| -\int\displaylimits_{s \in \Omega} \lambda(s) g(s) \mathrm{d}s \right)\prod_{i=1}^n \lambda(s_i)g(s_i)
+\pi(\bm{Y}) = \exp\left( |\Omega| -\int\displaylimits_{\bs \in \Omega} \lambda(\bs) g(\bs) \mathrm{d}\bs \right)\prod_{i=1}^n \lambda(\bs_i)g(\bs_i)
 \end{equation}
-where $\lambda(.)$ and $g(.)$ both depend on parameter vectors omitted for readability and $|\Omega|$ is the area of the total surveyed region.
+where $|\Omega|$ is the area of the total surveyed region and $\lambda(\bs)$ and $g(\bs)$ both depend on parameter vectors omitted for readability.  
 
 \subsection{Writing the model as a modified Poisson likelihood}
 
@@ -248,7 +247,7 @@ The SPDE approach can at first appear to be fundamentally different to other spa
 We fitted the models using penalised complexity priors for the hyperparameters of the GMRF \citep{simpson_penalising_2017}, setting $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$, where $\rho$ is the range parameter of the Mat\'ern covariance.  The value of 130 was selected based on the minimum distance between sampling locations.  The complete code for the analysis can be found in the Supplementary materials.  Since only distance to observer was recorded we used the adjusted intensity given in \eqref{intensity-incomplete}.
 
 The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.
-\begin{figure}[h]
+\begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/intensity_mean_cv_sd.png}
 		\caption{The A) mean, B) CV and C) SD of the posterior intensity field.  Units are per m$^2$}
@@ -256,7 +255,7 @@ The predicted mean of the posterior intensity is shown in \autoref{fig:intensity
 	\end{center}
 \end{figure}
 This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary material).  The CV plot shows that the CV in the posterior intensity field is lower in areas with greater sampling effort.  There is a clear indication of preferential sampling with more survey effort in the south, where densities are higher, compared to the north  (see \autoref{fig:2002studyareapointspt}).  In the north, estimated intensities are lower, which also contributes to larger CV values.  The standard deviation map shows stronger overall posterior variability in the south where intensity is larger.  We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location.  [[Say something about these - hard to know what to say about them?]]   (\autoref{fig:intensity-quantiles}).
-\begin{figure}[h]
+\begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/intensity_quantiles.png}
 		\caption{The predicted posterior intensity quantiles:  A) 0.025 quantile B) 0.975 quantile.  Both plots plots use the same colour scale}
@@ -265,7 +264,7 @@ This shows a region of high intensity in the south and much lower intensity in t
 \end{figure}
 
 The posterior detection function \autoref{fig:det-matern} shows that detectability drops to just under 0.25 at the maximum observable distance of 58 metres.
-\begin{figure}[h]
+\begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/detfn_and_matern.png}
 		\caption{A) posterior half-normal detection function. B) posterior Mat\'ern correlation function.  The black line is the mean posterior estimate and the grey shaded area is 95\% credible interval in both plots}
@@ -275,7 +274,7 @@ The posterior detection function \autoref{fig:det-matern} shows that detectabili
 The posterior Mat\'ern correlation function is shown in \autoref{fig:det-matern}, the grey regions show the 95\% credible interval.  Note that this correlation function shows positive correlation even at distances of 10,000 metres, wider than the full length of the study region (approximately 8,000 metres).  This is the correlation range on the log-intensity scale.  [[Can I make a better "range of correlation" plot for the posterior intensity process?  How can I convert this to something on the intensity scale?  For a field $Z$ with covariance function $C$, is there an implied covariance for $\exp(Z)$?]]
 
 To further investigate the ability of the GMRF component to capture the heterogeneity we generated 100 thinned point patterns from the fitted model and calculated the pairwise distances between all observations for each of these patterns \autoref{fig:post-pp-distances}.
-\begin{figure}[h]
+\begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.6]{figures/post_pp_distances.png}
 		\caption{Boxplots of frequency of pairwise distances (tick mark values for end of each bin) based on 100 posterior samples.  Red circles: observed frequency of pairwise distances between observations}
@@ -285,7 +284,7 @@ To further investigate the ability of the GMRF component to capture the heteroge
 The plot shows that the GMRF component broadly captures the relevant scale of clustering in the observed data.  There is some evidence of over-predicting the strength of the clustering at distances between 1,000 and 2,500 m.
 
 We plot the posterior abundance estimate using a Monte Carlo method.
-\begin{figure}[h]
+\begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/N_posterior.png}
 		\caption{Posterior abundance.  Grey area marks two Monte-carlo standard errors above and below the mean}
@@ -313,7 +312,7 @@ The most common method to communicate uncertainty in a spatial estimate tend is 
 The most important consequences of an analysis are the possible conclusions and decisions that will be taken on the basis of the results.  Here we advocate the view that model estimates should be converted into outputs, with associated uncertainty, that are most directly relevant to these conclusions and decisions.  In this paper we provide an example based on a scenario where the most important aim of the analysis is identification of areas where animal density is above a certain threshold.  It is not always the case that the most appropriate output of a species distribution model is a map of the predicted mean density.
 
 The mapped posterior mean is the most common map one encounters in the literature.  However, the mean will always be smoother than realisations from the posterior random field.
-\begin{figure}
+\begin{figure}[!htb]
 	\includegraphics[scale=0.525]{figures/intensity_realized.png}
 	\caption{Three realizations of the posterior intensity field}
 	\label{fig:intensity-realizations}
@@ -337,7 +336,7 @@ E_{u,\alpha}^{+}(\lambda) = \argmax_{D}\{\lvert D \rvert : \mathbb{P}\left[D \su
 Note that $A_u^{+}(f)$ specifies a set for which a function $f(s)$ exceeds a threshold value $u$ for \textit{every location} in the set. As such the positive excursion set $E_{u,\alpha}^{+}(\lambda)$ is the largest such set for which a threshold is exceeded simultaneously for all locations in the set, with a chosen probability.  Negative excursion sets are similarly defined.  Excursion sets can be estimated by considering candidate sets for $D$ of increasing size and a sequential integration scheme to estimate probabilities.  An implementation is available in the \texttt{excursions} package \citep{bolin_calculating_2018} available through the Comprehensive R Archive Network \citep{r_2017}.
 
 \autoref{fig:excursions} (left panel) shows the positive excursion set with a level corresponding to 1 bird per hectare with probability 0.95.  This figure can be interpreted in a natural way as the largest region for which the intensity is greater than 1 bird per hectare for every location within the region, with probability 0.95.
-\begin{figure}
+\begin{figure}[!htb]
 	\includegraphics[scale=0.5]{figures/excursions.png}
 	\caption{Left:  The positive excursion set with a level corresponding to 1 bird per hectare and probability 0.95.  Right: The positive excursion function with a level corresponding to 1 bird per hectare}
 	\label{fig:excursions}

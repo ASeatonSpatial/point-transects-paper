@@ -257,12 +257,14 @@ We use a GMRF representation of $\xi(s)$ following the approach of \cite{lindgre
 
 In order to specify priors on the Mat\'ern covariance below we use a reparameterisation of $\kappa$ and $\tau$ to a range and variance parameter.  When $\nu = 1$ and the domain is two dimensional then the reparameterisation is $\rho = \sqrt{8} / \kappa$ for the range and $\sigma^2 = 1 / (4\pi\kappa^2\tau^2)$ for the marginal variance (\cite{blangiardo_spatial_2013}, p196).
 
-The SPDE approach can at first appear to be fundamentally different to other spatial random effect approaches such as penalised regression splines.  However, the two methods are closely related and the GRF model component in our model plays a similar role to a penalised smoothing spline on space.  \cite{yue_bayesian_2014} show how spline models can be viewed through the perspective of SPDEs and \cite{ miller_understanding_2019} do the reverse and show how to implement the SPDE as a penalised spline model in \texttt{mgcv} \citep{wood_gam_2017}.
+This parameterisation is used to set penalised complexity priors \citep{simpson_penalising_2017} on $\rho$ and $\sigma^2$ which allow the GRMF effect to shrink towards zero.  For the Mat\'ern field, the base model is the limiting case with $\sigma^2 = 0$ and $\rho \rightarrow \infty$, which defines a random field that is almost surely zero everywhere.  The purpose of penalised complexity priors is to place sufficient prior probability on a simple model to allow the random effect to be `turned off' if the model component is not required.  
+
+To specify the penalised complexity priors on the SPDE effect we set $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$.  The value of 130 for the range parameter was selected based on the minimum distance between sampling locations.  Since only the distance to the observer was recorded, and not the exact location of \akepa{}, we used the adjusted intensity given in equation \eqref{intensity-incomplete}.
+
+The SPDE approach can at first appear to be fundamentally different  other approaches such as penalised regression splines.  However, the two methods are closely related and the GRF model component in our model plays a similar role to a penalised smoothing spline on space.  \cite{yue_bayesian_2014} show how spline models can be viewed through the perspective of SPDEs and \cite{ miller_understanding_2019} do the reverse to show how to implement the Mat\'ern SPDE as a penalised spline model in \texttt{mgcv} \citep{wood_gam_2017}.
 
 \section{Results}
-\label{sec-results}
-
-We fitted the models using penalised complexity priors for the hyperparameters of the GMRF \citep{simpson_penalising_2017}, setting $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$, where $\rho$ is the range parameter of the Mat\'ern covariance.  The value of 130 was selected based on the minimum distance between sampling locations.  The complete code for the analysis can be found in the Supplementary materials.  Since only distance to observer was recorded we used the adjusted intensity given in \eqref{intensity-incomplete}.
+\label{sec-results} 
 
 The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.
 \begin{figure}[!htb]
@@ -272,7 +274,7 @@ The predicted mean of the posterior intensity is shown in \autoref{fig:intensity
 		\label{fig:intensity-mean-cv}
 	\end{center}
 \end{figure}
-This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary material).  The CV plot shows that the CV in the posterior intensity field is lower in areas with greater sampling effort.  There is a clear indication of preferential sampling with more survey effort in the south, where densities are higher, compared to the north  (see \autoref{fig:2002studyareapointspt}).  In the north, estimated intensities are lower, which also contributes to larger CV values.  The standard deviation map shows stronger overall posterior variability in the south where intensity is larger.  We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location.  [[Say something about these - hard to know what to say about them?]]   (\autoref{fig:intensity-quantiles}).
+This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary material).  The CV plot shows that the CV in the posterior intensity field is lower in areas with greater sampling effort.  There is a clear indication of preferential sampling with more survey effort in the south, where densities are higher, compared to the north  (see \autoref{fig:2002studyareapointspt}).  In the north, estimated intensities are lower, which also contributes to larger CV values.  The standard deviation map shows stronger overall posterior variability in the south where intensity is larger.  We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location (\autoref{fig:intensity-quantiles}).
 \begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/intensity_quantiles.png}

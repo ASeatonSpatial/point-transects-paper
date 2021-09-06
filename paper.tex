@@ -211,7 +211,7 @@ In the above, we assume the data are complete records of animal locations.  That
 \end{align}
 where $c_k(r)$ is a circle of radius $r$ centred at $\bs_k$ and the second line follows from change of variables and the assumption of linear intensity within $\Omega_k$.  This intensity differs from the full data case through the $2\pi$  term that accounts for the fact that we do not observe $\theta$ and the additional $r$ term that accounts for the increasing area surveyed at larger distances.  We note that a similar equation is derived from the perspective of a triangular distribution for point transect distance sampling in \cite{buckland_advanced_2004}.  
 
-The log-intensity for observed points (the thinned intensity) is $\log\tl(\bs) = \log 2 \pi r + \log\lambda(\bs) + \log g(\bs)$.  As we noted above, the detection function $g(\bs)$ is non-linear in its parameters and this component of the additive predictor requires a novel approach to parameter estimation.
+The log-intensity for detected points is therefore $\log\tl(\bs) = \log 2 \pi r + \log\lambda(\bs) + \log g(\bs)$ and so it is straightforward to account for incomplete location information by including an offset term.  As we noted above, the detection function $g(\bs)$ is non-linear in its parameters and this component of the additive predictor requires a novel approach to parameter estimation.
 
 \section{Iterated INLA}
 \label{sec-iinla}
@@ -238,21 +238,26 @@ In practice the point $\bm{u}_*$ may be problematic and result in a linearised m
 \section{Spatially Structured Random Effect}
 \label{sec-gmrf}
 
-Using spatially-structured random effects can be computationally expensive, often resulting in dense prior precision matrices which typically have $\mathcal{O}(n^3)$ cost to factorise for an effect with $n$ parameters.  A key development in this area is the use of sparse Gaussian Markov random field (GMRF) representations of Gaussian random fields (GRFs) and the \texttt{R-INLA} software that makes use of the sparsity to factorise the precision matrix at a cost of $\mathcal{O}(n^{3/2})$.  This representation is constructed via a stochastic partial differential equation solved using finite element methods \citep{lindgren_explicit_2011}.
+This section describes the spatial model for the intensity process.  
+As mentioned above, the \akepa{} population exhibits spatially heterogeneity for which there is no known explanatory covariate.  Therefore we use a spatially structured random effect to explain this variation.
+
+Using spatially-structured random effects can be computationally expensive.  Often this is due to parameterisations and approximations that lead to dense prior precision matrices which have an  $\mathcal{O}(k^3)$ cost to factorise for an effect with $k$ basis parameters.  A key development in the development of computationally efficient methods is the use of sparse Gaussian Markov random field (GMRF) representations of Gaussian random fields (GRFs).  These result in a sparse precision matrix which can be factorised with a cost of $\mathcal{O}(k^{3/2})$.  We use a GMRF representation based on a stochastic partial differential equation approach \citep{lindgren_explicit_2011}.  This representation is constructed by applying finite element methods to solve the SPDE numerically.
 
 The log-intensity of animal locations is given by
 \begin{equation*}
-\log \lambda(s) = \beta_0 + \sum_v \beta_v z_v(s) + \xi(s)
+\log \lambda(s) = \beta_0 + \xi(\bs)
 \end{equation*}
-where $\beta_0$ is an intercept parameter, the $z_v(s)$ are spatial covariates with effect parameters $\beta_v$ and $\xi(s)$ is a zero-mean GRF with Mat\'ern covariance
+where $\beta_0$ is an intercept parameter and $\xi(\bs)$ is a mean zero GRF with Mat\'ern covariance.  The Mat\'ern covariance function in two dimensions can be written as 
 \begin{equation}
-C(s_1,s_2) = \frac{2^{1-\nu}}{4\pi\kappa^2\tau^2\Gamma(\nu)}(\kappa \|s_1-s_2\|)^{\nu}K_\nu(\kappa \|s_1-s_2\|)
+C(\bs_1,\bs_2) = \frac{2^{1-\nu}}{4\pi\kappa^2\tau^2\Gamma(\nu)}(\kappa \|\bs_1-\bs_2\|)^{\nu}K_\nu(\kappa \|\bs_1-\bs_2\|)
 \end{equation}
-where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  All three parameters are not simultaneously identifiable \citep{zhang_inconsistent_2004} and it is conventional to assume a value for $\nu$ which specifies the mean-square differentiability of the process.  We set $\nu = 1$ which is the default value in \texttt{R-INLA}.
+where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  The three parameters are not simultaneously identifiable \citep{zhang_inconsistent_2004} and it is conventional to assume a value for $\nu$ which specifies the mean-square differentiability of the process.  We set $\nu = 1$ which is the default value in \texttt{R-INLA}.
 
-We use a GMRF representation of $\xi(s)$ following the approach of \cite{lindgren_explicit_2011} based on specifying $\xi(s)$ via a SPDE.  Given a finite element mesh on the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$ we represent the GRF as $\xi(s) = \sum_l \xi_l \phi_l(s)$.  The parameters $\xi_1, \ldots, \xi_L$ form a GMRF with sparse prior precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices the elements of which are defined via an approximate solution to a SPDE (see Supplementary material). The parameters $\tau$ and $\kappa$ control the shape and rate of decay of the Mat\'ern covariance function. In order to specify priors on the Mat\'ern covariance below we use a reparameterisation to a range and variance parameter.  When $\nu = 1$ and the domain is of dimension two the reparameterisation is $\rho = \sqrt{8} / \kappa$ and $\sigma^2 = 1 / (4\pi\kappa^2\tau^2)$ \citep{blangiardo_spatial_2013}.
+We use a GMRF representation of $\xi(s)$ following the approach of \cite{lindgren_explicit_2011} based on specifying $\xi(s)$ via a SPDE.  Given a finite element mesh defined over the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$, we represent the GRF as $\xi(\bs) = \sum_l \beta_l \phi_l(\bs)$.  The parameters $\beta_1, \ldots, \beta_L$ form a GMRF with sparse prior precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices (see Appendix [BLAH]). The parameters $\tau$ and $\kappa$ control the shape and rate of decay of the Mat\'ern covariance function as distance between locations increases. 
 
-The SPDE approach can at first appear to be fundamentally different to other spatial random effect approaches such as penalised regression splines.  However, the two methods are closely related and the GRF model component in our model plays a similar role to a tensor product spline with an appropriate smoothing penalty.  See \cite{yue_bayesian_2014, miller_understanding_2019} for more details on the similarities and differences between penalised regression splines and the SPDE approach.
+In order to specify priors on the Mat\'ern covariance below we use a reparameterisation of $\kappa$ and $\tau$ to a range and variance parameter.  When $\nu = 1$ and the domain is two dimensional then the reparameterisation is $\rho = \sqrt{8} / \kappa$ for the range and $\sigma^2 = 1 / (4\pi\kappa^2\tau^2)$ for the marginal variance (\cite{blangiardo_spatial_2013}, p196).
+
+The SPDE approach can at first appear to be fundamentally different to other spatial random effect approaches such as penalised regression splines.  However, the two methods are closely related and the GRF model component in our model plays a similar role to a penalised smoothing spline on space.  \cite{yue_bayesian_2014} show how spline models can be viewed through the perspective of SPDEs and \cite{ miller_understanding_2019} do the reverse and show how to implement the SPDE as a penalised spline model in \texttt{mgcv} \citep{wood_gam_2017}.
 
 \section{Results}
 \label{sec-results}

@@ -243,9 +243,9 @@ As mentioned above, the \akepa{} population exhibits spatially heterogeneity for
 
 Using spatially-structured random effects can be computationally expensive.  Often this is due to parameterisations and approximations that lead to dense prior precision matrices which have an  $\mathcal{O}(k^3)$ cost to factorise for an effect with $k$ basis parameters.  A key development in the development of computationally efficient methods is the use of sparse Gaussian Markov random field (GMRF) representations of Gaussian random fields (GRFs).  These result in a sparse precision matrix which can be factorised with a cost of $\mathcal{O}(k^{3/2})$.  We use a GMRF representation based on a stochastic partial differential equation approach \citep{lindgren_explicit_2011}.  This representation is constructed by applying finite element methods to solve the SPDE numerically.
 
-The log-intensity of animal locations is given by
+Since only the distance to the observer was recorded, and not the exact location of \akepa{}, we used the adjusted intensity given in equation \eqref{intensity-incomplete}.  The log-intensity of animal locations, detected or undetected, is given by
 \begin{equation*}
-\log \lambda(s) = \beta_0 + \xi(\bs)
+\log \lambda(\bs) = \beta_0 + \xi(\bs)
 \end{equation*}
 where $\beta_0$ is an intercept parameter and $\xi(\bs)$ is a mean zero GRF with Mat\'ern covariance.  The Mat\'ern covariance function in two dimensions can be written as 
 \begin{equation}
@@ -253,20 +253,20 @@ C(\bs_1,\bs_2) = \frac{2^{1-\nu}}{4\pi\kappa^2\tau^2\Gamma(\nu)}(\kappa \|\bs_1-
 \end{equation}
 where \(\nu, \kappa, \tau\) are parameters and \(K_{\nu}\) is the modified Bessel function of the second kind.  The three parameters are not simultaneously identifiable \citep{zhang_inconsistent_2004} and it is conventional to assume a value for $\nu$ which specifies the mean-square differentiability of the process.  We set $\nu = 1$ which is the default value in \texttt{R-INLA}.
 
-We use a GMRF representation of $\xi(s)$ following the approach of \cite{lindgren_explicit_2011} based on specifying $\xi(s)$ via a SPDE.  Given a finite element mesh defined over the spatial domain with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$, we represent the GRF as $\xi(\bs) = \sum_l \beta_l \phi_l(\bs)$.  The parameters $\beta_1, \ldots, \beta_L$ form a GMRF with sparse prior precision matrix $\bm{Q}_{\xi} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices (see Appendix [BLAH]). The parameters $\tau$ and $\kappa$ control the shape and rate of decay of the Mat\'ern covariance function as distance between locations increases. 
+We use a GMRF representation of $\xi(s)$ following the approach of \cite{lindgren_explicit_2011} based on specifying $\xi(s)$ via a SPDE.  We define a finite element mesh with $L$ nodes and associated piece-wise linear basis functions $\phi_1, \ldots, \phi_L$. The GRF is represented as $\xi(\bs) = \sum_l \beta_l \phi_l(\bs)$.  The parameters $\beta_1, \ldots, \beta_L$ form a GMRF with sparse prior precision matrix $\bm{Q} = \frac{1}{\tau^2}\left(\kappa^4\bm{C} + 2\kappa^2\bm{G_1} + \bm{G_2}\right)$ where $\bm{C}$, $\bm{G_1}$, $\bm{G_2}$ are all sparse matrices (see Appendix [BLAH]). The parameters $\tau$ and $\kappa$ control the shape and rate of decay of the Mat\'ern covariance function as distance between locations increases. We used a finite element mesh with 3748 nodes defined over the entire study region and extended over a buffer region to avoid the effects of boundary conditions within the region of inference.
 
-In order to specify priors on the Mat\'ern covariance below we use a reparameterisation of $\kappa$ and $\tau$ to a range and variance parameter.  When $\nu = 1$ and the domain is two dimensional then the reparameterisation is $\rho = \sqrt{8} / \kappa$ for the range and $\sigma^2 = 1 / (4\pi\kappa^2\tau^2)$ for the marginal variance (\cite{blangiardo_spatial_2013}, p196).
+In order to specify priors on the Mat\'ern covariance below we use a reparameterisation of $\kappa$ and $\tau$ to a range and variance parameter.  When $\nu = 1$ and the domain is two dimensional then the reparameterisation is $\rho = \sqrt{8} / \kappa$ for the range and $\sigma^2 = 1 / (4\pi\kappa^2\tau^2)$ for the marginal variance (\cite{blangiardo_spatial_2013}, p196).  This parameterisation is used to set penalised complexity priors \citep{simpson_penalising_2017} on $\rho$ and $\sigma^2$ which allow the GRMF effect to shrink towards zero.  For the Mat\'ern field, the base model is the limiting case with $\sigma^2 \rightarrow 0$ and $\rho \rightarrow \infty$, which defines a random field that is almost surely zero everywhere.  The purpose of penalised complexity priors is to place sufficient prior probability on a simple model to allow the random effect to be essentially `turned off' if the model component is not supported by the data.  
 
-This parameterisation is used to set penalised complexity priors \citep{simpson_penalising_2017} on $\rho$ and $\sigma^2$ which allow the GRMF effect to shrink towards zero.  For the Mat\'ern field, the base model is the limiting case with $\sigma^2 = 0$ and $\rho \rightarrow \infty$, which defines a random field that is almost surely zero everywhere.  The purpose of penalised complexity priors is to place sufficient prior probability on a simple model to allow the random effect to be `turned off' if the model component is not required.  
-
-To specify the penalised complexity priors on the SPDE effect we set $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$.  The value of 130 for the range parameter was selected based on the minimum distance between sampling locations.  Since only the distance to the observer was recorded, and not the exact location of \akepa{}, we used the adjusted intensity given in equation \eqref{intensity-incomplete}.
+To specify penalised complexity priors on the SPDE effect we set $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$.  The value of 130 for the range parameter was selected based on the minimum distance between sampling locations.  
 
 The SPDE approach can at first appear to be fundamentally different  other approaches such as penalised regression splines.  However, the two methods are closely related and the GRF model component in our model plays a similar role to a penalised smoothing spline on space.  \cite{yue_bayesian_2014} show how spline models can be viewed through the perspective of SPDEs and \cite{ miller_understanding_2019} do the reverse to show how to implement the Mat\'ern SPDE as a penalised spline model in \texttt{mgcv} \citep{wood_gam_2017}.
 
 \section{Results}
 \label{sec-results} 
 
-The predicted mean of the posterior intensity is shown in \autoref{fig:intensity-mean-cv} along with a map of the coefficient of variation (CV) of the posterior intensity field on a regular prediction grid with cell area of approximately 1.7 hectares.
+The model fits 40 to 60 seconds on a laptop with 10 Gb RAM and a 2.50 GHz CPU when INLA is run using the `empirical Bayes' option which does not incorporate uncertainty in hyper parameters.  The model fits in minutes in full INLA mode including hyper parameter uncertainty.  We suggest using the `empirical Bayes' mode for model development and full INLA on a smaller subset of candidate models.  
+
+The predicted mean of the posterior intensity field is shown in \autoref{fig:intensity-mean-cv}A along with a map of the coefficient of variation (CV) (\autoref{fig:intensity-mean-cv}B) and standard deviation of the posterior intensity field (\autoref{fig:intensity-mean-cv}C) on a regular prediction grid with each prediction cell area approximately 1.7 hectares.
 \begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/intensity_mean_cv_sd.png}
@@ -274,7 +274,9 @@ The predicted mean of the posterior intensity is shown in \autoref{fig:intensity
 		\label{fig:intensity-mean-cv}
 	\end{center}
 \end{figure}
-This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data (see Supplementary material).  The CV plot shows that the CV in the posterior intensity field is lower in areas with greater sampling effort.  There is a clear indication of preferential sampling with more survey effort in the south, where densities are higher, compared to the north  (see \autoref{fig:2002studyareapointspt}).  In the north, estimated intensities are lower, which also contributes to larger CV values.  The standard deviation map shows stronger overall posterior variability in the south where intensity is larger.  We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location (\autoref{fig:intensity-quantiles}).
+This shows a region of high intensity in the south and much lower intensity in the north, agreeing with a standard two-stage analysis of the same data \citep{camp_dsm_2020}.  The CV plot shows that the CV in the posterior intensity field is lower in areas with greater sampling effort and higher intensity.  There is a clear indication of preferential sampling with more survey effort in the south, where densities are higher, compared to the north.  In the north, estimated intensities are lower, which also contributes to larger CV values and makes the CV map hard to interpret.  The standard deviation map shows stronger overall posterior variability in the south where intensity is larger, most likely due to the assumed log-normal relationship between the random field and the Poisson rate parameter.  
+
+We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location (Figure \ref{fig:intensity-quantiles}).  As we discuss below, these quantiles are independent summary statistics of the posterior intensity field at each prediction location.  
 \begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/intensity_quantiles.png}
@@ -283,27 +285,29 @@ This shows a region of high intensity in the south and much lower intensity in t
 	\end{center}
 \end{figure}
 
-The posterior detection function \autoref{fig:det-matern} shows that detectability drops to just under 0.25 at the maximum observable distance of 58 metres.
+The posterior detection function (\autoref{fig:det-matern}) shows that detectability drops to just under 0.25 at the maximum observable distance of 58 metres and also broadly agrees with a two-stage analysis.
 \begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/detfn_and_matern.png}
-		\caption{A) posterior half-normal detection function. B) posterior Mat\'ern correlation function.  The black line is the mean posterior estimate and the grey shaded area is 95\% credible interval in both plots}
+		\caption{A) Posterior half-normal detection function. B) Posterior Mat\'ern correlation function.  The black line is the mean posterior estimate and the grey shaded area is 95\% credible interval in both plots}
 		\label{fig:det-matern}
 	\end{center}
 \end{figure}
-The posterior Mat\'ern correlation function is shown in \autoref{fig:det-matern}, the grey regions show the 95\% credible interval.  Note that this correlation function shows positive correlation even at distances of 10,000 metres, wider than the full length of the study region (approximately 8,000 metres).  This is the correlation range on the log-intensity scale.  [[Can I make a better "range of correlation" plot for the posterior intensity process?  How can I convert this to something on the intensity scale?  For a field $Z$ with covariance function $C$, is there an implied covariance for $\exp(Z)$?]]
+The posterior Mat\'ern correlation function is shown in \autoref{fig:det-matern}; the grey regions show the 95\% credible interval.  We note that this correlation function shows positive correlation even at distances of 10,000 metres, wider than the full length of the study region (approximately 8,000 metres).  This is because this is the correlation range on the log-intensity scale.  On the intensity scale the empirical range of correlation is shorter.
 
-To further investigate the ability of the GMRF component to capture the heterogeneity we generated 100 thinned point patterns from the fitted model and calculated the pairwise distances between all observations for each of these patterns \autoref{fig:post-pp-distances}.
+To evaluate the ability of the SPDE effect to capture the spatial heterogeneity in the observed data we generated 1,000 point patterns using the posterior intensity field and thinned them with the posterior detection function to create 1,000 simulated datasets to compare with the observed data.  We calculated the pairwise distances between all observations for each of these datasets and compared the frequency of pairwise distances with those in the observed data.
 \begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.6]{figures/post_pp_distances.png}
-		\caption{Boxplots of frequency of pairwise distances (tick mark values for end of each bin) based on 100 posterior samples.  Red circles: observed frequency of pairwise distances between observations}
+		\caption{Boxplots of the frequency of pairwise distances (tick mark values for end of each bin) based on 1,000 simulated datasets.  Red circles indicate the frequency of pairwise distances in the observed data.}
 		\label{fig:post-pp-distances}
 	\end{center}
 \end{figure}
-The plot shows that the GMRF component broadly captures the relevant scale of clustering in the observed data.  There is some evidence of over-predicting the strength of the clustering at distances between 1,000 and 2,500 m.
+Figure \ref{fig:post-pp-distances} shows that the SPDE effect broadly captures the spatial clustering in the observed data.  There is some evidence of under-predicting the strength of the clustering at shorter distances between 1,000 and 2,500 m, with the simulated data showing some evidence of negative bias.  This could be due to over-smoothing in some areas which can happen if using a stationary model.  Large areas of the study region having low density, which has a larger correlation range than higher density areas, and so the effect will average between these. 
 
-We plot the posterior abundance estimate using a Monte Carlo method.
+Figure \ref{fig:post-pp-distances} is similar in spirit to Ripley's $K$-function \citep{ripley_SecondorderAnalysisStationary_1976}, which is a common approach to investigating spatial structure in point patterns.  The pairwise distances in the observed data is a function of spatial heterogeneity as well as the spatially restricted sampling scheme.  Other methods of comparison could also be considered such as the average difference between predicted and observed counts at each point transect.  Working with posterior predictive datasets is a flexible approach to model evaluation that allows for innovative methods of comparison with observed data that can focus on particular features of the model.
+
+To plot the posterior abundance estimate for the \akepa{} in Hakalau reserve we use a Monte Carlo method based on sampling realisations of the posterior intensity field.  Let $n$ denote the abundance of the population within the region of interest and $N = \int_{\Omega}\lambda(\bs)\mathrm{d}\bs$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the posterior intensity field provides a point estimate for the abundance, i.e. the expected abundance.  To generate a full posterior estimate for abundance we approximate the posterior $\pi(N | \bm{Y})$ by taking $m$ Monte Carlo samples of the posterior intensity field, $\lambda^{(1)}, \ldots, \lambda^{(m)}$ and approximate the posterior for the abundance as $\pi(N | \bm{Y}) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda^{(i)}, \bm{Y})$. Each $\pi(N | \lambda = \lambda^{(i)}, \bm{Y})$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda^{(i)}(\bs)\mathrm{d}\bs$. 
 \begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[scale=0.525]{figures/N_posterior.png}
@@ -311,19 +315,12 @@ We plot the posterior abundance estimate using a Monte Carlo method.
 		\label{fig:realized-abundance-posterior}
 	\end{center}
 \end{figure}
-Let $n$ denote the abundance of the population within the region of interest and $N = \int_{\Omega}\lambda(s)\mathrm{d}s$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the posterior intensity field provides a point estimate for the abundance, i.e. the expected abundance.  We approximate the posterior $\pi(N | \bm{Y})$ by a Monte Carlo method.  Taking $m$ Monte Carlo samples  $\lambda^{(1)}, \ldots, \lambda^{(m)}$ of the posterior intensity field we estimate the posterior for the abundance as $\pi(N | \bm{Y}) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda^{(i)})$. Each $\pi(N | \lambda = \lambda_i)$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda_i(s)\mathrm{d}s$. \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of realised abundance $n$ by estimated $\pi(N = n | \lambda)$.  Strictly speaking
 
-% Add table of estimated model parameters
-% Add 95% CI figures for N?
+\autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of realised abundance $n$ which may be of interest to conservation managers.  This approach can also be used to generate credible intervals and other posterior summaries of interest. 
 
-\clearpage %sort out figure placements later
+The abundance estimates broadly agree with a standard two-stage analysis of the data \citep{camp_dsm_2020} but the attractive feature of the one-stage model is that, by using Monte Carlo samples from the joint posterior, model summaries naturally incorporate uncertainty in the detection model.  There is no additional step required to incorporate detection function uncertainty beyond working with samples from the joint posterior.
 
-\section{Communication of Results}
-\label{sec-comms}
-
-The results above are consistent with those resulting from a two-stage model fitted to binned count data (see Supplementary material).  Our presentation of the results is broadly consistent with approaches taken in the species distribution modelling literature, although maps of predictive uncertainty (\autoref{fig:intensity-mean-cv} and \autoref{fig:intensity-quantiles}) are not always provided there and it is common to see maps of point estimates without any accompanying communication of uncertainty.  It is also common to report a point estimate of the expected abundance along with uncertainty in this point estimate.  However, uncertainty in a point estimate will tend to have lower variance than variance of the random variable of interest.  For this reason we chose to show the full abundance posterior in \autoref{fig:realized-abundance-posterior}.
-
-Our intention in this section is to highlight limitations with mapped summaries of model predictions, including those presented in Section \ref{results}, and suggest ways to address these limitations.  We note that all model outputs are based on sampling from the joint posterior of all model parameters which naturally average over the uncertainty in the observation process, a key advantage of the one-stage approach.
+\vfill
 
 \subsection{Limitations of mapped summaries}
 

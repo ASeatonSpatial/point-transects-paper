@@ -1,6 +1,7 @@
 # Evaluate fitted model
 library(INLA)
 library(inlabru)
+library(ggplot2)
 library(scales)
 library(cowplot)
 library(rgeos)
@@ -89,6 +90,10 @@ dev.off()
 # intensity plots
 pxl = pixels(mesh, nx = 300, ny = 300, mask = study_area)
 nrow(pxl@coords)
+
+# map units are per km^2 = 1,000,000 m^2
+# I want per hectare = 10,000 m^2
+# so divide by 100
 pr.int <- predict(fit, pxl, ~ exp(grf + Intercept))
 
 # mean

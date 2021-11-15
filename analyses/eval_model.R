@@ -94,7 +94,7 @@ nrow(pxl@coords)
 # map units are per km^2 = 1,000,000 m^2
 # I want per hectare = 10,000 m^2
 # so divide by 100
-pr.int <- predict(fit, pxl, ~ exp(grf + Intercept))
+pr.int <- predict(fit, pxl, ~ exp(grf + Intercept)/100)
 
 # mean
 lower = min(pr.int["mean"]$mean)
@@ -248,7 +248,7 @@ dev.off()
 
 # show that these maps are misleading:
 str(pr.int)
-cell_area = as.numeric(pr.int@grid@cellsize["x"]*pr.int@grid@cellsize["y"])
+cell_area = as.numeric(pr.int@grid@cellsize["x"]*pr.int@grid@cellsize["y"]*100)
 sum(pr.int@data["mean"]*cell_area)
 sum(pr.int@data["q0.025"]*cell_area)
 sum(pr.int@data["q0.975"]*cell_area)

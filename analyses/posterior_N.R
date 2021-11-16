@@ -1,5 +1,6 @@
 library(INLA)
 library(inlabru)
+library(ggplot2)
 library(rgeos)
 library(patchwork)
 library(dplyr)
@@ -255,4 +256,37 @@ N_post %>%
 ggsave(filename = here::here(fig_path, "N_posterior.png"),
        width = 5, height = 5, units = "in")
 
+
+
+# does N_post integrate to 1?
+N_post %>%
+  filter(type == "predict everywhere") %>%
+  str()
+N_ips = ipoints(inla.mesh.1d(N_seq))
+sum(N_ips$weight/2 * N_post$mean) # should be close to 1
+
+# get mean density per hectare
+# this allows comparison with Figure 2 in Camp et al 2020
+whole_area = gArea(study_area)*100   # hectares
+N_mode = N_seq[which(N_post$mean == max(N_post$mean))]  # posterior mode
+N_mode / whole_area
+5500 / whole_area
+4200 / whole_area  # some random end points just to get a feeling
+7500 / whole_area
+
+# just convert the plot scale to show density
+N_post %>%
+  filter(type == "predict everywhere") %>%
+  mutate(dens = N/whole_area) %>%
+  ggplot() +
+  geom_line(aes(x = dens, y = mean)) +
+  geom_ribbon(aes(x = dens,
+                  ymin = mean - 2 * sd / sqrt(n.mc),
+                  ymax = mean + 2 * sd / sqrt(n.mc)),
+              alpha = 0.2) +
+  ylab("posterior probability") + 
+  xlab("akepa density per hectare") +
+
+ggsave(filename = here::here(fig_path, "density_posterior.png"),
+       width = 5, height = 5, units = "in")
 

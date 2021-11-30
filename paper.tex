@@ -313,9 +313,9 @@ To plot the posterior abundance estimate for the \akepa{} in Hakalau reserve we 
 
 \autoref{fig:realized-abundance-posterior} shows the approximate posterior for $N$ with $m = 20,000$.  This allows us to estimate the probability for any specific value of realised abundance $n$ which may be of interest to conservation managers.  This approach can also be used to generate credible intervals and other posterior summaries of interest. 
 
-The abundance estimates broadly agree with a standard two-stage analysis of the data \citep{camp_dsm_2020} but the attractive feature of the one-stage model is that, by using Monte Carlo samples from the joint posterior, model summaries naturally incorporate uncertainty in the detection model.  There is no additional step required to incorporate detection function uncertainty beyond working with samples from the joint posterior.
+The abundance estimates cannot be directly compared to the results in \cite{camp_dsm_2020} since their two-stage model also includes a temporal correlation and we include an area of Hakalau that they had to exclude.  Converting the above abundance estimates to density per hectare for the whole study region allows for some comparison with Figure 2 in \cite{camp_dsm_2020} which suggests that \akepa{} density was roughly between 0.5 and 1.5 birds per hectare in 2002 (considering both the design-based estimate and the spatio-temporal GAM estimate).  In our analysis we find a credible region of roughly 0.9 to 1.7 birds per hectare, which is slightly different but overlaps significantly with the results in \cite{camp_dsm_2020}.
 
-\vfill
+An attractive feature of our Bayesian one-stage model is that, by basing model outputs on posterior Monte Carlo samples, all the outputs presented in the above, the summaries of the random field as well as the posterior abundance, incorporate the uncertainty in the detection model in a natural way.  There is no additional step required to incorporate detection function uncertainty beyond working with samples from the joint posterior.
 
 \subsection{Limitations of mapped summaries}
 

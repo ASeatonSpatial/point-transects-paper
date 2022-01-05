@@ -1,21 +1,20 @@
 ## Fit model and save model object
 
 # Load required packages
+library(ggplot2)
+library(sp)
 library(inlabru)
-library(INLA)  # need testing version of inla
-# library(rgeos)
-# library(raster)  # raster::crs() easy way to remove CRS information
-# library(maptools)
-# init.tutorial()
+library(INLA)  
 
 #### Save Fitted Model Object? ####
-
-#### WARNING!!!! THIS WILL OVERWRITE EXISTING OBJECT!!!!
+#### WARNING: THIS WILL OVERWRITE EXISTING FITTED MODEL OBJECT 
 to_save = TRUE
-model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
+model_path = here::here("analyses", "fitted_model.RDS")
+
+#### Produce intermediate plots? ####
+to_plot = FALSE
 
 #### Load Data ####
-
 data_path = here::here("analyses", "data")
 realobs <- readRDS(here::here(data_path, "obs_extended_no_crs.RDS"))
 study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
@@ -37,29 +36,23 @@ dsamp = function(distance, lsig){
   log(distance) + log_hn(distance, lsig)
 }
 
-
 # Plot the data
-g1 <- ggplot() +
-  gg(mesh) +
-  gg(study_area) +
-  gg(samplers) +
-  gg(realobs, colour = "green") +
-  coord_equal()
-
-g1
+if (to_plot){
+  g1 <- ggplot() +
+    gg(mesh) +
+    gg(study_area) +
+    gg(samplers) +
+    gg(realobs, colour = "green") +
+    coord_equal()
+  g1
+}
 
 #### Specify and fit model ####
 
 # SPDE:
-
-# What are the shorter distances between transects?
-# (xrange <- study_area@bbox["x",2] - study_area@bbox["x",1])
-# (yrange <- study_area@bbox["y",2] - study_area@bbox["y",1])
-# sort(gDistance(pts, byid = TRUE), decreasing = TRUE)
-
 matern <- inla.spde2.pcmatern(mesh,
                               prior.sigma = c(2, 0.01),
-                              prior.range = c(300/1000, 0.01))   # was 300 before, now km units so divide
+                              prior.range = c(300/1000, 0.01))
 
 cmp <- ~ grf(main = coordinates, model = matern) +
   lsig(1) + Intercept(1)
@@ -70,7 +63,7 @@ fml <- coordinates + distance ~ grf +
   log(2*pi) +   # 2*pi offset for not knowing angle theta
   Intercept
 
-W <- 58/1000   # transect radius
+W <- 58/1000   # transect radius, units km 
 distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
 starting_values <- list(lsig = 3.36 - log(1000))
 
@@ -83,23 +76,10 @@ fit <-  lgcp(components = cmp,
              options = list(bru_max_iter = 40,
                             bru_result = starting_values,
                             bru_verbose = 3,
+#                            inla.mode = "experimental",
                             control.inla = list(int.strategy = "eb")))
-
-# now fit once with int.strategy = "auto"
-fit2 = lgcp(components = cmp,
-           data = realobs,
-           samplers = samplers,
-           domain = list(coordinates = mesh,
-                         distance = distance_domain),
-           formula = fml,
-           options = list(bru_max_iter = 1,
-                          bru_result = fit,
-                          control.inla = list(int.strategy = "auto")))
-
-summary(fit)
-summary(fit2)
 
 #### Save model object ####
 
-if (to_save) saveRDS(object = fit2, file = model_path)
+if (to_save) saveRDS(object = fit, file = model_path)
 

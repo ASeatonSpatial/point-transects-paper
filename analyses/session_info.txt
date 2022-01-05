@@ -1,0 +1,82 @@
+─ Session info ────────────────────────────────────────────────────────────────────────────────────
+ setting  value                       
+ version  R version 4.0.5 (2021-03-31)
+ os       Ubuntu 20.04.3 LTS          
+ system   x86_64, linux-gnu           
+ ui       X11                         
+ language en_GB:en                    
+ collate  en_GB.UTF-8                 
+ ctype    en_GB.UTF-8                 
+ tz       Europe/London               
+ date     2022-01-05                  
+
+─ Packages ────────────────────────────────────────────────────────────────────────────────────────
+ package     * version    date       lib source                              
+ cachem        1.0.6      2021-08-19 [1] CRAN (R 4.0.5)                      
+ callr         3.7.0      2021-04-20 [1] CRAN (R 4.0.5)                      
+ class         7.3-19     2021-05-03 [4] CRAN (R 4.0.5)                      
+ classInt      0.4-3      2020-04-07 [1] CRAN (R 4.0.3)                      
+ cli           3.1.0      2021-10-27 [1] CRAN (R 4.0.5)                      
+ codetools     0.2-18     2020-11-04 [1] CRAN (R 4.0.3)                      
+ colorspace    2.0-2      2021-06-24 [1] CRAN (R 4.0.5)                      
+ cowplot     * 1.1.1      2020-12-30 [1] CRAN (R 4.0.5)                      
+ crayon        1.4.2      2021-10-29 [1] CRAN (R 4.0.5)                      
+ DBI           1.1.0      2019-12-15 [1] CRAN (R 4.0.3)                      
+ desc          1.4.0      2021-09-28 [1] CRAN (R 4.0.5)                      
+ devtools      2.4.3      2021-11-30 [1] CRAN (R 4.0.5)                      
+ dplyr       * 1.0.7      2021-06-18 [1] CRAN (R 4.0.5)                      
+ e1071         1.7-4      2020-10-14 [1] CRAN (R 4.0.3)                      
+ ellipsis      0.3.2      2021-04-29 [1] CRAN (R 4.0.5)                      
+ excursions  * 2.5.2      2021-09-17 [1] CRAN (R 4.0.5)                      
+ fansi         0.5.0      2021-05-25 [1] CRAN (R 4.0.5)                      
+ fastmap       1.1.0      2021-01-25 [1] CRAN (R 4.0.5)                      
+ foreach     * 1.5.1      2020-10-15 [1] CRAN (R 4.0.3)                      
+ fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.3)                      
+ generics      0.1.0      2020-10-31 [1] CRAN (R 4.0.5)                      
+ ggplot2     * 3.3.5      2021-06-25 [1] CRAN (R 4.0.5)                      
+ glue          1.5.0      2021-11-07 [1] CRAN (R 4.0.5)                      
+ gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.5)                      
+ INLA        * 20.12.10   2022-01-05 [1] local                               
+ inlabru     * 2.3.1.9000 2021-12-14 [1] Github (inlabru-org/inlabru@bbcdaa9)
+ iterators     1.0.13     2020-10-15 [1] CRAN (R 4.0.3)                      
+ KernSmooth    2.23-20    2021-05-03 [4] CRAN (R 4.0.5)                      
+ lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.3)                      
+ lifecycle     1.0.1      2021-09-24 [1] CRAN (R 4.0.5)                      
+ magrittr      2.0.1      2020-11-17 [1] CRAN (R 4.0.3)                      
+ Matrix      * 1.3-0      2020-12-22 [1] CRAN (R 4.0.3)                      
+ memoise       2.0.1      2021-11-26 [1] CRAN (R 4.0.5)                      
+ munsell       0.5.0      2018-06-12 [1] CRAN (R 4.0.3)                      
+ nvimcom     * 0.9-105    2022-01-05 [1] local                               
+ patchwork   * 1.1.1      2020-12-17 [1] CRAN (R 4.0.5)                      
+ pillar        1.6.4      2021-10-18 [1] CRAN (R 4.0.5)                      
+ pkgbuild      1.3.1      2021-12-20 [1] CRAN (R 4.0.5)                      
+ pkgconfig     2.0.3      2019-09-22 [1] CRAN (R 4.0.3)                      
+ pkgload       1.2.4      2021-11-30 [1] CRAN (R 4.0.5)                      
+ prettyunits   1.1.1      2020-01-24 [1] CRAN (R 4.0.5)                      
+ processx      3.5.2      2021-04-30 [1] CRAN (R 4.0.5)                      
+ ps            1.6.0      2021-02-28 [1] CRAN (R 4.0.5)                      
+ purrr         0.3.4      2020-04-17 [1] CRAN (R 4.0.5)                      
+ R6            2.5.1      2021-08-19 [1] CRAN (R 4.0.5)                      
+ Rcpp          1.0.7      2021-07-07 [1] CRAN (R 4.0.5)                      
+ remotes       2.4.2      2021-11-30 [1] CRAN (R 4.0.5)                      
+ rgdal         1.5-27     2021-09-16 [1] CRAN (R 4.0.5)                      
+ rgeos       * 0.5-8      2021-09-22 [1] CRAN (R 4.0.5)                      
+ rlang         0.4.12     2021-10-18 [1] CRAN (R 4.0.5)                      
+ rprojroot     2.0.2      2020-11-15 [1] CRAN (R 4.0.5)                      
+ scales      * 1.1.1      2020-05-11 [1] CRAN (R 4.0.5)                      
+ sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.3)                      
+ sf          * 1.0-4      2021-11-14 [1] CRAN (R 4.0.5)                      
+ sp          * 1.4-6      2021-11-14 [1] CRAN (R 4.0.5)                      
+ testthat      3.1.1      2021-12-03 [1] CRAN (R 4.0.5)                      
+ tibble        3.1.6      2021-11-07 [1] CRAN (R 4.0.5)                      
+ tidyselect    1.1.1      2021-04-30 [1] CRAN (R 4.0.5)                      
+ units         0.6-7      2020-06-13 [1] CRAN (R 4.0.3)                      
+ usethis       2.1.5      2021-12-09 [1] CRAN (R 4.0.5)                      
+ utf8          1.2.2      2021-07-24 [1] CRAN (R 4.0.5)                      
+ vctrs         0.3.8      2021-04-29 [1] CRAN (R 4.0.5)                      
+ withr         2.4.3      2021-11-30 [1] CRAN (R 4.0.5)                      
+
+[1] /home/andy/R/x86_64-pc-linux-gnu-library/4.0
+[2] /usr/local/lib/R/site-library
+[3] /usr/lib/R/site-library
+[4] /usr/lib/R/library

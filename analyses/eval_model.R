@@ -1,4 +1,5 @@
-# Evaluate fitted model
+# Produce summary figures of the posterior intensity field
+
 library(INLA)
 library(inlabru)
 library(ggplot2)
@@ -11,10 +12,8 @@ theme_set(theme_minimal())
 
 set.seed(9701071)
 
-#### WARNING - as it stands this script will overwrite figures for the paper
-
 #### Fitted model  ####
-model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
+model_path = here::here("analyses", "fitted_model.RDS")
 fit = readRDS(model_path)
 
 #### Other things ####
@@ -46,10 +45,9 @@ dsamp = function(distance, lsig){
 
 
 #### Model evaluation ####
-
 summary(fit)
 
-# half-normal
+#### Posterior half-normal plot ####
 
 W = 58/1000
 Wm = 58    # transect radius in metres
@@ -65,34 +63,35 @@ ghn = ggplot() +
         xlab("\ndistance (m)") +
         theme(axis.title = element_text(size = 16),
         axis.text = element_text(size = 16))
+ghn
 
-# Matern plots ##
-
+##### Posterior Matern plot ####
 blah = spde.posterior(fit, "grf", what = "matern.correlation")
-# blah$x = blah$x / 1000
-gm = ggplot() +
-      gg(blah) +
-      ylab("correlation\n") +
-      xlab("\ndistance (km)") +
-      theme(axis.title = element_text(size = 16, vjust = 0.3),
-            axis.text = element_text(size = 16))
+gmat = ggplot() +
+  gg(blah) +
+  ylab("correlation\n") +
+  xlab("\ndistance (km)") +
+  theme(axis.title = element_text(size = 16, vjust = 0.3),
+        axis.text = element_text(size = 16))
 
-gm
+gmat
 
 png(filename = here::here(fig_path, "detfn_and_matern.png"),
     width = 10, height = 5, units = "in", res = 100)
-plot_grid(NULL, ghn, NULL, gm, NULL,
+plot_grid(NULL, ghn, NULL, gmat, NULL,
           labels = c("", "A", "", "B", ""),
           rel_widths = c(0.05, 1, 0.15, 1, 0.05),
           ncol = 5)
 dev.off()
 
-# intensity plots
+##### Posterior intensity plots #####
+
+# Prediction locations
 pxl = pixels(mesh, nx = 300, ny = 300, mask = study_area)
 nrow(pxl@coords)
 
 # map units are per km^2 = 1,000,000 m^2
-# I want per hectare = 10,000 m^2
+# I want intensity per hectare = 10,000 m^2
 # so divide by 100
 pr.int <- predict(fit, pxl, ~ exp(grf + Intercept)/100)
 
@@ -175,26 +174,11 @@ plot_grid(NULL, p1, NULL, p2, NULL, p3, NULL,
           ncol = 7)
 dev.off()
 
-# png(filename = "../figures/intensity_mean_cv.png",
-#     width = 10, height = 6, units = "in", res = 100)
-# multiplot(p1, p2, p3, cols = 3)
-# dev.off()
 
-# png(filename = here::here(fig_path, "intensity_mean.png"),
-#     width = 10, height = 6, units = "in", res = 100)
-# p1
-# dev.off()
-
-# png(filename = here::here(fig_path, "figures/akepa_transects.png"),
-#     width = 10, height = 6, units = "in", res = 100)
-# p3
-# dev.off()
-
-# lower and upper quantiles
-
-v = c(pr.int$q0.025, pr.int$q0.975)
+##### lower and upper quantiles ####
 
 # scale legend breaks
+v = c(pr.int$q0.025, pr.int$q0.975)
 lower = min(v)
 upper = max(v)
 q_breaks = c(lower, upper)
@@ -246,14 +230,15 @@ plot_grid(NULL, p2, NULL, p3, NULL,
           ncol = 5)
 dev.off()
 
-# show that these maps are misleading:
-str(pr.int)
+# show that these maps are misleading by interpreting
+# them as an intensity
 cell_area = as.numeric(pr.int@grid@cellsize["x"]*pr.int@grid@cellsize["y"]*100)
-sum(pr.int@data["mean"]*cell_area)
 sum(pr.int@data["q0.025"]*cell_area)
 sum(pr.int@data["q0.975"]*cell_area)
+# these are not supported by posterior for abundance (see script N_posterior.R)
 
-# plot "realized intensity" a few times
+### plot three realisations of posterior intensity field #### 
+
 set.seed(1989)
 draw1 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw2 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
@@ -301,7 +286,9 @@ plot_grid(NULL, p1, NULL, p2, NULL, p3, NULL,
 
 dev.off()
 
-# GMRF params
+#### GMRF hyperparameter plots ####
+
+# Note: these do not appear in the thesis chapter
 spde.range = spde.posterior(fit, "grf", what = "range")
 spde.logvar = spde.posterior(fit, "grf", what = "log.variance")
 

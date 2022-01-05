@@ -1,3 +1,6 @@
+# Investigate effet of different integration schemes
+# on the posterior for abundance
+
 library(INLA)
 library(inlabru)
 library(ggplot2)
@@ -10,19 +13,18 @@ source(here::here("analyses", "gg.R"))   # some small edits to inlabru gg method
 theme_set(theme_minimal())
 
 #### Fitted model  ####
-model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
+model_path = here::here("analyses", "fitted_model.RDS")
 fit = readRDS(model_path)
 
 #### Other things ####
 data_path = here::here("analyses", "data")
 study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
 samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
-obs = readRDS(here::here(data_path, "obs_2002_no_crs.RDS"))
+obs = readRDS(here::here(data_path, "obs_extended_no_crs.RDS"))
 mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
 
 #### Where to save figures ####
 fig_path = here::here("figures")
-
 
 # Total surveyed region as % of study area?
 W = 58 / 1000
@@ -31,18 +33,19 @@ nrow(samplers@data)*pi*W^2  / gArea(study_area) * 100
 # Buffer samplers points df to create transects
 samplers_buffered = gBuffer(samplers, width = W, byid = TRUE)
 
-# did this buffer produce something of the right area?
+# Did this buffer produce something of the right area?
 abs(gArea(samplers_buffered) - nrow(samplers@coords)*pi*W^2) / nrow(samplers@data)*pi*W^2 * 100
 # seems pretty close.
 
 # Remove transects from study area
 study_area_no_samplers = gDifference(study_area, samplers_buffered)
 abs(gArea(study_area) - (gArea(study_area_no_samplers) + gArea(samplers_buffered))) / gArea(study_area) * 100
-# less than 1/5th percent difference seems... okay?  Not perfect though
+# ideally would be zero. Less than 0.03% difference, this seems... okay?  Not perfect. 
 
 # For integration points before they are projected to mesh nodes
 # use method = "direct"
 
+# plot raw integration weights
 ips_unsurveyed = ipoints(study_area_no_samplers,
                          domain = mesh,
                          int.args = list(method = "direct"))
@@ -94,7 +97,7 @@ ips_unsurveyed = ipoints(study_area_no_samplers,
 ips_full = ipoints(study_area,
                    domain = mesh)
 
-# plot to check things look sensible
+# plot weights projected to mesh nodes
 g1 = ggplot() +
   gg(mesh) +
   gg(ips_full, aes(size = weight, colour = weight)) +
@@ -171,8 +174,7 @@ log_hn = function(distance, lsig){
 # Half-normal
 hn <- function(distance, lsig) exp(log_hn(distance, lsig))
 
-# How can I do this all at once?
-
+# Integration scheme formulas
 int_formulas = ~ {
   tmp <- c(
     unsurveyed = sum(weight * exp(Intercept + grf) * (distance > W)),
@@ -201,7 +203,7 @@ max(test3)
 test4 = test["predict_everywhere",] - test["predict_old_way",]
 hist(test4, main = "difference between integration schemes")
 
-# define range of
+# define range of N
 N_min = round(mean(test["predict_everywhere",]) - 4*sd(test["predict_everywhere",]))
 N_max = round(mean(test["predict_everywhere",]) + 4*sd(test["predict_everywhere",]))
 by = round((N_max - N_min)/100)
@@ -222,7 +224,7 @@ N_post = predict(fit,
                  n.samples = n.mc)
 
 # For unobserved we need to shift
-# shift PMF to be PMF for total abundance, not just unobserved.  Can then compare
+# PMF to be PMF for total abundance, not just unobserved.  Can then compare
 # with the "predict everywhere" approach
 N_post$N = c(N_seq + nrow(obs), N_seq)
 N_post$type = rep(c("use observed counts", "predict everywhere"), each = length(N_seq))
@@ -256,8 +258,6 @@ N_post %>%
 ggsave(filename = here::here(fig_path, "N_posterior.png"),
        width = 5, height = 5, units = "in")
 
-
-
 # does N_post integrate to 1?
 N_post %>%
   filter(type == "predict everywhere") %>%
@@ -285,7 +285,7 @@ N_post %>%
                   ymax = mean + 2 * sd / sqrt(n.mc)),
               alpha = 0.2) +
   ylab("posterior probability") + 
-  xlab("akepa density per hectare") +
+  xlab("akepa density per hectare") 
 
 ggsave(filename = here::here(fig_path, "density_posterior.png"),
        width = 5, height = 5, units = "in")

@@ -1,11 +1,11 @@
 #### Try excursions package ####
 library(INLA)
 library(inlabru)
+library(ggplot2)
 library(excursions)
 library(cowplot)
 source("gg.R")   # small edit of gg.SpatialPixelsDataFrame
 
-## todo - replace predict loop with generate() ?
 
 # set ggplot theme
 theme_set(theme_minimal())
@@ -13,7 +13,7 @@ theme_set(theme_minimal())
 set.seed(1525)
 
 #### Fitted model  ####
-model_path = here::here("analyses", "akepa_2002_fitted_model_new_inlabru.RDS")
+model_path = here::here("analyses", "fitted_model.RDS")
 fit = readRDS(model_path)
 
 #### Other things ####
@@ -42,17 +42,11 @@ X = generate(fit,
              ~ exp(grf + Intercept),
              n.samples = n.mc)
 
-# X = matrix(NA, nrow = nrow(pxl@coords), ncol = n.mc)
-# for (i in 1:n.mc){
-#   print(paste("i = ", i))
-#   int_draw <- predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
-#   X[,i] = int_draw@data$mean
-# }
+#### excursions ####
+# Note:  I use excursions.mc() because I am not sure
+# if excursions() knows how to work with fitted bru objects
 
-#### Try excursions ####
-
-# re-scale X (per km)
-# o per hectare:
+# re-scale X (per km) to per hectare:
 Xhec = X/100
 
 # per hectare threshold:
@@ -83,9 +77,6 @@ p2 = ggplot() +
                                 label.theme = element_text(size = 16, hjust = 0.5)))
 
 p2
-
-# ggsave(filename = "../figures/excursion_function.png",
-#        width = 5, height = 6, units = "in")
 
 Epxl = pxl
 Epxl$E = as.factor(ex$E)
@@ -118,18 +109,3 @@ plot_grid(NULL, p1, NULL, p2, NULL,
           rel_widths = c(0.05, 1, 0.15, 1, 0.05),
           ncol = 5)
 dev.off()
-
-# contour map - how to visualise this?  ?
-# cm = contourmap.mc(Xhec, levels = c(0.1, 0.5, 0.8, 1.5, 2, 4), alpha = alpha)
-# str(cm)
-#
-# Gpxl = pxl
-# Gpxl$G = cm$G
-# ggplot() +
-#   gg(Gpxl)
-#
-# cm = contourmap.mc(Xhec, levels = c(1), alpha = alpha)
-# Gpxl = pxl
-# Gpxl$G = cm$G
-# ggplot() +
-#   gg(Gpxl)

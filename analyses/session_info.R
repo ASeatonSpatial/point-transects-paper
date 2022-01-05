@@ -11,4 +11,5 @@ library(patchwork)
 library(dplyr)
 library(excursions)
 
-devtools::session_info()
+writeLines(capture.output(devtools::session_info()),
+           here::here("analyses", "session_info.txt"))

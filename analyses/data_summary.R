@@ -1,4 +1,5 @@
-# Evaluate fitted model
+# Some summaries of the data to go in the paper
+
 library(INLA)
 library(inlabru)
 

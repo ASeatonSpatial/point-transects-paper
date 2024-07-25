@@ -1,11 +1,11 @@
-\documentclass{stylefile16/statsoc}
+\documentclass{statsoc}
 \usepackage[a4paper]{geometry}   % otherwise statsoc class doesn't compile to A4 correctly
 %\usepackage{setspace}
 %\doublespacing
 
 \usepackage[hidelinks]{hyperref} % auto detect ref type
 \usepackage{natbib}
-\setcitestyle{stylefile16/rss}
+%\setcitestyle{rss}
 
 \usepackage{graphicx}
 \usepackage{amssymb}
@@ -14,7 +14,10 @@
 \usepackage{caption}
 \usepackage{textcomp}    % for Hawaii characters
 
-% shortcuts
+% new commands
+\newcommand{\wt}[1]{\widetilde{#1}}
+\newcommand{\ol}[1]{\overline{#1}}
+\newcommand{\wh}[1]{\widehat{#1}}
 \newcommand{\bbeta}{\boldsymbol{\beta}}
 \newcommand{\blambda}{\boldsymbol{\lambda}}
 \newcommand{\T}{\intercal}
@@ -35,11 +38,11 @@
 \title[One-stage point transect distance sampling using iterated INLA]{One-stage point transect distance sampling using iterated integrated nested Laplace approximations}
 
 \author[Andrew E. Seaton {\it et al.}]{Andrew E. Seaton}
-\address{Centre for Research into Ecological \& Environmental Modelling and School of Mathematics \& Statistics, 
-	University of St Andrews, 
-	St Andrews,
+\address{School of Mathematics \& Statistics, 
+	University of Glasgow, 
+	Glasgow,
 	UK}
-\email{aes22@st-andrews.ac.uk}
+\email{andrew.seaton.2@glasgow.ac.uk}
 
 \author{Janine B. Illian}
 \address{School of Mathematics and Statistics, University of Glasgow, Glasgow, UK}
@@ -212,7 +215,7 @@ The log-intensity for detected points is therefore $\log\tl(\bs) = \log 2 \pi r 
 \section{Iterated INLA}
 \label{sec-iinla}
 
-The half-normal detection function depends on the strictly positive parameter $\sigma^2$. Since it is not possible to restrict the range of parameters to be strictly positive within \texttt{R-INLA} this model cannot be fitted using the standard INLA methodology.  Instead, we choose a log link and consider $g(\bs | \phi)$, where $\log\sigma^2 = \phi$. This is a non-linear function of $\phi$ which cannot be fitted using standard GLM methods.  To address this we use a novel approximate method based on a first-order Taylor approximation of the non-linear predictor.  
+The half-normal detection function depends on the strictly positive parameter $\sigma^2$. Since it is not possible to restrict the range of parameters to be strictly positive within \texttt{R-INLA} this model cannot be fitted using the standard INLA methodology.  Instead, we choose a log link and consider $g(\bs | \phi)$, where $\log\sigma^2 = \phi$. This is a non-linear function of $\phi$ which cannot be fitted using standard GLM methods.  To address this we use a novel approximate-method based on an iterative model fitting scheme. This method is implemented in the \texttt{R} package \texttt{inlabru} which is a wrapper for and an extension of the \texttt{R-INLA} package \citep{lindgren_inlabru_2024}.  Full details of the method can be found in the software paper, here we present a brief overview.  
 
 Let $\eta(\bm{u}) = \log \tilde{\lambda}(\bm{u})$ where $\bm{u}$ is the parameter vector of the predictor (which includes $\phi$ as well as any parameters for fixed and random effects).  Denote by $\bar{\eta}_{\bm{u}_0}$ the first-order Taylor approximation of $\eta(\bm{u})$ at the point $\bm{u}_0$.  That is
 \begin{equation*}
@@ -222,14 +225,21 @@ where $\bm{B}_{\bm{u}_0}$ is the derivative matrix of $\eta(\bm{u})$ evaluated a
 
 The question then is how to choose the linearisation point $\bm{u}_0$.  To find an `optimal' linearisation point we use a fixed point iteration scheme.  There are various possible choices to define an `optimal' choice and this affects the properties of the approximate inference method.  Here we describe the criteria used when fitting the model that produces the results presented in this paper.  However, more recently, other options have been added to \texttt{inlabru}, the software package that implements these methods.
 
-Let $\bar{p}_{\bm{v}}$ denote the INLA approximate posterior distribution of the model parameters given the linearised model configuration at linearisation point $\bm{v}$.  New linearisation points are found by considering the functional
+Let $\bar{p}_{\bm{v}}$ denote the INLA approximate posterior distribution of the model parameters given the linearised model configuration at linearisation point $\bm{v}$.  New linearisation points are found by via the functional
 \begin{equation}
-	f(\bar{p}_{\bm{v}}) = \left\{ \argmax_{\bm{u}_i} \: \bar{p}_{\bm{v}}(u_i | \bm{Y}), \quad i = 1, \ldots, n_{\bm{u}} \right\}
+	f(\ol{p}_{\bm{v}}) = (\wh{\bm{\theta}}_{\bm{v}},\wh{\bm{u}}_{\bm{v}})
 \end{equation}
-where $n_{\bm{u}}$ is the length of $\bm{u}$.  Each marginal posterior $\bar{p}_{\bm{v}} (u_i | \bm{Y})$ and their modes are estimated during the model fitting using the standard INLA method and so this functional can be evaluated at no extra cost for each fit of the linearised model.
-We then seek a fixed point of this functional so that $\bm{u}_0 = f(\bar{p}_{\bm{u}_0})$.  This fixed point is identified via an iterative scheme. Given a current choice of linearisation point $\bm{v}$, we estimate $\bar{p}_{\bm{v}}$ and set $\bm{u}_* :=f(\bar{p}_v)$ to use as the new linearisation point.  We iterate this procedure until a fixed point is identified within a chosen tolerance.
+where
+\begin{equation}
+\wh{\bm{\theta}}_{\bm{v}} = \argmax_{\bm{\theta}} \ol{p}_{\bm{v}} ( \bm{\theta} | \bm{y}),
+\end{equation}
+the posterior mode for $\bm{\theta}$, and
+\begin{equation}
+\wh{\bm{u}}_{\bm{v}} = \argmax_{\bm{u}} \ol{p}_{\bm{v}} (\bm{u} | \bm{y}, \wh{\bm{\theta}}_{\bm{v}}),
+\end{equation}
+the joint conditional posterior mode for $\bm{u}$.  This functional defines a new linearisation point as the posterior mode for $\bm{\theta}$ under the linearised model configuration and the conditional mode for $\bm{u}$ given $\bm{\theta}$.  These posteriors are computed automatically during the model fitting using the standard INLA method and so this functional can be evaluated at no extra cost for each fit of the linearised model.
 
-In practice the point $\bm{u}_*$ may be problematic and result in a linearised model configuration that is challenging to fit.  Instead this point is considered only as an initial candidate point.  The next linearisation point is chosen by setting $\bm{u}_{\alpha} = (1 - \alpha)\bm{v} + \alpha \bm{u}_*$ and finding the value of $\alpha$ that minimises $ \lVert \eta(\bm{u}_{\alpha}) - \bar{\eta}_{\bm{v}} \rVert$.  This means that the new linearisation point remains close to a feasible region for fitting, assuming the current point $\bm{v}$ is reasonable.  In practice, we have found that this requires some care when choosing starting values for the initial model fit.  We estimate $\alpha$ using an approximate line search method that avoids many potentially expensive evaluations of the non-linear predictor.  This iterative method is implemented in the R package \texttt{inlabru} \citep{bachl_inlabru_2019} which is both a wrapper and an extension to \texttt{R-INLA}.
+The `optimal' approximate model is defined as a fixed point of this functional.  Given a current choice of linearisation point $\bm{v}$, we estimate $\bar{p}_{\bm{v}}$ and set $\bm{u}_* :=f(\bar{p}_{\bm{v}})$ to use as the new linearisation point.  We iterate this procedure until a fixed point $\bm{v}^*$ is identified within a chosen tolerance such that $\bm{v}^* = f(\bar{p}_{\bm{v}^*})$.
 
 \section{Spatially Structured Random Effect}
 \label{sec-gmrf}
@@ -394,7 +404,7 @@ The popularity of using INLA for spatial modelling has grown, in large part, due
 The \hawaii \akepa{} data are provided by U.S. Fish and Wildlife Service, Hakalau Forest Unit National Wildlife Refuge. We are grateful to the many U.S. Fish and Wildlife Service staff and volunteers who helped collect the data. We thank Steve Buckland for helpful comments on an early version.  Any use of trade, firm, or product names is for descriptive purposes only and does not imply endorsement by the U.S. Government.
 
 \clearpage
-\bibliographystyle{stylefile16/rss}
+\bibliographystyle{rss}
 \bibliography{paper}
 
 \end{document}

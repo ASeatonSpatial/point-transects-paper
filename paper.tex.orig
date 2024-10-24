@@ -38,7 +38,11 @@
 \title[One-stage point transect distance sampling using iterated INLA]{One-stage point transect distance sampling using iterated integrated nested Laplace approximations}
 
 \author[Andrew E. Seaton {\it et al.}]{Andrew E. Seaton}
+<<<<<<< HEAD
 \address{School of Biodiversity, One Health and Veterinary Medicine, 
+=======
+\address{School of Mathematics \& Statistics, 
+>>>>>>> 74377b1508b24185d23f7031c9b07713ea2f7f0a
 	University of Glasgow, 
 	Glasgow,
 	UK}
@@ -213,7 +217,11 @@ The log-intensity for detected points is therefore $\log\tl(\bs) = \log 2 \pi r 
 \section{Iterated INLA}
 \label{sec-iinla}
 
+<<<<<<< HEAD
+The half-normal detection function depends on the strictly positive parameter $\sigma^2$. Since it is not possible to restrict the range of parameters to be strictly positive within \texttt{R-INLA} this model cannot be fitted using the standard INLA methodology.  Instead, we choose a log link and consider $g(\bs | \phi)$, where $\log\sigma^2 = \phi$. This is a non-linear function of $\phi$ which cannot be fitted using standard GLM methods.  To address this we use a novel approximate method based on a first-order Taylor approximation of the non-linear predictor.  We outline the approach here, full details can be found in \cite{lindgren_InlabruSoftwareFitting_2024}  
+=======
 The half-normal detection function depends on the strictly positive parameter $\sigma^2$. Since it is not possible to restrict the range of parameters to be strictly positive within \texttt{R-INLA} this model cannot be fitted using the standard INLA methodology.  Instead, we choose a log link and consider $g(\bs | \phi)$, where $\log\sigma^2 = \phi$. This is a non-linear function of $\phi$ which cannot be fitted using standard GLM methods.  To address this we use a novel approximate-method based on an iterative model fitting scheme. This method is implemented in the \texttt{R} package \texttt{inlabru} which is a wrapper for and an extension of the \texttt{R-INLA} package \citep{lindgren_inlabru_2024}.  Full details of the method can be found in the software paper, here we present a brief overview.  
+>>>>>>> 74377b1508b24185d23f7031c9b07713ea2f7f0a
 
 Let $\eta(\bm{u}) = \log \tilde{\lambda}(\bm{u})$ where $\bm{u}$ is the parameter vector of the predictor (which includes $\phi$ as well as any parameters for fixed and random effects).  Denote by $\bar{\eta}_{\bm{u}_0}$ the first-order Taylor approximation of $\eta(\bm{u})$ at the point $\bm{u}_0$.  That is
 \begin{equation*}
@@ -225,7 +233,11 @@ The question then is how to choose the linearisation point $\bm{u}_0$.  To find 
 
 Let $\bar{p}_{\bm{v}}$ denote the INLA approximate posterior distribution of the model parameters given the linearised model configuration at linearisation point $\bm{v}$.  New linearisation points are found by via the functional
 \begin{equation}
+<<<<<<< HEAD
+	f(\bar{p}_{\bm{v}}) = \argmax_{\bm{u}} \bar{p}_{\bm{v}}(u | \bm{Y})
+=======
 	f(\ol{p}_{\bm{v}}) = (\wh{\bm{\theta}}_{\bm{v}},\wh{\bm{u}}_{\bm{v}})
+>>>>>>> 74377b1508b24185d23f7031c9b07713ea2f7f0a
 \end{equation}
 where
 \begin{equation}

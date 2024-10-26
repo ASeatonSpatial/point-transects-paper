@@ -13,6 +13,7 @@
 \usepackage{enumerate}
 \usepackage{caption}
 \usepackage{textcomp}    % for Hawaii characters
+\usepackage{url}
 
 % new commands
 \newcommand{\wt}[1]{\widetilde{#1}}
@@ -261,7 +262,7 @@ We use a GMRF representation of $\xi(\bs)$ following the approach of \cite{lindg
 
 In order to specify priors on the Mat\'ern covariance we use a reparameterisation of $\kappa$ and $\tau$ to a range and variance parameter.  When $\nu = 1$ and the domain is two dimensional then the reparameterisation is $\rho = \sqrt{8} / \kappa$ for the range and $\sigma^2 = 1 / (4\pi\kappa^2\tau^2)$ for the marginal variance (\cite{blangiardo_spatial_2013}, p196).  This parameterisation is used to set penalised complexity priors \citep{simpson_penalising_2017} on $\rho$ and $\sigma^2$ which allow the GRMF effect to shrink towards zero.  For the Mat\'ern field, the base model is the limiting case with $\sigma^2 \rightarrow 0$ and $\rho \rightarrow \infty$, which defines a random field that is almost surely zero everywhere.  The purpose of penalised complexity priors is to place sufficient prior probability on a simple model to allow the random effect to be essentially `turned off' if the model component is not supported by the data.  To specify penalised complexity priors on the SPDE effect we set $\mathbb{P}(\sigma > 2) = 0.01$ and $\mathbb{P}(\rho < 130) = 0.01$.  The value of 130 for the range parameter was selected based on the minimum distance between sampling locations.  
 
-The SPDE approach can at first appear to be fundamentally different  other approaches such as penalised regression splines.  However, the two methods are closely related and the GRF model component in our model plays a similar role to a penalised smoothing spline on space.  \cite{yue_bayesian_2014} show how spline models can be viewed through the perspective of SPDEs and \cite{ miller_understanding_2019} do the reverse to show how to implement the Mat\'ern SPDE as a penalised spline model in \texttt{mgcv} \citep{wood_gam_2017}.
+The SPDE approach can at first appear to be fundamentally different  other approaches such as penalised regression splines.  However, the two methods are closely related and the GRF model component in our model plays a similar role to a penalised smoothing spline on space.  \cite{yue_bayesian_2014} show how spline models can be viewed through the perspective of SPDEs and \cite{miller_UnderstandingStochasticPartial_2020} do the reverse to show how to implement the Mat\'ern SPDE as a penalised spline model in \texttt{mgcv} \citep{wood_gam_2017}.
 
 \section{Results}
 \label{sec-results} 

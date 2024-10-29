@@ -4,10 +4,10 @@
 library(ggplot2)
 library(sp)
 library(inlabru)
-library(INLA)  
+library(INLA)
 
 #### Save Fitted Model Object? ####
-#### WARNING: THIS WILL OVERWRITE EXISTING FITTED MODEL OBJECT 
+#### WARNING: THIS WILL OVERWRITE EXISTING FITTED MODEL OBJECT
 to_save = TRUE
 model_path = here::here("analyses", "fitted_model.RDS")
 
@@ -19,7 +19,11 @@ data_path = here::here("analyses", "data")
 realobs <- readRDS(here::here(data_path, "obs_extended_no_crs.RDS"))
 study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
 samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
-mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
+mesh_path = here::here(data_path, "mesh_extended_no_crs.RDS")
+if (!file.exists(mesh_path)){
+  source(here::here("data", "create_extended_mesh.R"))
+}
+mesh = readRDS(mesh_path)
 
 #### Specify detection function  ####
 
@@ -63,7 +67,7 @@ fml <- coordinates + distance ~ grf +
   log(2*pi) +   # 2*pi offset for not knowing angle theta
   Intercept
 
-W <- 58/1000   # transect radius, units km 
+W <- 58/1000   # transect radius, units km
 distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
 starting_values <- list(lsig = 3.36 - log(1000))
 

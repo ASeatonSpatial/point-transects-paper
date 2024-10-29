@@ -44,5 +44,5 @@ ggplot() +
 
 # write to disk
 out_path = here::here("R", "data")
-saveRDS(samplers_sf, file = here::here(data_path, "samplers.RDS"))
-saveRDS(obs_sf, file = here::here(data_path, "obs.RDS"))
+saveRDS(samplers_sf, file = here::here(out_path, "samplers.RDS"))
+saveRDS(obs_sf, file = here::here(out_path, "obs.RDS"))

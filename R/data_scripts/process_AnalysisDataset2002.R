@@ -1,15 +1,13 @@
-# convert AnalysisDataset2002.csv to appropriate SpatialPointDataFrame objects
+# process AnalysisDataset2002.csv
+# into points sf object
 
 library(dplyr)
-library(sp)
-library(inlabru)   # for quick plotting
+library(sf)
+library(ggplot2)
 
-data_path = here::here("analyses", "data")
+data_path = here::here("R", "data_raw")
 newdata = read.csv(here::here(data_path, "AnalysisDataset2002.csv"),
                    stringsAsFactors = FALSE)
-
-# old_obs = readRDS("obs_2002_no_crs.RDS")
-# old_samplers = readRDS("samplers_no_crs.RDS")
 
 # Stratum codes:
 # OF = open forest
@@ -24,7 +22,8 @@ newdata %>%
 samplers$weight = 1
 samplers$x = samplers$Easting/1000
 samplers$y = samplers$Northing/1000
-coordinates(samplers) = ~ x + y
+samplers_sf = st_as_sf(samplers,
+                       coords = c("x", "y"))
 
 obs = newdata %>%
   select(SampleLabel, Distance, Easting, Northing, Stratum, HabCode) %>%
@@ -35,13 +34,15 @@ obs$x = obs$Easting/1000
 obs$y = obs$Northing/1000
 obs$distance = obs$distance / 1000
 
-coordinates(obs) = ~ x + y
+obs_sf = st_as_sf(obs,
+                  coords = c("x", "y"))
 
 # check it looks okay
-
 ggplot() +
-  gg(samplers) +
-  gg(obs, col = "green")
+  geom_sf(data = samplers_sf) +
+  geom_sf(data = obs_sf, col = "green")
 
-saveRDS(samplers, file = here::here(data_path, "samplers_extended_no_crs.RDS"))
-saveRDS(obs, file = here::here(data_path, "obs_extended_no_crs.RDS"))
+# write to disk
+out_path = here::here("R", "data")
+saveRDS(samplers_sf, file = here::here(data_path, "samplers.RDS"))
+saveRDS(obs_sf, file = here::here(data_path, "obs.RDS"))

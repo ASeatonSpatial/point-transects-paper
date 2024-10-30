@@ -1,10 +1,9 @@
-# Summarise posterior sampled point patterns 
+# Summarise posterior sampled point patterns
 # using pairwise distances
 
 library(INLA)
 library(inlabru)
 library(ggplot2)
-library(rgeos)
 library(sf)
 
 # set ggplot theme
@@ -12,23 +11,24 @@ theme_set(theme_minimal())
 set.seed(9701071)
 
 #### Fitted model  ####
-model_path = here::here("analyses", "fitted_model.RDS")
-# model_path = here::here("holding_bay", "akepa_2002_fitted_model_new_inlabru.RDS")
+model_path = here::here("R",
+                        "fitted_models",
+                        "fitted_model.RDS")
 fit = readRDS(model_path)
 
-data_path = here::here("analyses", "data")
-obs <- readRDS(here::here(data_path, "obs_extended_no_crs.RDS"))
-# obs <- readRDS(here::here(data_path, "obs_2002_no_crs.RDS"))
-study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
-samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
+data_path = here::here("R", "data")
+obs <- readRDS(here::here(data_path, "obs.RDS"))
+study_area = readRDS(here::here(data_path, "study_area.RDS"))
+samplers = readRDS(here::here(data_path, "samplers.RDS"))
+mesh = readRDS(here::here(data_path, "mesh.RDS"))
 
-# polygon samplers 
+# polygon samplers
+samplers$ID = 1:nrow(samplers)
 W = 58/1000
-samplers_buffered = gBuffer(samplers, width = W, byid = TRUE)
-mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
+samplers_buffered = st_buffer(samplers, dist = W)
 
 ### Generate posterior point patterns
-n.pp = 100
+n.pp = 500
 
 # simulate intensities and detection functions
 # each column of llam is a realisation of the log-intensity at each mesh node
@@ -64,37 +64,26 @@ hn <- function(distance, lsig) exp(log_hn(distance, lsig))
 ## Build boundary information:
 ## (fmesher supports SpatialPolygons, but this app is not (yet) intelligent enough for that.)
 boundary <- list(
-  as.inla.mesh.segment(study_area),
+  fm_as_segm(study_area),
   NULL)
 
 ## Build the mesh:
-inner_mesh <- inla.mesh.2d(boundary=boundary,
-                     max.edge=c(0.25, 0.61),
-                     min.angle=c(30, 21),
-                     max.n=c(48000, 16000), ## Safeguard against large meshes.
-                     max.n.strict=c(128000, 128000), ## Don't build a huge mesh!
-                     cutoff=0.024, ## Filter away adjacent points.
-                     offset=c(0.1, 0.13)) ## Offset for extra boundaries, if needed.
+inner_mesh <- fm_mesh_2d_inla(boundary=boundary,
+                              max.edge=c(0.25, 0.61),
+                              min.angle=c(30, 21),
+                              max.n=c(48000, 16000), ## Safeguard against large meshes.
+                              max.n.strict=c(128000, 128000), ## Don't build a huge mesh!
+                              cutoff=0.024, ## Filter away adjacent points.
+                              offset=c(0.1, 0.13)) ## Offset for extra boundaries, if needed.
 
 A = inla.spde.make.A(mesh = mesh,
                      loc = inner_mesh$loc)
 
 inner_llam = A %*% llam
 
-# Note:  I think there is a way to use inner_mesh in the generate() 
-# call above to avoid having to create A and project afterwards. 
+# Note:  I think there is a way to use inner_mesh in the generate()
+# call above to avoid having to create A and project afterwards.
 # Have not tested this though.
-
-# Warning:
-# I was getting memory leaks in the loops, suspect it
-# was an rgeos function and could not resolve it.
-
-# Use sf functions to avoid rgeos
-samplers_sf = st_as_sf(samplers)
-samplers_buffered_sf = st_buffer(samplers_sf,
-                                 dist = W)
-samplers_sf$ID = 1:nrow(samplers_sf)
-samplers_buffered_sf$ID = 1:nrow(samplers_sf)
 
 for (i in 1:n.pp){
 
@@ -102,19 +91,22 @@ for (i in 1:n.pp){
   a.pp = sample.lgcp(mesh = inner_mesh,
                      loglambda = inner_llam[,i],
                      samplers = study_area)
-  a.pp = a.pp[samplers_buffered,]   # detectable points
+  a.pp = st_as_sf(a.pp)
+  # keep only detectable points
+  a.pp = a.pp[a.pp %>% st_within(samplers_buffered) %>% lengths > 0, ]
   a.lsig = lsig.post[i]
 
   cat("\nThinning point pattern ", i, "\n")
-  a.pp = st_as_sf(a.pp)
+
+  # add transect ID for each point
   pp_det = st_join(a.pp,
-                   samplers_buffered_sf[,"ID"])
+                   samplers_buffered[,"ID"])
 
   distances = rep(NA, nrow(pp_det))
 
   for (j in 1:nrow(pp_det)){
     pt = pp_det[j,]
-    transect = subset(samplers_sf, ID == pt$ID)
+    transect = subset(samplers, ID == pt$ID)
     distances[j] = as.numeric(st_distance(pt, transect))
   }
 
@@ -135,12 +127,12 @@ for (i in 1:n.pp){
   cat("\nFinished processing point pattern ", i, "\n")
 
   # memory leak?
-  rm(a.ds, a.ds.vec, a.obs, a.lsig, a.pp)
-  gc()
+  # rm(a.ds, a.ds.vec, a.obs, a.lsig, a.pp)
+  # gc()
 }
 
 # pairwise distances for observed data
-obs.ds = gDistance(obs, byid = TRUE)
+obs.ds = st_distance(obs)
 obs.ds[upper.tri(obs.ds, diag = TRUE)] = NA
 obs.ds.vec = as.numeric(obs.ds)
 count.obs = hist(obs.ds.vec, breaks = breaks, plot = FALSE)$counts

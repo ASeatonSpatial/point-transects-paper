@@ -1,17 +1,17 @@
 # Point Transect Distance Sampling With Inlabru
 ## A Case Study with Hawaiian Akepa Distance Sampling Data
 
-A brief tour of this repository:
-
 ### Data files
 
-**obs__extended2002_no_crs.RDS**    -  point transects locations with observed distances
+**obs.RDS**    -  point transects locations with observed distances
 
-**samplers_extended_no_crs.RDS**    -  point transect locations
+**samplers.RDS**    -  point transect locations
 
-**study_area_no_crs.RDS**  -  study area polygon
+**study_area.RDS**  -  study area polygon
 
-**create_extended_mesh.R** -  creates INLA mesh
+**mesh.RDS**  - INLA mesh 
+
+**create_mesh.R** -  creates INLA mesh
 
 ### Analyses
 

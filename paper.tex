@@ -288,8 +288,8 @@ This shows a region of high intensity in the south and much lower intensity in t
 We also map the lower and upper quantiles corresponding to a 95\% credible interval for each prediction location (Figure \ref{fig:intensity-quantiles}).  As we discuss below, these quantiles are independent summary statistics of the posterior intensity field at each prediction location.  
 \begin{figure}[!htb]
 	\begin{center}
-		\includegraphics[scale=0.525]{figures/intensity_quantiles.png}
-		\caption{The predicted posterior intensity quantiles:  A) 0.025 quantile B) 0.975 quantile.  Both plots use the same colour scale.}
+		\includegraphics{figures/intensity_quantiles.pdf}
+		\caption{Pointwise posterior quantiles for the intensity:  A) 0.025 quantile B) 0.975 quantile}
 		\label{fig:intensity-quantiles}
 	\end{center}
 \end{figure}
@@ -339,7 +339,7 @@ The most common method to communicate uncertainty in maps of animal density is t
 
 A map showing the posterior predicted mean across the study region (Figure \ref{fig:intensity-mean-cv}A) is often the key output of a species distribution model.  However, the posterior mean will always be smoother than realisations of the field itself, highlighting that even this relatively innocuous summary statistic can mask important features of the random field.  \autoref{fig:intensity-realizations} shows three such realisations from the posterior intensity field.  Note that each realisation has a finer-grained spatial structure than is shown in the posterior mean (\autoref{fig:intensity-mean-cv}A).  Our interpretation is that the clustering of animals is stronger than might be expected if we only looked at the map of the posterior mean.
 \begin{figure}[!htb]
-	\includegraphics[scale=0.525]{figures/intensity_realized.png}
+	\includegraphics{figures/intensity_realized.pdf}
 	\caption{Three realizations of the posterior intensity field}
 	\label{fig:intensity-realizations}
 \end{figure}

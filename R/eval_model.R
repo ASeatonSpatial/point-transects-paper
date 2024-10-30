@@ -252,10 +252,16 @@ p2 = ggplot() +
   geom_tile(data = pr.int,
             mapping = aes(x = x,
                          y = y,
-                         fill = q0.025)) +
-  scale_fill_viridis_c(limits = q_breaks,
+                         fill = q0.025,
+                         colour = q0.025)) +
+  scale_fill_viridis_c("",
+                       limits = q_breaks,
                        breaks = q_breaks,
                        labels = q_labels)+
+  scale_colour_viridis_c(limits = q_breaks,
+                         breaks = q_breaks,
+                         labels = q_labels,
+                         guide = "none")+
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
@@ -272,10 +278,16 @@ p3 = ggplot() +
   geom_tile(data = pr.int,
             mapping = aes(x = x,
                          y = y,
-                         fill = q0.975)) +
-  scale_fill_viridis_c(limits = q_breaks,
+                         fill = q0.975,
+                         colour = q0.975)) +
+  scale_fill_viridis_c("",
+                       limits = q_breaks,
                        breaks = q_breaks,
                        labels = q_labels)+
+  scale_colour_viridis_c(limits = q_breaks,
+                         breaks = q_breaks,
+                         labels = q_labels,
+                         guide = "none")+
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
@@ -287,12 +299,39 @@ p3 = ggplot() +
 
 p3
 
-png(filename = here::here(fig_path, "intensity_quantiles.png"),
-    width = 10, height = 5, units = "in", res = 100)
-plot_grid(NULL, p2, NULL, p3, NULL,
-          labels = c("", "A", "", "B", ""),
-          rel_widths = c(0.05, 1, 0.15, 1, 0.05),
-          ncol = 5)
+p2 = p2 +
+  theme(legend.margin = margin(t = 0, r = 10, b = 0, l = 10)) +
+  guides(fill = guide_colourbar(
+    title.vjust = 0.85,
+    title.theme = element_text(size = ax.size-2),
+    label.theme = element_text(size = ax.size-2),
+    barwidth = unit(2, "cm"),  # Consistent width for the color bar
+    barheight = unit(0.5, "cm") # Consistent height for the color bar
+  ))
+
+p3 = p3 +
+  theme(legend.margin = margin(t = 0, r = 10, b = 0, l = 10)) +
+  guides(fill = guide_colourbar(
+    title.vjust = 0.85,
+    title.theme = element_text(size = ax.size-2),
+    label.theme = element_text(size = ax.size-2),
+    barwidth = unit(2, "cm"),  # Consistent width for the color bar
+    barheight = unit(0.5, "cm") # Consistent height for the color bar
+  ))
+
+library(patchwork)
+pdf(file = here::here(fig_path, "intensity_quantiles.pdf"),
+    width = twi/1.5, height = twi/2)
+# plot_grid(NULL, p2, NULL, p3, NULL,
+#           labels = c("", "A", "", "B", ""),
+#           rel_widths = c(0.05, 1, 0.15, 1, 0.05),
+#           ncol = 5)
+wrap_plots(p2, p3) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(heights = c(1, 1), # Adjust heights for equal space
+            nrow = 1) +  # 2 rows for vertical stacking
+  theme(plot.margin = margin(10, 10, 10, 10)) &
+  theme(legend.justification = c(0.5, 0))  # Adjust margins for more whitespace
 dev.off()
 
 # show that these maps are misleading by interpreting
@@ -304,7 +343,7 @@ sum(pr.int$q0.975*cell_area)
 
 ### plot three realisations of posterior intensity field ####
 
-set.seed(1989)
+set.seed(1982139)
 draw1 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw2 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw3 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
@@ -319,15 +358,20 @@ draw_all = c(draw1$mean,
       draw2$mean,
       draw3$mean)
 
-viridisscale = scale_fill_viridis_c(limits = range(draw_all))
+viridisscale = scale_fill_viridis_c("",
+                                    limits = range(draw_all))
 
 p1 = ggplot() +
   geom_sf(data = study_area) +
   geom_tile(data = draw1,
             mapping = aes(x = x,
                          y = y,
-                         fill = mean)) +
+                         fill = mean,
+                         colour = mean)) +
   viridisscale +
+  scale_colour_viridis_c("",
+                         limits = range(draw_all),
+                         guide = "none") +
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
@@ -340,6 +384,9 @@ p2 = ggplot() +
                          y = y,
                          fill = mean)) +
   viridisscale +
+  scale_colour_viridis_c("",
+                         limits = range(draw_all),
+                         guide = "none") +
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
@@ -352,18 +399,20 @@ p3 = ggplot() +
                          y = y,
                          fill = mean)) +
   viridisscale +
+  scale_colour_viridis_c("",
+                         limits = range(draw_all),
+                         guide = "none") +
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
   theme(legend.position = "none")
 
-png(filename = here::here(fig_path, "intensity_realized.png"),
-    width = 10, height = 5, units = "in", res = 100)
+pdf(file = here::here(fig_path, "intensity_realized.pdf"),
+    width = twi, height = twi/2)
 plot_grid(NULL, p1, NULL, p2, NULL, p3, NULL,
           labels = c("", "A", "", "B", "", "C", ""),
           rel_widths = c(0.1, 1, 0.4, 1, 0.4, 1, 0.1),
           ncol = 7)
-
 dev.off()
 
 

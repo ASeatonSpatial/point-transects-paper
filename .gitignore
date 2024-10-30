@@ -1,12 +1,6 @@
 ## My added ignores:
 paper.pdf
-*~   ## vim temp things
-*~   ## vim temp things
-*~   ## vim temp things
-*~   ## vim temp things
-*~   ## vim temp things
-*~   ## vim temp things
-*~   ## vim temp things
+fitted_models/
 *~   ## vim temp things
 
 # ignore generated figures

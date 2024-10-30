@@ -2,27 +2,26 @@
 
 # Load required packages
 library(ggplot2)
-library(sp)
+library(sf)
 library(inlabru)
 library(INLA)
 
 #### Save Fitted Model Object? ####
 #### WARNING: THIS WILL OVERWRITE EXISTING FITTED MODEL OBJECT
 to_save = TRUE
-model_path = here::here("analyses", "fitted_model.RDS")
+model_path = here::here("R",
+                        "fitted_models",
+                        "fitted_model.RDS")
 
 #### Produce intermediate plots? ####
-to_plot = FALSE
+to_plot = TRUE
 
 #### Load Data ####
-data_path = here::here("analyses", "data")
-realobs <- readRDS(here::here(data_path, "obs_extended_no_crs.RDS"))
-study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
-samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
-mesh_path = here::here(data_path, "mesh_extended_no_crs.RDS")
-if (!file.exists(mesh_path)){
-  source(here::here("data", "create_extended_mesh.R"))
-}
+data_path = here::here("R", "data")
+obs <- readRDS(here::here(data_path, "obs.RDS"))
+study_area = readRDS(here::here(data_path, "study_area.RDS"))
+samplers = readRDS(here::here(data_path, "samplers.RDS"))
+mesh_path = here::here(data_path, "mesh.RDS")
 mesh = readRDS(mesh_path)
 
 #### Specify detection function  ####
@@ -44,10 +43,9 @@ dsamp = function(distance, lsig){
 if (to_plot){
   g1 <- ggplot() +
     gg(mesh) +
-    gg(study_area) +
-    gg(samplers) +
-    gg(realobs, colour = "green") +
-    coord_equal()
+    geom_sf(data = study_area) +
+    geom_sf(data = samplers) +
+    geom_sf(data = obs, colour = "green")
   g1
 }
 
@@ -58,30 +56,33 @@ matern <- inla.spde2.pcmatern(mesh,
                               prior.sigma = c(2, 0.01),
                               prior.range = c(300/1000, 0.01))
 
-cmp <- ~ grf(main = coordinates, model = matern) +
+cmp <- ~ grf(main = geometry, model = matern) +
   lsig(1) + Intercept(1)
 
 # Predictor formula:
-fml <- coordinates + distance ~ grf +
+fml <- geometry + distance ~ grf +
   dsamp(distance, lsig) +
   log(2*pi) +   # 2*pi offset for not knowing angle theta
   Intercept
 
 W <- 58/1000   # transect radius, units km
-distance_domain <- inla.mesh.1d(seq(.Machine$double.eps, W, length.out = 30))
+distance_domain <- fm_mesh_1d(seq(.Machine$double.eps, W, length.out = 30))
 starting_values <- list(lsig = 3.36 - log(1000))
 
-fit <-  lgcp(components = cmp,
-             data = realobs,
-             samplers = samplers,
-             domain = list(coordinates = mesh,
-                           distance = distance_domain),
-             formula = fml,
-             options = list(bru_max_iter = 40,
-                            bru_result = starting_values,
-                            bru_verbose = 3,
-#                            inla.mode = "experimental",
-                            control.inla = list(int.strategy = "eb")))
+lik = like(data = obs,
+           family = "cp",
+           samplers = samplers,
+           domain = list(geometry = mesh,
+                         distance = distance_domain),
+           formula = fml)
+
+fit <-  bru(components = cmp,
+            lik,
+            options = list(bru_max_iter = 40,
+                           bru_result = starting_values,
+                           bru_verbose = 3,
+                           #                            inla.mode = "experimental",
+                           control.inla = list(int.strategy = "eb")))
 
 #### Save model object ####
 

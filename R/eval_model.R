@@ -120,16 +120,19 @@ p1 = ggplot() +
   geom_tile(data = pr.int,
             mappin = aes(x = x,
                          y = y,
-                         fill = mean)) +
+                         fill = mean,
+                         colour = mean)) +
   scale_fill_viridis_c(breaks = mean_breaks,
                        labels = mean_labels) +
+  scale_colour_viridis_c(breaks = mean_breaks,
+                         labels = mean_labels) +
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
   guides(fill = guide_colourbar(title.vjust = 0.85,
-                                title.theme = element_text(size = ax.size),
-                                label.theme = element_text(size = ax.size)))
+                                title.theme = element_text(size = ax.size-2),
+                                label.theme = element_text(size = ax.size-2)))
 
 p1
 
@@ -146,16 +149,19 @@ p2 = ggplot() +
   geom_tile(data = pr.int,
             mapping = aes(x = x,
                          y = y,
-                         fill = cv)) +
+                         fill = cv,
+                         colour = cv)) +
   scale_fill_viridis_c(breaks = cv_breaks,
+                       labels = cv_labels) +
+  scale_colour_viridis_c(breaks = cv_breaks,
                        labels = cv_labels) +
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
   guides(fill = guide_colourbar(title.vjust = 0.85,
-                                title.theme = element_text(size = ax.size),
-                                label.theme = element_text(size = ax.size)))
+                                title.theme = element_text(size = ax.size-2),
+                                label.theme = element_text(size = ax.size-2)))
 
 p2
 
@@ -164,26 +170,62 @@ lower = min(pr.int$sd)
 upper = max(pr.int$sd)
 sd_breaks = c(lower, upper)
 sd_labels = format(c(signif(lower, digits = 3),
-                     signif(upper, digits = 3)),
-                   scientific = TRUE)
+                     signif(upper, digits = 3)))
 
 p3 = ggplot() +
   geom_sf(data = study_area) +
   geom_tile(data = pr.int,
             mapping = aes(x = x,
                          y = y,
-                         fill = sd)) +
+                         fill = sd,
+                         colour = sd)) +
   scale_fill_viridis_c(breaks = sd_breaks,
+                       labels = sd_labels) +
+  scale_colour_viridis_c(breaks = sd_breaks,
                        labels = sd_labels) +
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
   guides(fill = guide_colourbar(title.vjust = 0.85,
-                                title.theme = element_text(size = ax.size),
-                                label.theme = element_text(size = ax.size)))
+                                title.theme = element_text(size = ax.size-2),
+                                label.theme = element_text(size = ax.size-2)))
 
 p3
+
+# Adjust each plot's legend guide to include some margin
+# Numbers getting clipped otherwise.
+
+# Adjust each plot's legend guide to avoid stretching the color ramps
+p1 = p1 +
+  theme(legend.margin = margin(t = 0, r = 10, b = 0, l = 10)) +  # Add margin to legend
+  guides(fill = guide_colourbar(
+    title.vjust = 0.85,
+    title.theme = element_text(size = ax.size-2),
+    label.theme = element_text(size = ax.size-2),
+    barwidth = unit(2, "cm"),  # Set a fixed width for the color bar
+    barheight = unit(0.5, "cm") # Set a fixed height for the color bar
+  ))
+
+p2 = p2 +
+  theme(legend.margin = margin(t = 0, r = 10, b = 0, l = 10)) +
+  guides(fill = guide_colourbar(
+    title.vjust = 0.85,
+    title.theme = element_text(size = ax.size-2),
+    label.theme = element_text(size = ax.size-2),
+    barwidth = unit(2, "cm"),  # Consistent width for the color bar
+    barheight = unit(0.5, "cm") # Consistent height for the color bar
+  ))
+
+p3 = p3 +
+  theme(legend.margin = margin(t = 0, r = 10, b = 0, l = 10)) +
+  guides(fill = guide_colourbar(
+    title.vjust = 0.85,
+    title.theme = element_text(size = ax.size-2),
+    label.theme = element_text(size = ax.size-2),
+    barwidth = unit(2, "cm"),  # Consistent width for the color bar
+    barheight = unit(0.5, "cm") # Consistent height for the color bar
+  ))
 
 pdf(file = here::here(fig_path, "intensity_mean_cv_sd.pdf"),
     width = twi, height = twi/2)

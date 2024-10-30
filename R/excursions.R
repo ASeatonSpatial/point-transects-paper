@@ -4,8 +4,8 @@ library(inlabru)
 library(ggplot2)
 library(excursions)
 library(cowplot)
-source("gg.R")   # small edit of gg.SpatialPixelsDataFrame
-
+library(sf)
+source(here::here("R", "gg.R"))   # small edit of gg.SpatialPixelsDataFrame
 
 # set ggplot theme
 theme_set(theme_minimal())
@@ -13,29 +13,31 @@ theme_set(theme_minimal())
 set.seed(1525)
 
 #### Fitted model  ####
-model_path = here::here("analyses", "fitted_model.RDS")
+model_path = here::here("R",
+                        "fitted_models",
+                        "fitted_model.RDS")
 fit = readRDS(model_path)
 
 #### Other things ####
-data_path = here::here("analyses", "data")
-study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
-samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
-mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
+data_path = here::here("R", "data")
+study_area = readRDS(here::here(data_path, "study_area.RDS"))
+samplers = readRDS(here::here(data_path, "samplers.RDS"))
+mesh = readRDS(here::here(data_path, "mesh.RDS"))
 
 #### Where to save figures ####
 fig_path = here::here("figures")
 
 #### monte-carlo samples of intensity ####
 
-# Does excursions work with an inlabru object?
-
-# There must be a way to get the actual values from
-# predict with n.samples > 1 ?
-
-# yes update this to use generate
-
 n.mc = 500     # lower this when fiddling with things
-pxl = pixels(mesh, nx = 300, ny = 300, mask = study_area)
+n.mc = 25     # lower this when fiddling with things
+pxl = fm_pixels(mesh,
+                dims = c(50, 50),
+                mask = study_area)
+
+pxl.coords = st_coordinates(pxl)
+pxl$x = pxl.coords[,1]
+pxl$y = pxl.coords[,2]
 
 X = generate(fit,
              pxl,
@@ -43,8 +45,6 @@ X = generate(fit,
              n.samples = n.mc)
 
 #### excursions ####
-# Note:  I use excursions.mc() because I am not sure
-# if excursions() knows how to work with fitted bru objects
 
 # re-scale X (per km) to per hectare:
 Xhec = X/100
@@ -62,12 +62,14 @@ Fpxl$F = ex$F
 # png(filename = "../figures/excursion_function.png",
 #     width = 4.5, height = 5.5, units = "cm", res = 1000)
 p2 = ggplot() +
-  gg(study_area) +
-  gg(Fpxl) +
+  geom_sf(data = study_area) +
+  geom_tile(data = Fpxl,
+            mapping = aes(x = x,
+                          y = y,
+                          fill = F)) +
   scale_fill_viridis_c(limits = c(0,1),
                        breaks = c(0, 0.5, 1),
                        labels = c(0, 0.5, 1))+
-  coord_equal() +
   theme_void() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
@@ -82,9 +84,11 @@ Epxl = pxl
 Epxl$E = as.factor(ex$E)
 Epxl = Epxl[Epxl$E == 1,]
 p1 = ggplot() +
-  gg(study_area) +
-  gg(Epxl, aes(group = E)) +
-  coord_equal() +
+  geom_sf(data = study_area) +
+  geom_tile(data = Epxl,
+            mapping = aes(x = x,
+                          y = y,
+                          fill = E)) +
   # ggtitle("Excursion set for > 1 bird per hectare,\nalpha = 0.05") +
   scale_fill_manual(values = c("blue"),
                     labels = c("Excursion set")) +

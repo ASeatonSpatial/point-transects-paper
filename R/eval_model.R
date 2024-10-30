@@ -5,27 +5,27 @@ library(inlabru)
 library(ggplot2)
 library(scales)
 library(cowplot)
-library(rgeos)
-
-# set ggplot theme
-theme_set(theme_minimal())
+library(sf)
 
 set.seed(9701071)
 
 #### Fitted model  ####
-model_path = here::here("analyses", "fitted_model.RDS")
+model_path = here::here("R",
+                        "fitted_models",
+                        "fitted_model.RDS")
 fit = readRDS(model_path)
 
 #### Other things ####
-data_path = here::here("analyses", "data")
-study_area = readRDS(here::here(data_path, "study_area_extended_no_crs.RDS"))
-samplers = readRDS(here::here(data_path, "samplers_extended_no_crs.RDS"))
-mesh = readRDS(here::here(data_path, "mesh_extended_no_crs.RDS"))
+data_path = here::here("R", "data")
+study_area = readRDS(here::here(data_path, "study_area.RDS"))
+samplers = readRDS(here::here(data_path, "samplers.RDS"))
+mesh = readRDS(here::here(data_path, "mesh.RDS"))
 
 #### Where to save figures ####
 fig_path = here::here("figures")
 
 #### ggplot theme ####
+# theme_set(theme_minimal())
 theme_set(theme_classic())
 
 #### Specify detection functions  ####
@@ -42,7 +42,6 @@ hn <- function(distance, lsig) exp(log_hn(distance, lsig))
 dsamp = function(distance, lsig){
   log(distance) + log_hn(distance, lsig)
 }
-
 
 #### Model evaluation ####
 summary(fit)
@@ -87,29 +86,38 @@ dev.off()
 ##### Posterior intensity plots #####
 
 # Prediction locations
-pxl = pixels(mesh, nx = 300, ny = 300, mask = study_area)
-nrow(pxl@coords)
+pxl = fm_pixels(mesh,
+                dims = c(300, 300),
+                mask = study_area)
 
 # map units are per km^2 = 1,000,000 m^2
 # I want intensity per hectare = 10,000 m^2
 # so divide by 100
-pr.int <- predict(fit, pxl, ~ exp(grf + Intercept)/100)
+pr.int <- predict(fit, pxl, ~ exp(grf + Intercept)/100,
+                  n.samples = 1000)
+
+# add x and y columns for geom_tile
+pr.int.coords = st_coordinates(pr.int)
+pr.int$x = pr.int.coords[,1]
+pr.int$y = pr.int.coords[,2]
 
 # mean
-lower = min(pr.int["mean"]$mean)
-upper = max(pr.int["mean"]$mean)
+lower = min(pr.int$mean)
+upper = max(pr.int$mean)
 mean_breaks = c(lower, upper)
 mean_labels = c(signif(lower, digits = 3),
                 signif(upper, digits = 3))
 
 p1 = ggplot() +
-  gg(study_area) +
-  gg(pr.int["mean"]) +
+  geom_sf(data = study_area) +
+  geom_tile(data = pr.int,
+            mappin = aes(x = x,
+                         y = y,
+                         fill = mean)) +
   scale_fill_viridis_c(breaks = mean_breaks,
                        labels = mean_labels) +
   xlab("Easting") +
   ylab("Northing") +
-  coord_equal() +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
   guides(fill = guide_colourbar(title.vjust = 0.95,
@@ -119,6 +127,7 @@ p1 = ggplot() +
 p1
 
 # cv
+pr.int$cv = pr.int$sd / pr.int$mean
 lower = min(pr.int$cv)
 upper = max(pr.int$cv)
 cv_breaks = c(lower, upper)
@@ -126,13 +135,15 @@ cv_labels = c(signif(lower, digits = 3),
               signif(upper, digits = 3))
 
 p2 = ggplot() +
-  gg(study_area)  +
-  gg(pr.int["cv"]) +
+  geom_sf(data = study_area) +
+  geom_tile(data = pr.int,
+            mapping = aes(x = x,
+                         y = y,
+                         fill = cv)) +
   scale_fill_viridis_c(breaks = cv_breaks,
                        labels = cv_labels) +
   xlab("Easting") +
   ylab("Northing") +
-  coord_equal() +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
   guides(fill = guide_colourbar(title.vjust = 0.95,
@@ -149,15 +160,16 @@ sd_labels = format(c(signif(lower, digits = 3),
                      signif(upper, digits = 3)),
                    scientific = TRUE)
 
-
 p3 = ggplot() +
-  gg(study_area)  +
-  gg(pr.int["sd"]) +
+  geom_sf(data = study_area) +
+  geom_tile(data = pr.int,
+            mapping = aes(x = x,
+                         y = y,
+                         fill = sd)) +
   scale_fill_viridis_c(breaks = sd_breaks,
                        labels = sd_labels) +
   xlab("Easting") +
   ylab("Northing") +
-  coord_equal() +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
   guides(fill = guide_colourbar(title.vjust = 0.95,
@@ -187,12 +199,14 @@ q_labels = sd_labels = format(c(signif(lower, digits = 3),
                               scientific = TRUE)
 
 p2 = ggplot() +
-  gg(study_area) +
-  gg(pr.int["q0.025"]) +
+  geom_sf(data = study_area) +
+  geom_tile(data = pr.int,
+            mapping = aes(x = x,
+                         y = y,
+                         fill = q0.025)) +
   scale_fill_viridis_c(limits = q_breaks,
                        breaks = q_breaks,
                        labels = q_labels)+
-  coord_equal() +
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
@@ -205,12 +219,14 @@ p2 = ggplot() +
 p2
 
 p3 = ggplot() +
-  gg(study_area) +
-  gg(pr.int["q0.975"]) +
+  geom_sf(data = study_area) +
+  geom_tile(data = pr.int,
+            mapping = aes(x = x,
+                         y = y,
+                         fill = q0.975)) +
   scale_fill_viridis_c(limits = q_breaks,
                        breaks = q_breaks,
                        labels = q_labels)+
-  coord_equal() +
   xlab("Easting") +
   ylab("Northing") +
   theme_void() +
@@ -232,27 +248,36 @@ dev.off()
 
 # show that these maps are misleading by interpreting
 # them as an intensity
-cell_area = as.numeric(pr.int@grid@cellsize["x"]*pr.int@grid@cellsize["y"]*100)
-sum(pr.int@data["q0.025"]*cell_area)
-sum(pr.int@data["q0.975"]*cell_area)
+cell_area = st_area(study_area)/nrow(pr.int)*100
+sum(pr.int$q0.025*cell_area)
+sum(pr.int$q0.975*cell_area)
 # these are not supported by posterior for abundance (see script N_posterior.R)
 
-### plot three realisations of posterior intensity field #### 
+### plot three realisations of posterior intensity field ####
 
 set.seed(1989)
 draw1 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw2 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw3 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
+draw1$x = pr.int$x
+draw1$y = pr.int$y
+draw2$x = pr.int$x
+draw2$y = pr.int$y
+draw3$x = pr.int$x
+draw3$y = pr.int$y
 
-draw_all = c(draw1["mean"]@data,
-      draw2["mean"]@data,
-      draw3["mean"]@data)
+draw_all = c(draw1$mean,
+      draw2$mean,
+      draw3$mean)
 
 viridisscale = scale_fill_viridis_c(limits = range(draw_all))
 
 p1 = ggplot() +
-  gg(study_area) +
-  gg(draw1["mean"]) +
+  geom_sf(data = study_area) +
+  geom_tile(data = draw1,
+            mapping = aes(x = x,
+                         y = y,
+                         fill = mean)) +
   viridisscale +
   xlab("Easting") +
   ylab("Northing") +
@@ -260,8 +285,11 @@ p1 = ggplot() +
   theme(legend.position = "none")
 
 p2 = ggplot() +
-  gg(study_area) +
-  gg(draw2["mean"]) +
+  geom_sf(data = study_area) +
+  geom_tile(data = draw2,
+            mapping = aes(x = x,
+                         y = y,
+                         fill = mean)) +
   viridisscale +
   xlab("Easting") +
   ylab("Northing") +
@@ -269,8 +297,11 @@ p2 = ggplot() +
   theme(legend.position = "none")
 
 p3 = ggplot() +
-  gg(study_area) +
-  gg(draw3["mean"]) +
+  geom_sf(data = study_area) +
+  geom_tile(data = draw3,
+            mapping = aes(x = x,
+                         y = y,
+                         fill = mean)) +
   viridisscale +
   xlab("Easting") +
   ylab("Northing") +
@@ -285,19 +316,5 @@ plot_grid(NULL, p1, NULL, p2, NULL, p3, NULL,
           ncol = 7)
 
 dev.off()
-
-#### GMRF hyperparameter plots ####
-
-# Note: these do not appear in the thesis chapter
-spde.range = spde.posterior(fit, "grf", what = "range")
-spde.logvar = spde.posterior(fit, "grf", what = "log.variance")
-
-plot(spde.range)
-ggsave(filename = here::here(fig_path, "range_posterior.png"),
-       width = 5, height = 5, units = "in")
-
-plot(spde.logvar)
-ggsave(filename = here::here(fig_path, "spde_logvar_posterior.png"),
-       width = 5, height = 5, units = "in")
 
 

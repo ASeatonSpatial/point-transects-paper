@@ -15,6 +15,9 @@
 \usepackage{textcomp}    % for Hawaii characters
 \usepackage{url}
 
+% to find textwidth
+%\usepackage{layouts}
+
 % new commands
 \newcommand{\wt}[1]{\widetilde{#1}}
 \newcommand{\ol}[1]{\overline{#1}}
@@ -72,6 +75,9 @@ Since the thinning process is non-linear, we cannot use standard methods for inf
 
 \section{Introduction}
 
+Text width here we go:
+%\printinunitsof{cm}\prntlen{\textwidth}
+
 The estimation of the size and spatial distribution of wild populations of animals is a critical objective within ecology and conservation \citep{schwarz_estimating_1999}. Here we present an analysis of wildlife survey data collected on a critically endangered Hawaiian forest bird that aims to meet this objective.  The \hawaii{} \akepa{} (hereafter \akepa{}; \textit{Loxops coccineus}; nomenclature according to \citealp{usfws_akepa_1970}) is an endemic species whose population declined dramatically during the 20th century  \citep{usfws_revised_2006, judge_akepa_2018}.  The remaining population is the focus of sustained conservation efforts and monitoring is required to inform decision-makers about changes in the overall abundance and spatial distribution.  This information is critical when decisions about conservation strategies are made.  However, estimating the abundance and spatial distribution of wild populations of animals presents many statistical challenges.
 
 First, as in many ecological surveys, it is impossible to undertake a full census (i.e. the complete enumeration of all individuals within a defined study region).  The existing population numbers in the thousands and lives in dense tropical forest where logistical and ecological challenges mean a census is not feasible.  For this reason, a monitoring survey must sub-sample appropriately in space and time.  For the \akepa{} this takes the form of the \hawaii Forest Bird Survey (HFBS) \citep{scott_HFBS_1986}, which is a large-scale, quantitative survey of Hawaiian forest birds.  Annual surveys of the \akepa{} study-region consist of a number of point transects located along randomly located line transects.
@@ -109,8 +115,8 @@ Hakalau was established in 1985 to conserve 15,390 ha of montane forest habitat 
 
 \begin{figure}[!htb]
 	\centering
-	\includegraphics[scale=0.5]{figures/study_area_design.png}
-	\caption{Study area showing the 2002 survey points (black dots) in Hakalau Forest National Wildlife Refuge, \hawaii{} Island.  Eastings and Northings are in kilometres.}
+	\includegraphics{figures/study_area_design.pdf}
+	\caption{Study area showing the 2002 survey points (black dots) in Hakalau Forest National Wildlife Refuge, \hawaii{} Island.  The red outline marks the study area boundary as defined in \cite{camp_dsm_2020}.}
 	\label{fig:2002studyareapointspt}
 \end{figure}
 
@@ -272,7 +278,7 @@ The model fits in roughly 40 to 60 seconds on a laptop with 10 Gb RAM and a 2.50
 The predicted mean of the posterior intensity field is shown in \autoref{fig:intensity-mean-cv}A along with a map of the coefficient of variation (CV) (\autoref{fig:intensity-mean-cv}B) and standard deviation of the posterior intensity field (\autoref{fig:intensity-mean-cv}C) on a regular prediction grid with each prediction cell area approximately 1.7 hectares.
 \begin{figure}[!htb]
 	\begin{center}
-		\includegraphics[scale=0.525]{figures/intensity_mean_cv_sd.png}
+		\includegraphics[width=\textwidth]{figures/intensity_mean_cv_sd.pdf}
 		\caption{The A) mean, B) CV and C) SD of the posterior intensity field.  Units are per m$^2$.  The colour scale is different for each panel.}
 		\label{fig:intensity-mean-cv}
 	\end{center}
@@ -291,7 +297,7 @@ We also map the lower and upper quantiles corresponding to a 95\% credible inter
 The posterior detection function (\autoref{fig:det-matern}) shows that detectability drops to just under 0.25 at the maximum observable distance of 58 metres and also broadly agrees with a two-stage analysis.
 \begin{figure}[!htb]
 	\begin{center}
-		\includegraphics[scale=0.525]{figures/detfn_and_matern.png}
+		\includegraphics[width=\textwidth]{figures/detfn_and_matern.pdf}
 		\caption{A) Posterior half-normal detection function. B) Posterior Mat\'ern correlation function.  The black line is the mean posterior estimate and the grey shaded area is 95\% credible interval in both plots}
 		\label{fig:det-matern}
 	\end{center}

@@ -9,6 +9,13 @@ library(sf)
 
 set.seed(9701071)
 
+# statsoc doc class textwidth in cm
+tw = 14.69785
+twi = 5.7865551181  # pdf() needs inches
+
+# axis title text size
+ax.size = 12
+
 #### Fitted model  ####
 model_path = here::here("R",
                         "fitted_models",
@@ -58,10 +65,10 @@ hnpred <- predict(fit, distdf, ~ hn(distance, lsig + log(1000)),
 
 ghn = ggplot() +
         gg(hnpred) +
-        ylab("probability of detection\n") +
+        ylab("detection probability\n") +
         xlab("\ndistance (m)") +
-        theme(axis.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+        theme(axis.title = element_text(size = ax.size),
+        axis.text = element_text(size = ax.size))
 ghn
 
 ##### Posterior Matern plot ####
@@ -70,13 +77,13 @@ gmat = ggplot() +
   gg(blah) +
   ylab("correlation\n") +
   xlab("\ndistance (km)") +
-  theme(axis.title = element_text(size = 16, vjust = 0.3),
-        axis.text = element_text(size = 16))
+  theme(axis.title = element_text(size = ax.size, vjust = 0.3),
+        axis.text = element_text(size = ax.size))
 
 gmat
 
-png(filename = here::here(fig_path, "detfn_and_matern.png"),
-    width = 10, height = 5, units = "in", res = 100)
+pdf(file = here::here(fig_path, "detfn_and_matern.pdf"),
+    width = twi, height = twi/2)
 plot_grid(NULL, ghn, NULL, gmat, NULL,
           labels = c("", "A", "", "B", ""),
           rel_widths = c(0.05, 1, 0.15, 1, 0.05),
@@ -120,9 +127,9 @@ p1 = ggplot() +
   ylab("Northing") +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
-  guides(fill = guide_colourbar(title.vjust = 0.95,
-                                title.theme = element_text(size = 18),
-                                label.theme = element_text(size = 16)))
+  guides(fill = guide_colourbar(title.vjust = 0.85,
+                                title.theme = element_text(size = ax.size),
+                                label.theme = element_text(size = ax.size)))
 
 p1
 
@@ -146,9 +153,9 @@ p2 = ggplot() +
   ylab("Northing") +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
-  guides(fill = guide_colourbar(title.vjust = 0.95,
-                                title.theme = element_text(size = 18),
-                                label.theme = element_text(size = 16)))
+  guides(fill = guide_colourbar(title.vjust = 0.85,
+                                title.theme = element_text(size = ax.size),
+                                label.theme = element_text(size = ax.size)))
 
 p2
 
@@ -172,14 +179,14 @@ p3 = ggplot() +
   ylab("Northing") +
   theme_void() +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
-  guides(fill = guide_colourbar(title.vjust = 0.95,
-                                title.theme = element_text(size = 18),
-                                label.theme = element_text(size = 16)))
+  guides(fill = guide_colourbar(title.vjust = 0.85,
+                                title.theme = element_text(size = ax.size),
+                                label.theme = element_text(size = ax.size)))
 
 p3
 
-png(filename = here::here(fig_path, "intensity_mean_cv_sd.png"),
-    width = 10, height = 5, units = "in", res = 100)
+pdf(file = here::here(fig_path, "intensity_mean_cv_sd.pdf"),
+    width = twi, height = twi/2)
 plot_grid(NULL, p1, NULL, p2, NULL, p3, NULL,
           labels = c("", "A", "", "B", "", "C", ""),
           rel_widths = c(0.1, 1, 0.4, 1, 0.4, 1, 0.1),

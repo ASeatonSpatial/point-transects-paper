@@ -3,8 +3,7 @@ paper.pdf
 fitted_models/
 *~   ## vim temp things
 
-# ignore generated figures
-# *.png
+.Rhistory
 
 
 ## Core latex/pdflatex auxiliary files:

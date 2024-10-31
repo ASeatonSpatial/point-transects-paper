@@ -272,27 +272,21 @@ We also map the lower and upper quantiles corresponding to a 95\% credible inter
 	\end{center}
 \end{figure}
 
-The posterior detection function (\autoref{fig:det-matern}) shows that detectability drops to just under 0.25 at the maximum observable distance of 58 metres and also broadly agrees with a two-stage analysis.
+The posterior detection function (\autoref{fig:dist-mat-pairs}) shows that detectability drops to just under 0.25 at the maximum observable distance of 58 metres and also broadly agrees with a two-stage analysis.
 \begin{figure}[!htb]
 	\begin{center}
-		\includegraphics[width=\textwidth]{figures/detfn_and_matern.pdf}
-		\caption{A) Posterior half-normal detection function. B) Posterior Mat\'ern correlation function.  The black line is the mean posterior estimate and the grey shaded area is 95\% credible interval in both plots}
-		\label{fig:det-matern}
+		\includegraphics[width=\textwidth]{figures/dist_mat_pairs.pdf}
+		\caption{A) Posterior half-normal detection function. B) Posterior Mat\'ern correlation function.  The black line is the posterior mean and the grey shaded area is 95\% credible interval in both plots. C) Boxplots of the frequency of pairwise distances based on 500 simulated datasets from the posterior predictive distribution.  Axis labels mark the largest value in each 1km bin.   Red circles indicate the observed count of pairwise distances within each bin.}
+		\label{fig:dist-mat-pairs}
 	\end{center}
 \end{figure}
-The posterior Mat\'ern correlation function is shown in \autoref{fig:det-matern}; the grey regions show the 95\% credible interval.  We note that this correlation function shows positive correlation even at distances of 10,000 metres, wider than the full length of the study region (approximately 8,000 metres).  This is because the correlation function is defined on the log-intensity scale.  On the intensity scale the empirical range of correlation is shorter.
+The posterior Mat\'ern correlation function is shown in \autoref{fig:dist-mat-pairs}B; the grey regions show the 95\% credible interval.  We note that this correlation function shows positive correlation even at distances of 10,000 metres, wider than the full length of the study region (approximately 8,000 metres).  This is because the correlation function is defined on the log-intensity scale.  On the intensity scale the empirical range of correlation is shorter.
 
 To evaluate the ability of the SPDE effect to capture the spatial heterogeneity in the observed data we generated 1,000 point patterns using the posterior intensity field and thinned them with the posterior detection function to create 1,000 simulated datasets to compare with the observed data.  We calculated the pairwise distances between all observations for each of these datasets and compared the frequency of pairwise distances with those in the observed data.
-\begin{figure}[!htb]
-	\begin{center}
-		\includegraphics{figures/post_pp_distances.pdf}
-		\caption{Boxplots of the frequency of pairwise distances based on 500 simulated datasets from the posterior predictive distribution.  Axis labels mark the largest value in each bin.   Red circles indicate the observed frequency of pairwise distances within each bin.}
-		\label{fig:post-pp-distances}
-	\end{center}
-\end{figure}
-Figure \ref{fig:post-pp-distances} shows that the SPDE effect broadly captures the spatial clustering in the observed data.  There is some evidence of under-predicting the strength of the clustering at shorter distances between 1,000 and 2,500 m, with the simulated data showing some evidence of negative bias.  This could be due to over-smoothing in some areas which can happen if using a stationary model.  Large areas of the study region having low density, which has a larger correlation range than higher density areas, and so the effect will average between these. 
 
-Figure \ref{fig:post-pp-distances} is similar in spirit to Ripley's $K$-function \citep{ripley_SecondorderAnalysisStationary_1976}, which is a common approach to investigating spatial structure in point patterns.  The pairwise distances in the observed data is a function of spatial heterogeneity as well as the spatially restricted sampling scheme.  Other methods of comparison could also be considered such as the average difference between predicted and observed counts at each point transect.  Working with posterior predictive datasets is a flexible approach to model evaluation that allows for innovative methods of comparison with observed data that can focus on particular features of the model.
+Figure  shows that the SPDE effect broadly captures the spatial clustering in the observed data.  There is some evidence of under-predicting the strength of the clustering at shorter distances between 1,000 and 2,500 m, with the simulated data showing some evidence of negative bias.  This could be due to over-smoothing in some areas which can happen if using a stationary model.  Large areas of the study region having low density, which has a larger correlation range than higher density areas, and so the effect will average between these. 
+
+Figure \autoref{fig:dist-mat-pairs}C is similar in spirit to Ripley's $K$-function \citep{ripley_SecondorderAnalysisStationary_1976}, which is a common approach to investigating spatial structure in point patterns.  The pairwise distances in the observed data is a function of spatial heterogeneity as well as the spatially restricted sampling scheme.  Other methods of comparison could also be considered such as the average difference between predicted and observed counts at each point transect.  Working with posterior predictive datasets is a flexible approach to model evaluation that allows for innovative methods of comparison with observed data that can focus on particular features of the model.
 
 To plot the posterior abundance estimate for the \akepa{} in Hakalau we use a Monte Carlo method based on sampling realisations of the posterior intensity field.  Let $n$ denote the abundance of the population within the region of interest and $N = \int_{\Omega}\lambda(\bs)\mathrm{d}\bs$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the posterior intensity field provides a point estimate for the abundance, i.e. the expected abundance.  To generate a full posterior estimate for abundance we approximate the posterior $\pi(N | \bm{Y})$ by taking $m$ Monte Carlo samples of the posterior intensity field, $\lambda^{(1)}, \ldots, \lambda^{(m)}$ and approximate the posterior for the abundance as $\pi(N | \bm{Y}) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda^{(i)}, \bm{Y})$. Each $\pi(N | \lambda = \lambda^{(i)}, \bm{Y})$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda^{(i)}(\bs)\mathrm{d}\bs$. 
 \begin{figure}[!htb]

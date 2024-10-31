@@ -69,10 +69,15 @@ p2 = ggplot() +
   geom_tile(data = Fpxl,
             mapping = aes(x = x,
                           y = y,
-                          fill = F)) +
+                          fill = F,
+                          colour = F)) +
   scale_fill_viridis_c(limits = c(0,1),
                        breaks = c(0, 0.5, 1),
                        labels = c(0, 0.5, 1))+
+  scale_colour_viridis_c(limits = c(0,1),
+                         breaks = c(0, 0.5, 1),
+                         labels = c(0, 0.5, 1),
+                         guide = "none")+
   theme_void() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") +
@@ -91,9 +96,13 @@ p1 = ggplot() +
   geom_tile(data = Epxl,
             mapping = aes(x = x,
                           y = y,
-                          fill = E)) +
+                          fill = E,
+                          colour = E)) +
   # ggtitle("Excursion set for > 1 bird per hectare,\nalpha = 0.05") +
   scale_fill_manual(values = c("blue"),
+                    labels = c("Excursion set"),
+                    guide = "none") +
+  scale_colour_manual(values = c("blue"),
                     labels = c("Excursion set"),
                     guide = "none") +
   theme_void() +

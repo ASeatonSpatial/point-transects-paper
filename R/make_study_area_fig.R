@@ -17,14 +17,15 @@ samplers = readRDS(here::here(data_path, "samplers.RDS"))
 study_area_boundaries <- sf::st_cast(study_area, "LINESTRING")
 
 pdf(file = here::here("figures", "study_area_design.pdf"),
-    width = twi/2, height = twi/2)
+    width = twi/1.5, height = twi/1.5)
 
 ggplot() +
   geom_sf(data = study_area_boundaries,
           # fill = NA,
           size = 2,
           colour = "red") +
-  geom_sf(data = samplers) +
+  geom_sf(data = samplers,
+          cex = 0.4) +
   xlab("Easting (km)") +
   ylab("Northing (km)") +
   scale_x_continuous(limits = c(254, 262),

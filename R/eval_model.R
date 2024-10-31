@@ -343,7 +343,7 @@ sum(pr.int$q0.975*cell_area)
 
 ### plot three realisations of posterior intensity field ####
 
-set.seed(1982139)
+set.seed(19822139)
 draw1 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw2 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
 draw3 = predict(fit, pxl, ~ exp(grf + Intercept), n.samples = 1)
@@ -382,7 +382,8 @@ p2 = ggplot() +
   geom_tile(data = draw2,
             mapping = aes(x = x,
                          y = y,
-                         fill = mean)) +
+                         fill = mean,
+                         colour = mean)) +
   viridisscale +
   scale_colour_viridis_c("",
                          limits = range(draw_all),
@@ -397,7 +398,8 @@ p3 = ggplot() +
   geom_tile(data = draw3,
             mapping = aes(x = x,
                          y = y,
-                         fill = mean)) +
+                         fill = mean,
+                         colour = mean)) +
   viridisscale +
   scale_colour_viridis_c("",
                          limits = range(draw_all),

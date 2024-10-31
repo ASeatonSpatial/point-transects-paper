@@ -8,6 +8,9 @@ library(patchwork)
 library(dplyr)
 source(here::here("R", "gg.R"))   # some small edits to inlabru gg methods
 
+# statsoc doc class textwidth in cm
+tw = 14.69785
+twi = 5.7865551181  # pdf() needs inches
 # set ggplot theme
 theme_set(theme_minimal())
 
@@ -65,10 +68,11 @@ N_post %>%
                   ymin = mean - 2 * sd / sqrt(n.mc),
                   ymax = mean + 2 * sd / sqrt(n.mc)),
               alpha = 0.2) +
-  ylab("p(N)")
+  xlab("Abundance") +
+  ylab("posterior probabililty")
 
-ggsave(filename = here::here(fig_path, "N_posterior.png"),
-       width = 5, height = 5, units = "in")
+ggsave(filename = here::here(fig_path, "N_posterior.pdf"),
+       width = twi/2, height = twi/2, units = "in")
 
 Nweight = (N_max - N_min) / length(N_seq)
 sum(Nweight * N_post$mean) # should be close to 1
@@ -94,6 +98,6 @@ N_post %>%
   ylab("posterior probability") +
   xlab("akepa density per hectare")
 
-ggsave(filename = here::here(fig_path, "density_posterior.png"),
-       width = 5, height = 5, units = "in")
+ggsave(filename = here::here(fig_path, "density_posterior.pdf"),
+       width = twi/2, height = twi/2, units = "in")
 

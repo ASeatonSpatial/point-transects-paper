@@ -7,6 +7,9 @@ library(cowplot)
 library(sf)
 source(here::here("R", "gg.R"))   # small edit of gg.SpatialPixelsDataFrame
 
+# statsoc doc class textwidth in cm
+tw = 14.69785
+twi = 5.7865551181  # pdf() needs inches
 # set ggplot theme
 theme_set(theme_minimal())
 
@@ -91,9 +94,10 @@ p1 = ggplot() +
                           fill = E)) +
   # ggtitle("Excursion set for > 1 bird per hectare,\nalpha = 0.05") +
   scale_fill_manual(values = c("blue"),
-                    labels = c("Excursion set")) +
+                    labels = c("Excursion set"),
+                    guide = "none") +
   theme_void() +
-  theme(legend.position = "bottom",
+  theme(legend.position = "none",
         legend.direction = "vertical",
         plot.margin = margin(0.1, 0, 0.3, 0, "in"),
         legend.box.margin = margin(-4,0,0,0)) +
@@ -106,8 +110,8 @@ p1
 # ggsave(filename = "../figures/excursion_set.png",
 #        width = 5, height = 6, units = "in")
 
-png(filename = here::here(fig_path, "excursions.png"),
-    width = 10, height = 5, units = "in", res = 100)
+pdf(file = here::here(fig_path, "excursions.pdf"),
+    width = twi, height = twi/2)
 plot_grid(NULL, p1, NULL, p2, NULL,
           labels = c("", "A", "", "B", ""),
           rel_widths = c(0.05, 1, 0.15, 1, 0.05),

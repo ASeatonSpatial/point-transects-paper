@@ -307,8 +307,8 @@ The posterior Mat\'ern correlation function is shown in \autoref{fig:det-matern}
 To evaluate the ability of the SPDE effect to capture the spatial heterogeneity in the observed data we generated 1,000 point patterns using the posterior intensity field and thinned them with the posterior detection function to create 1,000 simulated datasets to compare with the observed data.  We calculated the pairwise distances between all observations for each of these datasets and compared the frequency of pairwise distances with those in the observed data.
 \begin{figure}[!htb]
 	\begin{center}
-		\includegraphics[scale=0.6]{figures/post_pp_distances.png}
-		\caption{Boxplots of the frequency of pairwise distances (tick mark values for end of each bin) based on 500 simulated datasets from the posterior predictive distribution.  Red circles indicate the frequency of pairwise distances in the observed data.}
+		\includegraphics{figures/post_pp_distances.pdf}
+		\caption{Boxplots of the frequency of pairwise distances based on 500 simulated datasets from the posterior predictive distribution.  Axis labels mark the largest value in each bin.   Red circles indicate the observed frequency of pairwise distances within each bin.}
 		\label{fig:post-pp-distances}
 	\end{center}
 \end{figure}
@@ -319,8 +319,8 @@ Figure \ref{fig:post-pp-distances} is similar in spirit to Ripley's $K$-function
 To plot the posterior abundance estimate for the \akepa{} in Hakalau we use a Monte Carlo method based on sampling realisations of the posterior intensity field.  Let $n$ denote the abundance of the population within the region of interest and $N = \int_{\Omega}\lambda(\bs)\mathrm{d}\bs$ its corresponding random variable within our Bayesian framework.  Integrating the mean of the posterior intensity field provides a point estimate for the abundance, i.e. the expected abundance.  To generate a full posterior estimate for abundance we approximate the posterior $\pi(N | \bm{Y})$ by taking $m$ Monte Carlo samples of the posterior intensity field, $\lambda^{(1)}, \ldots, \lambda^{(m)}$ and approximate the posterior for the abundance as $\pi(N | \bm{Y}) \approx 1 / m \sum_{i=1}^m \pi (N | \lambda = \lambda^{(i)}, \bm{Y})$. Each $\pi(N | \lambda = \lambda^{(i)}, \bm{Y})$ is a Poisson probability mass function with rate parameter $\int_{\Omega}\lambda^{(i)}(\bs)\mathrm{d}\bs$. 
 \begin{figure}[!htb]
 	\begin{center}
-		\includegraphics[scale=0.525]{figures/N_posterior.png}
-		\caption{Posterior abundance.  Grey area marks two Monte Carlo standard errors above and below the mean}
+		\includegraphics{figures/N_posterior.pdf}
+		\caption{Posterior abundance.  Grey area marks two Monte Carlo standard errors above and below the mean.}
 		\label{fig:realized-abundance-posterior}
 	\end{center}
 \end{figure}
@@ -376,8 +376,8 @@ Excursion sets can be estimated by considering candidate sets for $D$ of increas
 
 \autoref{fig:excursions}A shows the positive excursion set with a level corresponding to 1 bird per hectare with probability 0.95 (hence $\alpha = 0.05$).  This figure can be interpreted in a natural way as the largest region for which the intensity is greater than 1 bird per hectare for every location within the region, with probability 0.95. 
 \begin{figure}[!htb]
-	\includegraphics[scale=0.5]{figures/excursions.png}
-	\caption{A) The positive excursion set with a level corresponding to 1 bird per hectare and probability 0.95.  B) The positive excursion function with a level corresponding to 1 bird per hectare.  The scale shows the probability values $1-\alpha$.}
+	\includegraphics{figures/excursions.pdf}
+	\caption{A) The blue area is the positive excursion set with a level corresponding to 1 bird per hectare and probability 0.95.  B) The positive excursion function with a level corresponding to 1 bird per hectare.  The scale shows the probability values $1-\alpha$.}
 	\label{fig:excursions}
 \end{figure} 
 This map could be used to define, for example, a `core region' for the \akepa{} population, with particular conservation importance.  Crucially, this map depends on a clear mathematical description of what a `core region' actually means in a statistical sense.  While any particular definition would be up for debate, the advantage is that the statistical methodology is taken as close as possible to the aims of the analysis.  Often a map of species density will be interpreted informally in many different ways (one of which is identifying hotspots for example).  Here we present an example of how a clear statistical definition can be used to produce a map that incorporates relevant definitions and uncertainties, and can be interpreted clearly.  

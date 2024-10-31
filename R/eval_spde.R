@@ -6,6 +6,10 @@ library(inlabru)
 library(ggplot2)
 library(sf)
 
+# statsoc doc class textwidth in cm
+tw = 14.69785
+twi = 5.7865551181  # pdf() needs inches
+
 # set ggplot theme
 theme_set(theme_minimal())
 set.seed(9701071)
@@ -138,8 +142,8 @@ obs.ds.vec = as.numeric(obs.ds)
 count.obs = hist(obs.ds.vec, breaks = breaks, plot = FALSE)$counts
 
 # plot
-png(filename = here::here("figures", "post_pp_distances.png"),
-    width = 7, height = 4, units = "in", res = 100)
+pdf(file = here::here("figures", "post_pp_distances.pdf"),
+    width = twi, height = twi/2)
 
 boxplot(counts,
         xlab = "distance (km)",
@@ -151,4 +155,5 @@ points(1:(length(breaks)-1), count.obs, col = "red")
 # xticks = floor(breaks[-1] - (breaks[2] - breaks[1])/2)
 xticks = breaks[-1]
 axis(1, at = 1:(length(breaks)-1), labels = xticks)
+
 dev.off()

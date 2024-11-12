@@ -14,6 +14,7 @@
 \usepackage{caption}
 \usepackage{textcomp}    % for Hawaii characters
 \usepackage{url}
+\usepackage{subcaption}
 
 % to find textwidth
 %\usepackage{layouts}
@@ -102,6 +103,7 @@ Hakalau was established in 1985 to conserve 15,390 ha of montane forest habitat 
 	\centering
 	\includegraphics{figures/study_area_design.pdf}
 	\caption{Study area showing the 2002 survey points (black dots) in Hakalau Forest Unit of the Big Island National Wildlife Refuge Complex on the island of \hawaii{}.  The red outline marks the study area boundary as defined in \cite{camp_dsm_2020}.}
+	\subcaption*{Alt text: A map of the Hakalau study region with the locations of point transects.  The point transects are arranged approximately evenly spaced along straight lines moving roughly east to west.  The southern portion has higher survey effort comopared to the northern portion of the study area.}
 	\label{fig:2002studyareapointspt}
 \end{figure}
 
@@ -255,6 +257,7 @@ The SPDE approach can at first appear to be fundamentally different to other spa
 	\begin{center}
 		\includegraphics[width=\textwidth]{figures/intensity_mean_cv_sd.pdf}
 		\caption{The A) mean, B) coefficient of variation and C) standard deviation of the posterior intensity field.  For the mean and standard deviaion the units are number of birds per m$^2$.}
+		\subcaption*{Alt text:  A figure of 3 maps of the study region that summarise the posterior intensity field.  Map A shows the posterior mean showing a hot spot in the southern portion of the map. Map B shows the posterior coefficient of variation, showing higher values in the northern portion of the map. Map C shows the posterior standard deviation, showing higher standard deviation values in the southern portion of the map.}
 		\label{fig:intensity-mean-cv}
 	\end{center}
 \end{figure}
@@ -265,6 +268,7 @@ This shows a region of higher intensity in the south and lower intensity in the 
 	\begin{center}
 		\includegraphics[width=\textwidth]{figures/dist_mat_pairs.pdf}
 		\caption{A) Posterior half-normal detection function. B) Posterior Mat\'ern correlation function for the GMRF spatial effect.  The black line is the posterior mean and the grey shaded area marks the 95\% credible interval. C) Boxplots of the frequency of pairwise distances based on 500 simulated datasets from the posterior predictive distribution. Red circles indicate the observed count of pairwise distances within each bin.}
+		\subcaption*{Alt text:  A figure summarising the estimated spatial structure in the point transect distance sampling data.  Sub-figure A shows the posterior detection function with associated uncertainty.  Detectability drops to just above 0.25 at the maximum observable distance.  Sub-figure B shows the posterior Mat\`ern correlation function for the random effect.  It shows a decreasing correlation as distance increases, dropping to a correlation around 0.1 at a distance of 10 kilometres.  Sub-figure C shows boxplots that summarise the posterior distribution of pairwise distances between observations simulated from the posterior predictive distribution.  It shows a very close match between the posterior mean and pairwise distances observed in the real observations.}
 		\label{fig:dist-mat-pairs}
 	\end{center}
 \end{figure}
@@ -275,6 +279,7 @@ To visualise the posterior abundance for the \akepa{} in Hakalau we use a Monte 
 	\begin{center}
 		\includegraphics{figures/N_posterior.pdf}
 		\caption{Posterior abundance.  Grey area marks two Monte Carlo standard errors above and below the mean.}
+		\subcaption*{Alt text:  A figure summarising the posterior for abundance.  The posterior is approximately bell-shaped with the bulk of the posterior mass between 4000 and 8000 birds.}
 		\label{fig:realized-abundance-posterior}
 	\end{center}
 \end{figure}
@@ -292,6 +297,7 @@ Our presentation of the results above is broadly consistent with approaches take
 \begin{figure}[!htb]
 	\includegraphics{figures/intensity_realized.pdf}
 	\caption{Three realizations of the posterior intensity field}
+	\subcaption*{Alt text: A figure showing three realisations of the posterior intensity field.  The realisations all show broadly the same trend as the posterior mean but with more variability and a shorter effective range of correlation.}
 	\label{fig:intensity-realizations}
 \end{figure}
 
@@ -302,6 +308,7 @@ Quantile maps (Figure \ref{fig:intensity-quantiles}) are also difficult to inter
 	\begin{center}
 		\includegraphics{figures/intensity_quantiles.pdf}
 		\caption{Pointwise posterior quantiles for the intensity:  A) 0.025 quantile B) 0.975 quantile}
+		\subcaption*{Alt text: 2 maps summarising pointwise prediction quantiles for the posterior intensity field. Map A shows the 0.025 quantile, and map B shows the 0.975 quantile.}
 		\label{fig:intensity-quantiles}
 	\end{center}
 \end{figure}
@@ -325,6 +332,7 @@ In other words, the positive excursion set $E_{u,\alpha}^{+}(\lambda)$ is the \t
 \begin{figure}[!htb]
 	\includegraphics{figures/excursions.pdf}
 	\caption{A) The blue area is the positive excursion set with a level corresponding to 1 bird per hectare and probability 0.95.  B) The positive excursion function with a level corresponding to 1 bird per hectare.  The scale shows the probability values $1-\alpha$.}
+	\subcaption*{Alt text: Two maps showing estimates of excursion set and excursion functions.  Map A shows the excursion set with a level corresponding to 1 bird per hectare and probability 0.95.  The map shows a region in the south and a very small region slightly north of this that are within the excusion set.  Map B shows the excursion function, showing that most of the hotspot would remain in the excursion set even under probability values very close to 1.  A few areas additional areas would be included if the probability were lower than 0.95 but this are on the fringe and are not substantially larger excursion sets than the 0.95 example.}
 	\label{fig:excursions}
 \end{figure} 
 This map could be used to define, for example, a `core region' for the \akepa{} population, with particular conservation importance.  Crucially, this map depends on a clear mathematical description of what a `core region' actually means in a statistical sense.  While any particular definition would be up for debate, the advantage is that the statistical methodology is taken as close as possible to the aims of the analysis.  Often a map of species density will be interpreted informally in many different ways (one of which is identifying hotspots).  To visualise how such excursion sets change with different levels of uncertainty we can use the excursion function $F_u^{+}(\bs) = \sup \{1 - \alpha ; \bs \in E_{u,\alpha}^+ \}$.  This defines, for each location, the largest possible probability $1 -\alpha$ for which that location would be in the excursion set defined using probability $1 - \alpha$.  That is, if we allow greater uncertainty, this function shows which locations would be included in the excursion set.    

@@ -1,0 +1,19 @@
+Dear Editors,
+
+We are pleased to submit our manuscript entitled "One-stage point transect distance sampling using iterated integrated nested Laplace approximations" for consideration in Journal of the Royal Statistical Society: Series C. Our study introduces a one-stage Bayesian modelling framework for distance sampling data, applied to an endangered Hawaiian forest bird population. We believe this manuscript aligns closely with Series C’s focus on applied statistical work, as it presents a novel, generalisable inference method that we have applied to address critical ecological and conservation challenges.
+
+In response to limitations in traditional two-stage distance sampling methods, our work develops an integrated one-stage model that simultaneously estimates both detectability and spatial distribution of animals, which is essential for accurately assessing population size and spatial patterns of species critical to conservation efforts. Central to our approach is a novel inference method using an iterative scheme with integrated nested Laplace approximations (INLA) to estimate non-linear model components. This iterative INLA framework represents a significant advancement for Bayesian modeling in applied contexts, allowing for a variety of non-linear model specifications whilst retaining the speed and efficiency of computational methods for spatial modelling.
+
+While our specific application focuses on the akepa bird population, the iterative INLA method is generalizable to a broad range of applied problems. By implementing this approach, our work contributes both to the immediate ecological question and to the field of applied statistics at large, aligning well with Series C’s goal of publishing papers that adapt or develop new statistical methodologies for real-world applications.
+
+The paper also aligns with Series C’s emphasis on methods that directly engage with an applied problem. Here, the unified one-stage model offers a more cohesive analytical framework that accounts for the detection uncertainty inherent to field survey data. This joint estimation approach provides conservation practitioners with critical insights that would be difficult to capture with traditional methods. We hope this reflects Series C’s emphasis on genuine, problem-driven statistical work.
+
+Thank you for considering this submission. We look forward to the possibility of contributing to Series C with this paper and await to hear from you.
+
+Sincerely,
+
+Dr Andrew Seaton
+
+Research Associate
+School of Biodiversity, One Health and Veterinary Medicine
+University of Glasgow

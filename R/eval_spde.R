@@ -100,21 +100,6 @@ samplers_buffered <- st_buffer(samplers, dist = W)
 ### Generate posterior point patterns
 n.pp <- 500
 
-# simulate intensities and detection functions
-# each column of llam is a realisation of the log-intensity at each mesh node
-post.sample <- generate(fit,
-  formula = ~ {
-    c(
-      llam = grf_latent + Intercept_latent,
-      lsig = lsig_latent
-    )
-  },
-  n.samples = n.pp
-)
-
-llam <- post.sample[seq_len(fm_dof(mesh)), ]
-lsig.post <- post.sample["lsig", ]
-
 # create distance bins and matrix to store counts
 breaks <- 0:12
 counts <- matrix(NA, nrow = n.pp, ncol = length(breaks) - 1)
@@ -153,64 +138,98 @@ inner_mesh <- fm_mesh_2d_inla(
   offset = 0.1
 ) ## Offset for extra boundaries, if needed.
 
-A <- fm_basis(mesh, loc = inner_mesh$loc)
+# simulate intensities and detection functions
+# each column of llam is a realisation of the log-intensity at each
+# inner_mesh node
+post.sample <- generate(
+  fit,
+  st_sf(geometry = fm_as_sfc(inner_mesh, format = "loc")),
+  formula = ~ {
+    c(llam = grf + Intercept, lsig = lsig_latent)
+  },
+  n.samples = n.pp
+)
 
-inner_llam <- A %*% llam
+inner_llam <- post.sample[seq_len(NROW(inner_mesh$loc)), ]
+lsig.post <- post.sample["lsig", ]
 
-# Note:  I think there is a way to use inner_mesh in the generate()
-# call above to avoid having to create A and project afterwards.
-# Have not tested this though.
-
-for (i in 1:n.pp) {
-  cat("\nGenerating point pattern ", i, "\n")
-  a.pp <- sample.lgcp(
-    mesh = inner_mesh,
-    loglambda = inner_llam[, i],
-    samplers = study_area
-  )
-  a.pp <- st_as_sf(a.pp)
-  # keep only detectable points
-  a.pp <- a.pp[a.pp %>%
-    st_within(samplers_buffered) %>%
-    lengths() > 0, ]
-  a.lsig <- lsig.post[i]
-
-  cat("\nThinning point pattern ", i, "\n")
-
-  # add transect ID for each point
-  pp_det <- st_join(
-    a.pp,
-    samplers_buffered[, "ID"]
-  )
-
-  distances <- rep(NA, nrow(pp_det))
-
-  for (j in 1:nrow(pp_det)) {
-    pt <- pp_det[j, ]
-    transect <- subset(samplers, ID == pt$ID)
-    distances[j] <- as.numeric(st_distance(pt, transect))
-  }
-
-  pdet <- hn(distances, a.lsig)
-  pp_det$distances <- distances
-  pp_det$pdet <- pdet
-
-  detected <- rbinom(nrow(pp_det), 1, pdet)
-  a.obs <- subset(pp_det, as.logical(detected))
-
-  # calculate pairwise distances
-  a.ds <- st_distance(a.obs, byid = TRUE)
-  a.ds[upper.tri(a.ds, diag = TRUE)] <- NA
-  a.ds.vec <- as.numeric(a.ds)
-  a.ds.vec <- a.ds.vec[!is.na(a.ds.vec)]
-  counts[i, ] <- hist(a.ds.vec, breaks = breaks, plot = FALSE)$counts
-
-  cat("\nFinished processing point pattern ", i, "\n")
-
-  # memory leak?
-  # rm(a.ds, a.ds.vec, a.obs, a.lsig, a.pp)
-  # gc()
+library(progressr)
+if (interactive()) {
+  # Up to user to setup multisession beforehand
+  prog <- with_progress
+  handlers(handler_progress(
+    format = "Computing simulations: [:bar] :percent eta: :eta"
+  ))
+} else {
+  future::plan(future::multisession)
+  prog <- without_progress
 }
+
+sims_idx <- seq_len(n.pp)
+sims_result <- prog({
+  prog_bar <- progressor(along = sims_idx)
+  future.apply::future_lapply(
+    X = sims_idx,
+    prog_bar = prog_bar,
+    future.seed = 1037584L,
+    FUN = function(i, prog_bar) {
+      prog_bar()
+      #  cat("\nGenerating point pattern ", i, "\n")
+      a.pp <- sample.lgcp(
+        mesh = inner_mesh,
+        loglambda = inner_llam[, i],
+        samplers = study_area
+      )
+      a.pp <- st_as_sf(a.pp)
+      # keep only detectable points
+      a.pp <- a.pp[a.pp %>%
+                     st_within(samplers_buffered) %>%
+                     lengths() > 0, ]
+      a.lsig <- lsig.post[i]
+
+      #  cat("\nThinning point pattern ", i, "\n")
+
+      # add transect ID for each point
+      pp_det <- st_join(
+        a.pp,
+        samplers_buffered[, "ID"]
+      )
+
+      distances <- rep(NA, nrow(pp_det))
+
+      for (j in 1:nrow(pp_det)) {
+        pt <- pp_det[j, ]
+        transect <- subset(samplers, ID == pt$ID)
+        distances[j] <- as.numeric(st_distance(pt, transect))
+      }
+
+      pdet <- hn(distances, a.lsig)
+      pp_det$distances <- distances
+      pp_det$pdet <- pdet
+
+      detected <- rbinom(nrow(pp_det), 1, pdet)
+      a.obs <- subset(pp_det, as.logical(detected))
+
+      # calculate pairwise distances
+      a.ds <- st_distance(a.obs, byid = TRUE)
+      a.ds[upper.tri(a.ds, diag = TRUE)] <- NA
+      a.ds.vec <- as.numeric(a.ds)
+      a.ds.vec <- a.ds.vec[!is.na(a.ds.vec)]
+
+      counts <- hist(a.ds.vec, breaks = breaks, plot = FALSE)$counts
+
+      #  cat("\nFinished processing point pattern ", i, "\n")
+
+      # memory leak?
+      # rm(a.ds, a.ds.vec, a.obs, a.lsig, a.pp)
+      # gc()
+
+      counts
+    }
+  )
+})
+
+counts <- do.call(rbind, sims_result)
 
 # pairwise distances for observed data
 obs <- readRDS(here::here(data_path, "obs.RDS"))
@@ -227,7 +246,7 @@ counts_long <- counts_df %>%
 
 # Prepare observed data as a separate data frame
 count_obs_df <- data.frame(
-  distance_bin = 1:(length(breaks) - 1),
+  distance_bin = seq_len(length(breaks) - 1),
   count = count.obs
 )
 

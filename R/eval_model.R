@@ -59,7 +59,7 @@ summary(fit)
 
 # Prediction locations
 pxl <- fm_pixels(mesh,
-  dims = c(300, 300),
+  dims = c(150, 300),
   mask = study_area
 )
 

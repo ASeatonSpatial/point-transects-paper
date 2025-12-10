@@ -32,13 +32,24 @@ mesh <- readRDS(mesh_path)
 log_hn <- function(distance, lsig) {
   -0.5 * (distance / exp(lsig))^2
 }
+log_hr <- function(distance, sig, gam) {
+  log(1-exp(-(distance / sig)^(-gam)))
+}
 
 # Half-normal
 hn <- function(distance, lsig) exp(log_hn(distance, lsig))
+hr <- function(distance, sig, gam) {
+  1-exp(-(distance / sig)^(-gam))
+}
 
 # Include r for switching to polar coords
 dsamp <- function(distance, lsig) {
   log(distance) + log_hn(distance, lsig)
+}
+
+# Include r for switching to polar coords
+dsamp2 <- function(distance, sig,gam) {
+  log(distance) + log_hr(distance, sig, gam)
 }
 
 # Plot the data
@@ -61,17 +72,24 @@ matern <- inla.spde2.pcmatern(mesh,
 )
 
 cmp <- ~ grf(main = geometry, model = matern) +
-  lsig(1) + Intercept(1)
+  lsig(1) + Intercept(1) +
+  sig(1, prec.linear = 1, marginal = bm_marginal(qexp, rate = 1/0.02)) +
+  gam(1, prec.linear = 1, marginal = bm_marginal(qexp, rate = 1))
 
 # Predictor formula:
 fml <- geometry + distance ~ grf +
   dsamp(distance, lsig) +
   log(2 * pi) + # 2*pi offset for not knowing angle theta
   Intercept
+fml2 <- geometry + distance ~ grf +
+  dsamp2(distance, sig, gam) +
+  log(2 * pi) + # 2*pi offset for not knowing angle theta
+  Intercept
 
 W <- 58 / 1000 # transect radius, units km
 distance_domain <- fm_mesh_1d(W * seq(.Machine$double.eps, 1, length.out = 30)^2)
 starting_values <- list(lsig = 3.36 - log(1000))
+starting_values2 <- list(sig = 3.36 - log(1000),gam = 0)
 
 lik <- bru_obs(
   data = obs,
@@ -84,16 +102,40 @@ lik <- bru_obs(
   formula = fml
 )
 
+lik2 <- bru_obs(
+  data = obs,
+  family = "cp",
+  samplers = samplers,
+  domain = list(
+    geometry = mesh,
+    distance = distance_domain
+  ),
+  formula = fml2
+)
+
 fit <- bru(
   components = cmp,
   lik,
   options = list(
     bru_max_iter = 40,
     bru_initial = starting_values,
-    bru_verbose = 3,
-    control.inla = list(int.strategy = "eb")
+    bru_verbose = 3#,
+    #    control.inla = list(int.strategy = "eb")
   )
 )
+fit2 <- bru(
+  components = cmp,
+  lik2,
+  options = list(
+    bru_max_iter = 40,
+    bru_initial = starting_values2,
+    bru_verbose = 3#,
+    #    control.inla = list(int.strategy = "eb")
+  )
+)
+
+bru_convergence_plot(fit)
+bru_convergence_plot(fit2)
 
 #### Save model object ####
 
@@ -102,4 +144,12 @@ if (to_save) {
     dir.create(dirname(model_path))
   }
   saveRDS(object = fit, file = model_path)
+
+  model_path2 <- here::here(
+    "R",
+    "fitted_models",
+    "fitted_model2.RDS"
+  )
+  saveRDS(object = fit2, file = model_path2)
+
 }

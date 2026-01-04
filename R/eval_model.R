@@ -39,17 +39,11 @@ theme_set(theme_classic())
 
 #### Specify detection functions  ####
 
-# Log half-normal
-log_hn <- function(distance, lsig) {
-  -0.5 * (distance / exp(lsig))^2
-}
-
-# Half-normal
-hn <- function(distance, lsig) exp(log_hn(distance, lsig))
+source(here::here("R", "detection_functions.R"))
 
 # Include r for switching to polar coords
-dsamp <- function(distance, lsig) {
-  log(distance) + log_hn(distance, lsig)
+dsamp <- function(distance, sig, gam) {
+  log(distance) + log_hr(distance, sig, gam)
 }
 
 #### Model evaluation ####

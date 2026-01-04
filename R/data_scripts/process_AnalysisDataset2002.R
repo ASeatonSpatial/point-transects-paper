@@ -40,6 +40,10 @@ obs_sf <- st_as_sf(obs,
   coords = c("x", "y")
 )
 
+W <- 58 / 1000 # truncation distance in km
+obs_sf <- obs_sf |>
+  dplyr::filter(distance <= W)
+
 # check it looks okay
 ggplot() +
   geom_sf(data = samplers_sf) +

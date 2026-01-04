@@ -138,9 +138,38 @@ Our analysis is, to the best of our knowledge, the first analysis of point trans
 
 This section describes the statistical model for the spatial pattern of observed animal locations and distances to observers. We assume the locations of all animals, detected or not, form a point pattern distributed as a log-Gaussian Cox process with intensity process $\lambda(\bs)$.  The log-Gaussian Cox process is a flexible model that can include spatial covariates to model the mean intensity as well a mean-zero spatially structured random effect to account for unexplained heterogeneity not captured by the covariates \citep{moller_log_1998}.  To account for the imperfect detection of points we specify a thinning probability function $g(\bs) = \mathbb{P}(\text{a point at $\bs$ is detected } |\text{ a point is at $\bs$})$. A key property of the log-Gaussian Cox process is that the point pattern of \textit{detected} points itself follows a log-Gaussian Cox process with intensity process $\tl(\bs) := \lambda(\bs)g(\bs)$.  Using a log link $\log g(\bs)$ is therefore included in the model as an additive component to the model for $\log \lambda(\bs)$.
 
-Distance sampling models specify the thinning function $g(\bs)$ as a function that decays as distance increases.  The distance measured depends on the type of survey transect.  For line transects the perpendicular distance to the transect line is used, whereas for point transects the distance refers to the distance to the observer at a central, unmoving location.  For the remainder of the paper we assume a point transect survey design and hence horizontal distance to an observer located at the centre of each point transect.  The thinning probability function is specified as a parametric family of functions. We denote the distance of a point at $\bs$ from an observer as $r(\bs)$.  The \textit{half-normal} detection function is $g(\bs | \sigma) = \exp(-r(\bs)^2 / 2\sigma^2)$, where $\sigma^2 > 0$ is a variance parameter to be estimated.  Other types of detection function, such as hazard-rate, negative exponential, can also be used. Their parameters themselves can be modelled using appropriate link functions to incorporate covariates that may affect detectability.  In addition to these parametric forms, additional adjustments have been proposed to increase the flexibility of such models by including trigonometric series expansions \citep{buckland_distance_2015}.  For simplicity, $\sigma$ is modelled using only an intercept parameter, but our approach can readily be extended to include covariates.
+Distance sampling models specify the thinning function $g(\bs)$ as a function
+that decays as distance increases.  The distance measured depends on the type
+of survey transect.  For line transects the perpendicular distance to the
+transect line is used, whereas for point transects the distance refers to the
+distance to the observer at a central, unmoving location.  For the remainder of
+the paper we assume a point transect survey design and hence horizontal distance
+to an observer located at the centre of each point transect.  The thinning
+probability function is specified as a parametric family of functions. We denote
+the distance of a point at $\bs$ from an observer as $r(\bs)$.
+The \textit{hazard-rate} detection function is
+$g(\bs | \sigma) = 1-\exp(-(r(\bs)/\sigma)^{-\gamma})$, where $\sigma > 0$ and
+$\gamma > 0$ are scale and shape parameters to be estimated.
+Other types of detection function, such as
+half-norm and negative exponential, can also be used. The parameters themselves
+can be modelled using appropriate link functions to incorporate covariates that
+may affect detectability.  In addition to these parametric forms, additional
+adjustments have been proposed to increase the flexibility of such models by
+including trigonometric series expansions \citep{buckland_distance_2015}.
+For simplicity, the $\sigma$ and $\gamma$ parameters are modelled as only
+transformed intercept parameters with Exponential distributions as prior
+distributions, but our approach can readily be extended to include covariates,
+using the flexible model definition system in the \texttt{inlabru} package
+\citep{lindgren_inlabru_2024, bachl_inlabru_2019}.
 
-The detection function parameters can only be estimated if a uniformity assumption is made about the distribution of animals with respect to $r(\bs)$. Without such an assumption, the detection probability and intensity are confounded.  The standard assumption in distance sampling is that the intensity is constant with respect to changes in $r(\bs)$. The usual approach for two stage models is to assume $\lambda(\bs)$ is constant within each spatial unit.  With the point process perspective we are able to relax this assumption slightly to allow $\lambda(\bs)$ to be a linear function within each transect.
+The detection function parameters can only be estimated if a locally linear
+assumption is made about the distribution of animals with respect to $\bs$.
+Without such an assumption, the detection probability and intensity are confounded.
+The standard assumption in distance sampling is that the intensity is locally
+constant with respect to changes in $\bs$. The usual approach for two stage models is
+to assume $\lambda(\bs)$ is constant within each spatial unit.  With the point
+process perspective we are able to relax this assumption slightly to allow
+$\lambda(\bs)$ to be a linear function within each transect.
 
 To describe the model in general, we assume a point transect distance sampling survey consists of a set of $K$ point transects.   We denote the $k$-th point transect as $\Omega_k \subset \mathbb{R}^2$ and the total surveyed region as $\Omega = \cup_{k=1}^K \Omega_k$.  In the HFBS, the point transects are non-overlapping disks all with equal radius $W$ and centres at locations $\bs_k$ for $k = 1, \ldots, K$.  We denote probability of observing a point at location $\bs \in \Omega_k$, given there is a point at that location, by $g_k(\bs)$.  The probability of observing a point outside the surveyed region is zero.
 Since the point transects are non-overlapping, each location $\bs \in \Omega$ is unambiguously associated with a single observer and, therefore, a single thinning probability function $g_k$.   The half-normal detection function for points in $\Omega_k$ is therefore $g_k(\bs) = \exp(-\lVert \bs - \bs_k \rVert_2^2 / 2\sigma^2)$.  The assumption of non-overlapping survey regions could be relaxed by including extra information such as the time of each observation and observer identifiers.  The thinning probability function for any $\bs \in \Omega$ is then given by $g(\bs) = g_{k(\bs)}(\bs)$, where $k(\bs)$ is an indexing function such that $k(\bs) = k$ whenever $\bs \in \Omega_k$.
@@ -261,12 +290,12 @@ At first, using the SPDE approach to represent spatially structured effects can 
 \end{figure}
 This shows a region of higher intensity in the south and of lower intensity in the north, agreeing with the broad patterns observed in a standard two-stage analysis of the same data \citep{camp_dsm_2020}.  The CV plot shows that the CV in the posterior intensity field is lower in areas with greater sampling effort and higher intensity. The standard deviation map shows stronger overall posterior variability in the south, where intensity is larger.  Although survey effort is higher in the south, the increased uncertainty is likely due to the assumed log-normal relationship between the random field and the Poisson rate parameter.  For this reason, we suggest using both the CV and SD to visualise uncertainty.
 
-\autoref{fig:dist-mat-pairs} summarises the estimates of spatial structure in the model.  The posterior detection function (\autoref{fig:dist-mat-pairs}A) shows that the detection probability drops to around 0.25 at the maximum observable distance of 58 metres.
+\autoref{fig:dist-mat-pairs} summarises the estimates of spatial structure in the model.  The posterior detection function (\autoref{fig:dist-mat-pairs}A) shows that the detection probability drops to around 0.15 at the maximum observable distance of 58 metres.
 \begin{figure}[!htb]
 	\begin{center}
 		\includegraphics[width=\textwidth]{figures/dist_mat_pairs.pdf}
-		\caption{A) Posterior half-normal detection function. B) Posterior Mat\'ern correlation function for the GMRF spatial effect.  The black line is the posterior mean and the grey shaded area marks the 95\% credible interval. C) Boxplots of the frequency of pairwise distances based on 500 simulated datasets from the posterior predictive distribution. Red circles indicate the observed count of pairwise distances within each bin.}
-		\subcaption*{Alt text:  A figure summarising the estimated spatial structure in the point transect distance sampling data.  Sub-figure A shows the posterior detection function with associated uncertainty.  Detectability drops to just above 0.25 at the maximum observable distance.  Sub-figure B shows the posterior Mat\`ern correlation function for the random effect.  It shows a decreasing correlation as distance increases, dropping to a correlation around 0.1 at a distance of 10 kilometres.  Sub-figure C shows boxplots that summarise the posterior distribution of pairwise distances between observations simulated from the posterior predictive distribution.  It shows a very close match between the posterior mean and pairwise distances observed in the real observations.}
+		\caption{A) Posterior hazard-rate detection function and B) Posterior Mat\'ern correlation function for the GMRF spatial effect.  The black lines are the posterior mean and the grey shaded area marks 95\% credible intervals. C) Boxplots of the frequency of pairwise distances based on 500 simulated datasets from the posterior predictive distribution. Red circles indicate the observed count of pairwise distances within each bin.}
+		\subcaption*{Alt text:  A figure summarising the estimated spatial structure in the point transect distance sampling data.  Sub-figure A shows the posterior detection function with associated uncertainty.  Detectability drops to just below 0.15 at the maximum observable distance.  Sub-figure B shows the posterior Mat\`ern correlation function for the random effect.  It shows a decreasing correlation as distance increases, dropping to a correlation around 0.1 at a distance of 10 kilometres.  Sub-figure C shows boxplots that summarise the posterior distribution of pairwise distances between observations simulated from the posterior predictive distribution.  It shows a very close match between the posterior mean and pairwise distances observed in the real observations.}
 		\label{fig:dist-mat-pairs}
 	\end{center}
 \end{figure}

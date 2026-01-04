@@ -42,33 +42,28 @@ theme_set(theme_minimal())
 
 #### Specify detection functions  ####
 
-# Log half-normal
-log_hn <- function(distance, lsig) {
-  -0.5 * (distance / exp(lsig))^2
-}
-
-# Half-normal
-hn <- function(distance, lsig) exp(log_hn(distance, lsig))
+source(here::here("R", "detection_functions.R"))
 
 # Include r for switching to polar coords
-dsamp <- function(distance, lsig) {
-  log(distance) + log_hn(distance, lsig)
+dsamp <- function(distance, sig, gam) {
+  log(distance) + log_hr(distance, sig, gam)
 }
 
 
-#### Posterior half-normal plot ####
+#### Posterior detection function plot ####
 
 W <- 58 / 1000
 Wm <- 58 # transect radius in metres
 distdf <- data.frame(distance = seq(.Machine$double.eps, Wm, length = 100))
 
 # adjust for change of units (km in model fit, metres here)
-hnpred <- predict(fit, distdf, ~ hn(distance, lsig + log(1000)),
-                  n.samples = 100
+hrpred <- predict(
+  fit, distdf, ~ hr(distance, sig * 1000, gam),
+  n.samples = 100
 )
 
-ghn <- ggplot() +
-  gg(hnpred) +
+ghr <- ggplot() +
+  gg(hrpred) +
   ylim(c(0, 1)) +
   ylab("detection probability\n") +
   xlab("\ndistance (m)") +
@@ -76,7 +71,7 @@ ghn <- ggplot() +
     axis.title = element_text(size = ax.size),
     axis.text = element_text(size = ax.size)
   )
-ghn
+ghr
 
 #### Posterior Matern plot ####
 blah <- spde.posterior(fit, "grf", what = "matern.correlation")
@@ -93,7 +88,7 @@ gmat
 
 #### Pairwise distances plot ####
 # polygon samplers
-samplers$ID <- 1:nrow(samplers)
+samplers$ID <- seq_len(nrow(samplers))
 W <- 58 / 1000
 samplers_buffered <- st_buffer(samplers, dist = W)
 
@@ -103,15 +98,6 @@ n.pp <- 500
 # create distance bins and matrix to store counts
 breaks <- 0:12
 counts <- matrix(NA, nrow = n.pp, ncol = length(breaks) - 1)
-
-# detection functions
-# Log half-normal
-log_hn <- function(distance, lsig) {
-  -0.5 * (distance / exp(lsig))^2
-}
-
-# Half-normal
-hn <- function(distance, lsig) exp(log_hn(distance, lsig))
 
 # Need to create a new mesh just in the study area and
 # project llam to this. Boundary was giving very large intensities
@@ -145,13 +131,14 @@ post.sample <- generate(
   fit,
   st_sf(geometry = fm_as_sfc(inner_mesh, format = "loc")),
   formula = ~ {
-    c(llam = grf + Intercept, lsig = lsig_latent)
+    c(llam = grf + Intercept, sig = sig, gam = gam)
   },
   n.samples = n.pp
 )
 
 inner_llam <- post.sample[seq_len(NROW(inner_mesh$loc)), ]
-lsig.post <- post.sample["lsig", ]
+sig.post <- post.sample["sig", ]
+gam.post <- post.sample["gam", ]
 
 library(progressr)
 if (interactive()) {
@@ -162,7 +149,11 @@ if (interactive()) {
   ))
 } else {
   future::plan(future::multisession)
-  prog <- without_progress
+#  prog <- without_progress
+  prog <- with_progress
+  handlers(handler_progress(
+    format = "Computing simulations: [:bar] :percent eta: :eta"
+  ))
 }
 
 sims_idx <- seq_len(n.pp)
@@ -185,7 +176,8 @@ sims_result <- prog({
       a.pp <- a.pp[a.pp %>%
                      st_within(samplers_buffered) %>%
                      lengths() > 0, ]
-      a.lsig <- lsig.post[i]
+      a.sig <- sig.post[i]
+      a.gam <- gam.post[i]
 
       #  cat("\nThinning point pattern ", i, "\n")
 
@@ -203,7 +195,7 @@ sims_result <- prog({
         distances[j] <- as.numeric(st_distance(pt, transect))
       }
 
-      pdet <- hn(distances, a.lsig)
+      pdet <- hr(distances, a.sig, a.gam)
       pp_det$distances <- distances
       pp_det$pdet <- pdet
 
@@ -274,6 +266,6 @@ pdf(
   width = twi, height = twi
 )
 
-(ghn + gmat) / gpp + plot_annotation(tag_levels = "A")
+(ghr + gmat) / gpp + plot_annotation(tag_levels = "A")
 
 dev.off()

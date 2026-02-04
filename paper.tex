@@ -221,7 +221,7 @@ In the above, we assume that the data are complete records of animal locations. 
 \label{intensity-incomplete}
 \tl_k(r) &= \oint\displaylimits_{c_k(r)} \lambda(\bs)g_k(r)\mathrm{d}\bs \nonumber \\
 &= 2\pi\lambda(\bs_k)rg_k(r),
-\end{align}	
+\end{align}
 where $c_k(r)$ is a circle of radius $r$ centred at $\bs_k$ and the second line follows from change of variables and the assumption of linear intensity within $\Omega_k$.  This intensity differs from the full data case through the $2\pi$  term that accounts for the fact that we do not observe $\theta$ and the Jacobian term $r$ that accounts for the increasing area surveyed at larger distances.  We note that a similar equation is derived from the perspective of a triangular distribution for point transect distance sampling in \cite{buckland_advanced_2004}.
 
 The log-intensity for detected points is therefore $\log\tl(\bs) = \log 2 \pi r + \log\lambda(\bs) + \log g(\bs)$ and so it is straightforward to account for incomplete location information by including an offset term.  As noted above, the detection function $g(\bs)$ is non-linear in its parameters and this component of the additive predictor requires a novel approach to parameter estimation.
